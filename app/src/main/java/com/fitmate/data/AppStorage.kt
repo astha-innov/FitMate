@@ -100,18 +100,6 @@ object AppStorage {
         return List(array.length()) { index -> mealLogFromJson(array.getJSONObject(index)) }
     }
 
-    fun clearSetupData() {
-        prefs.edit()
-            .remove("setup_completed")
-            .remove("profile_json")
-            .remove("ai_config_json")
-            .remove("plan_json")
-            .remove("discipline_json")
-            .remove("goal_progress_json")
-            .remove("meal_logs_json")
-            .apply()
-    }
-
     internal fun profileToJson(profile: UserProfile): JSONObject = JSONObject()
         .put("age", profile.age)
         .put("heightCm", profile.heightCm)

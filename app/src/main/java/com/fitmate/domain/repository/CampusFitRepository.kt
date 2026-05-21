@@ -29,5 +29,4 @@ interface CampusFitRepository {
     fun addWater(amountLiters: Double)
     fun savePersonalizedPlan(plan: PersonalizedPlan)
     fun markSetupCompleted(completed: Boolean)
-    fun resetSetup()
 }
