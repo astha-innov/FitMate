@@ -1,0 +1,78 @@
+package com.fitmate.data
+
+import com.fitmate.domain.model.AppThemeMode
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
+import org.json.JSONArray
+import org.json.JSONObject
+
+class FirebaseBackendService {
+    fun isConfigured(): Boolean = runCatching { FirebaseApp.getInstance() }.isSuccess
+
+    suspend fun loadState(): BackendState? {
+        if (!isConfigured()) return null
+        val userId = ensureSignedIn()
+        val snapshot = firestore().collection(USERS_COLLECTION).document(userId).get().await()
+        if (!snapshot.exists()) return null
+        val data = snapshot.data ?: return null
+        return BackendState(
+            profile = decodeJson(data["profile"])?.let(AppStorage::profileFromJson),
+            aiConfig = decodeJson(data["aiConfig"])?.let(AppStorage::aiConfigFromJson),
+            themeMode = (data["themeMode"] as? String)?.let { runCatching { AppThemeMode.valueOf(it) }.getOrDefault(AppThemeMode.LIGHT) },
+            setupCompleted = data["setupCompleted"] as? Boolean,
+            personalizedPlan = decodeJson(data["personalizedPlan"])?.let(AppStorage::planFromJson),
+            discipline = decodeJson(data["discipline"])?.let(AppStorage::disciplineFromJson),
+            todayProgress = decodeJson(data["todayProgress"])?.let(AppStorage::goalProgressFromJson),
+            mealLogs = decodeJsonArray(data["mealLogs"])?.let { array ->
+                List(array.length()) { index -> AppStorage.mealLogFromJson(array.getJSONObject(index)) }
+            },
+        )
+    }
+
+    suspend fun saveState(state: BackendState) {
+        if (!isConfigured()) return
+        val userId = ensureSignedIn()
+        val payload = hashMapOf<String, Any>(
+            "themeMode" to (state.themeMode?.name ?: AppThemeMode.LIGHT.name),
+            "setupCompleted" to (state.setupCompleted ?: false),
+            "updatedAt" to FieldValue.serverTimestamp(),
+        )
+        state.profile?.let { payload["profile"] = AppStorage.profileToJson(it).toString() }
+        state.aiConfig?.let { payload["aiConfig"] = AppStorage.aiConfigToJson(it).toString() }
+        state.personalizedPlan?.let { payload["personalizedPlan"] = AppStorage.planToJson(it).toString() }
+        state.discipline?.let { payload["discipline"] = AppStorage.disciplineToJson(it).toString() }
+        state.todayProgress?.let { payload["todayProgress"] = AppStorage.goalProgressToJson(it).toString() }
+        state.mealLogs?.let { payload["mealLogs"] = JSONArray(it.map(AppStorage::mealLogToJson)).toString() }
+
+        firestore().collection(USERS_COLLECTION).document(userId).set(payload, SetOptions.merge()).await()
+    }
+
+    private suspend fun ensureSignedIn(): String {
+        auth().currentUser?.uid?.let { return it }
+        val result = auth().signInAnonymously().await()
+        return requireNotNull(result.user?.uid) { "Firebase anonymous sign-in failed." }
+    }
+
+    private fun auth(): FirebaseAuth = FirebaseAuth.getInstance()
+    private fun firestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    private fun decodeJson(raw: Any?): JSONObject? = when (raw) {
+        is String -> runCatching { JSONObject(raw) }.getOrNull()
+        is Map<*, *> -> runCatching { JSONObject(raw) }.getOrNull()
+        else -> null
+    }
+
+    private fun decodeJsonArray(raw: Any?): JSONArray? = when (raw) {
+        is String -> runCatching { JSONArray(raw) }.getOrNull()
+        is List<*> -> runCatching { JSONArray(raw) }.getOrNull()
+        else -> null
+    }
+
+    private companion object {
+        const val USERS_COLLECTION = "fitmateUsers"
+    }
+}
