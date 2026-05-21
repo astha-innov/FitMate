@@ -2,16 +2,16 @@
 /build/
 /app/build/
 /local.properties
-/app/google-services.json
+
 
 # Android Studio / IntelliJ
 /.idea/
 *.iml
 
 # Firebase / Google service credentials
-/app/google-services.json
-/app/src/debug/google-services.json
-/app/src/release/google-services.json
+
+
+
 firebase-debug.log
 firestore-debug.log
 
