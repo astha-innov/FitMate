@@ -70,14 +70,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fitmate.R
-import com.fitmate.domain.model.AiConfig
-import com.fitmate.domain.model.AiProviderMode
 import com.fitmate.domain.model.AppThemeMode
 import com.fitmate.domain.model.FoodPreference
 import com.fitmate.domain.model.GoalType
 import com.fitmate.domain.model.MealSlot
 import com.fitmate.domain.model.UserProfile
-import com.fitmate.ui.theme.CampusFitTheme
+import com.fitmate.ui.theme.FitMateTheme
+import androidx.compose.ui.tooling.preview.Preview
 
 private enum class HomeTab(val label: String) {
     DASHBOARD("Dashboard"),
@@ -125,13 +124,15 @@ fun CampusFitApp(viewModel: CampusFitViewModel = viewModel(factory = CampusFitVi
         stage = IntroStage.PERSONALIZING
     }
 
-    CampusFitTheme(darkTheme = uiState.themeMode == AppThemeMode.DARK) {
+    FitMateTheme(darkTheme = uiState.themeMode == AppThemeMode.DARK) {
         when (stage) {
             IntroStage.WELCOME -> WelcomeScreen { stage = IntroStage.QUESTIONS }
             IntroStage.QUESTIONS -> FitMateOnboarding(
                 initialProfile = uiState.profile,
-                initialConfig = uiState.aiConfig,
-                onStartPersonalization = { profile, config -> viewModel.bootstrapPersonalization(profile, config) },
+
+                onStartPersonalization = { profile ->
+                    viewModel.bootstrapPersonalization(profile)
+                },
             )
             IntroStage.PERSONALIZING -> PersonalizingScreen(personalizationState) { stage = IntroStage.QUESTIONS }
             IntroStage.HOME -> HomeScreen(
@@ -179,8 +180,8 @@ private fun WelcomeScreen(onGetStarted: () -> Unit) {
 @Composable
 private fun FitMateOnboarding(
     initialProfile: UserProfile,
-    initialConfig: AiConfig,
-    onStartPersonalization: (UserProfile, AiConfig) -> Unit,
+
+    onStartPersonalization: (UserProfile) -> Unit,
 ) {
     var stepIndex by rememberSaveable { mutableIntStateOf(0) }
     var height by rememberSaveable { mutableStateOf(initialProfile.heightCm.toString()) }
@@ -190,48 +191,25 @@ private fun FitMateOnboarding(
     var gender by rememberSaveable { mutableStateOf(initialProfile.gender) }
     var goal by rememberSaveable { mutableStateOf(initialProfile.goal) }
     var foodPreference by rememberSaveable { mutableStateOf(initialProfile.foodPreference) }
-    var providerMode by rememberSaveable { mutableStateOf(initialConfig.providerMode) }
-    var baseUrl by rememberSaveable { mutableStateOf(initialConfig.baseUrl) }
-    var apiKey by rememberSaveable { mutableStateOf(initialConfig.apiKey) }
-    var modelName by rememberSaveable { mutableStateOf(initialConfig.modelName) }
-    var localEndpoint by rememberSaveable { mutableStateOf(initialConfig.localEndpoint) }
-    var localModelName by rememberSaveable { mutableStateOf(initialConfig.localModelName) }
     var showValidation by rememberSaveable { mutableStateOf(false) }
 
-    val steps = buildList {
-        addAll(
-            listOf(
-                OnboardingStep.HEIGHT,
-                OnboardingStep.WEIGHT,
-                OnboardingStep.AGE,
-                OnboardingStep.WORKOUT,
-                OnboardingStep.GENDER,
-                OnboardingStep.GOAL,
-                OnboardingStep.FOOD,
-                OnboardingStep.AI_PROVIDER,
-            ),
-        )
-        if (providerMode == AiProviderMode.REMOTE_API) {
-            add(OnboardingStep.AI_BASE_URL)
-            add(OnboardingStep.AI_API_KEY)
-            add(OnboardingStep.AI_MODEL)
-        } else {
-            add(OnboardingStep.LOCAL_ENDPOINT)
-            add(OnboardingStep.LOCAL_MODEL)
-        }
-    }
+    val steps = listOf(
+        OnboardingStep.HEIGHT,
+        OnboardingStep.WEIGHT,
+        OnboardingStep.AGE,
+        OnboardingStep.WORKOUT,
+        OnboardingStep.GENDER,
+        OnboardingStep.GOAL,
+        OnboardingStep.FOOD
+    )
 
     val current = steps[stepIndex]
+
     val error = when (current) {
         OnboardingStep.HEIGHT -> requireField(height)
         OnboardingStep.WEIGHT -> requireField(weight)
         OnboardingStep.AGE -> requireField(age)
         OnboardingStep.WORKOUT -> requireField(workoutMinutes)
-        OnboardingStep.AI_BASE_URL -> requireField(baseUrl)
-        OnboardingStep.AI_API_KEY -> requireField(apiKey)
-        OnboardingStep.AI_MODEL -> requireField(modelName)
-        OnboardingStep.LOCAL_ENDPOINT -> requireField(localEndpoint)
-        OnboardingStep.LOCAL_MODEL -> requireField(localModelName)
         else -> null
     }
 
@@ -257,15 +235,8 @@ private fun FitMateOnboarding(
                                 foodPreference = foodPreference,
                                 workoutMinutes = workoutMinutes.toInt(),
                             ),
-                            AiConfig(
-                                providerMode = providerMode,
-                                baseUrl = baseUrl,
-                                apiKey = apiKey,
-                                modelName = modelName,
-                                localEndpoint = localEndpoint,
-                                localModelName = localModelName,
-                            ),
-                        )
+
+                            )
                     }
                 },
                 modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(24.dp),
@@ -296,15 +267,7 @@ private fun FitMateOnboarding(
                         OnboardingStep.GENDER -> TextSelection("Choose one", listOf("Male", "Female", "Other"), gender) { gender = it }
                         OnboardingStep.GOAL -> EnumSelection("Pick your goal", GoalType.entries, goal, { it.label }) { goal = it }
                         OnboardingStep.FOOD -> EnumSelection("Pick your style", FoodPreference.entries, foodPreference, { it.label }) { foodPreference = it }
-                        OnboardingStep.AI_PROVIDER -> EnumSelection("Provider mode", AiProviderMode.entries, providerMode, { it.label }) {
-                            providerMode = it
-                            stepIndex = 7
-                        }
-                        OnboardingStep.AI_BASE_URL -> NumericOrTextField("Base URL", baseUrl, showValidation.thenError(error)) { baseUrl = it }
-                        OnboardingStep.AI_API_KEY -> NumericOrTextField("API key", apiKey, showValidation.thenError(error)) { apiKey = it }
-                        OnboardingStep.AI_MODEL -> NumericOrTextField("Model name", modelName, showValidation.thenError(error)) { modelName = it }
-                        OnboardingStep.LOCAL_ENDPOINT -> NumericOrTextField("Local endpoint", localEndpoint, showValidation.thenError(error)) { localEndpoint = it }
-                        OnboardingStep.LOCAL_MODEL -> NumericOrTextField("Local model name", localModelName, showValidation.thenError(error)) { localModelName = it }
+                        else -> {}
                     }
                 }
             }
@@ -550,33 +513,6 @@ private fun SettingsTab(state: CampusFitUiState, viewModel: CampusFitViewModel) 
         }
     }
 
-    SectionCard("AI memory setup") {
-        Text(state.personalizedPlan?.aiSummary ?: "Your persistent AI baseline will be stored after setup.")
-        EnumSelection("Provider mode", AiProviderMode.entries, providerMode, { it.label }) { providerMode = it }
-        NumericOrTextField("Base URL", baseUrl, null) { baseUrl = it }
-        NumericOrTextField("API key", apiKey, null) { apiKey = it }
-        NumericOrTextField("Model name", modelName, null) { modelName = it }
-        NumericOrTextField("Local endpoint", localEndpoint, null) { localEndpoint = it }
-        NumericOrTextField("Local model name", localModelName, null) { localModelName = it }
-        Button(
-            onClick = {
-                viewModel.updateAiConfig(
-                    AiConfig(
-                        providerMode = providerMode,
-                        baseUrl = baseUrl,
-                        apiKey = apiKey,
-                        modelName = modelName,
-                        localEndpoint = localEndpoint,
-                        localModelName = localModelName,
-                    ),
-                )
-            },
-            shape = RoundedCornerShape(18.dp),
-        ) {
-            Text("Save AI settings")
-        }
-    }
-
     SectionCard("Personal info memory") {
         NumericField("Age", age, null) { age = it.filter(Char::isDigit) }
         NumericField("Height (cm)", height, null) { height = it.filter(Char::isDigit) }
@@ -698,3 +634,9 @@ private fun TextSelection(label: String, options: List<String>, selected: String
 
 private fun requireField(value: String): String? = if (value.isBlank()) "This field is required" else null
 private fun Boolean.thenError(error: String?): String? = if (this) error else null
+
+@Preview(showBackground = true)
+@Composable
+fun CampusFitAppPreview() {
+    CampusFitApp()
+}

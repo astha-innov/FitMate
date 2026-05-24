@@ -17,24 +17,31 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         vectorDrawables {
             useSupportLibrary = true
         }
     }
 
     buildTypes {
+
         release {
             isMinifyEnabled = false
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
         }
     }
 
     compileOptions {
+
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+
+        // IMPORTANT FIX
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -46,41 +53,114 @@ android {
     }
 
     packaging {
+
         resources {
+
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
-    val firebaseBom = platform("com.google.firebase:firebase-bom:34.7.0")
+
+    // =========================
+    // COMPOSE BOM
+    // =========================
+
+    val composeBom =
+        platform("androidx.compose:compose-bom:2024.09.00")
 
     implementation(composeBom)
     androidTestImplementation(composeBom)
+
+    // =========================
+    // FIREBASE BOM
+    // =========================
+
+    val firebaseBom =
+        platform("com.google.firebase:firebase-bom:34.7.0")
+
     implementation(firebaseBom)
 
+    // =========================
+    // CORE
+    // =========================
+
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.5")
+
     implementation("androidx.activity:activity-compose:1.9.2")
+
+    // =========================
+    // LIFECYCLE
+    // =========================
+
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
+
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.5")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
+
+    // =========================
+    // NAVIGATION
+    // =========================
+
     implementation("androidx.navigation:navigation-compose:2.8.0")
+
+    // =========================
+    // COROUTINES
+    // =========================
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
-    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // =========================
+    // FIREBASE
+    // =========================
+
     implementation("com.google.firebase:firebase-auth")
+
     implementation("com.google.firebase:firebase-firestore")
 
+    // =========================
+    // COIL
+    // =========================
+
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // =========================
+    // COMPOSE UI
+    // =========================
+
     implementation("androidx.compose.ui:ui")
+
     implementation("androidx.compose.ui:ui-tooling-preview")
+
     implementation("androidx.compose.material3:material3")
+
     implementation("androidx.compose.material:material-icons-extended")
 
+    // =========================
+    // DESUGARING
+    // =========================
+
+    coreLibraryDesugaring(
+        "com.android.tools:desugar_jdk_libs:2.0.4"
+    )
+
+    // =========================
+    // TESTING
+    // =========================
+
     testImplementation("junit:junit:4.13.2")
+
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
+
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
+
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

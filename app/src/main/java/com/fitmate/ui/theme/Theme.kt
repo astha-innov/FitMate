@@ -6,38 +6,61 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val LightColors = lightColorScheme(
+
     primary = Coral,
     onPrimary = Cloud,
+
     primaryContainer = Sand,
     onPrimaryContainer = Ink,
+
     secondary = Mint,
+
     background = Cloud,
     onBackground = Ink,
+
     surface = Cloud,
     onSurface = Ink,
+
     surfaceVariant = Sand,
-    onSurfaceVariant = Ink,
+    onSurfaceVariant = Ink
 )
 
 private val DarkColors = darkColorScheme(
+
     primary = Mint,
     onPrimary = Ink,
+
     primaryContainer = NightCard,
     onPrimaryContainer = Cloud,
+
     secondary = Coral,
+
     background = Night,
     onBackground = Cloud,
+
     surface = NightCard,
     onSurface = Cloud,
+
     surfaceVariant = NightCard,
-    onSurfaceVariant = Sand,
+    onSurfaceVariant = Sand
 )
 
 @Composable
-fun CampusFitTheme(darkTheme: Boolean, content: @Composable () -> Unit) {
+fun FitMateTheme(
+    darkTheme: Boolean = true,
+    content: @Composable () -> Unit
+) {
+
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
+
+        colorScheme =
+            if (darkTheme)
+                DarkColors
+            else
+                LightColors,
+
         typography = FitMateTypography,
-        content = content,
+
+        content = content
     )
 }

@@ -169,8 +169,8 @@ class CampusFitRepositoryImpl(
         val completedToday = when {
             targets == null -> _todayProgress.value.caloriesConsumed >= 1800 && _todayProgress.value.proteinConsumed >= 90
             else -> _todayProgress.value.caloriesConsumed >= targets.caloriesTarget &&
-                _todayProgress.value.proteinConsumed >= targets.proteinTarget &&
-                _todayProgress.value.waterLitersConsumed >= targets.waterLitersTarget
+                    _todayProgress.value.proteinConsumed >= targets.proteinTarget &&
+                    _todayProgress.value.waterLitersConsumed >= targets.waterLitersTarget
         }
         val wasCompleted = _discipline.value.completedToday
         val streakDays = if (completedToday && !wasCompleted) _discipline.value.streakDays + 1 else _discipline.value.streakDays

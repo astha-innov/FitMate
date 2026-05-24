@@ -10,6 +10,7 @@ import com.fitmate.domain.model.DashboardSnapshot
 import com.fitmate.domain.model.DietRecommendation
 import com.fitmate.domain.model.DisciplineState
 import com.fitmate.domain.model.GoalProgress
+import com.fitmate.domain.model.GoalReasoning
 import com.fitmate.domain.model.MealLog
 import com.fitmate.domain.model.MealSlot
 import com.fitmate.domain.model.MealsSnapshot
@@ -58,91 +59,255 @@ class CampusFitViewModel(
     private val buildMealsSnapshot: BuildMealsSnapshotUseCase = BuildMealsSnapshotUseCase(),
     private val calculateGoalMetrics: CalculateGoalMetricsUseCase = CalculateGoalMetricsUseCase(),
     private val analyzeMealUseCase: AnalyzeMealUseCase = AnalyzeMealUseCase(),
-    private val createInitialPersonalizedPlan: CreateInitialPersonalizedPlanUseCase = CreateInitialPersonalizedPlanUseCase(),
-    private val createDietRecommendation: CreateDietRecommendationUseCase = CreateDietRecommendationUseCase(),
-    private val createWorkoutPlan: CreateWorkoutPlanUseCase = CreateWorkoutPlanUseCase(),
+    private val createInitialPersonalizedPlan: CreateInitialPersonalizedPlanUseCase =
+        CreateInitialPersonalizedPlanUseCase(),
+    private val createDietRecommendation: CreateDietRecommendationUseCase =
+        CreateDietRecommendationUseCase(),
+    private val createWorkoutPlan: CreateWorkoutPlanUseCase =
+        CreateWorkoutPlanUseCase(),
 ) : ViewModel() {
-    private val _personalizationState = MutableStateFlow(PersonalizationState())
-    val personalizationState: StateFlow<PersonalizationState> = _personalizationState.asStateFlow()
 
-    val uiState: StateFlow<CampusFitUiState> = repository.profile
-        .combine(repository.aiConfig) { profile, config -> profile to config }
-        .combine(repository.themeMode) { (profile, config), themeMode -> Triple(profile, config, themeMode) }
-        .combine(repository.setupCompleted) { (profile, config, themeMode), setupCompleted ->
-            Quad(profile, config, themeMode, setupCompleted)
-        }
-        .combine(repository.personalizedPlan) { seed, plan -> seed to plan }
-        .combine(repository.discipline) { (seed, plan), discipline ->
-            DashboardSeed(seed.profile, seed.config, seed.themeMode, seed.setupCompleted, plan, discipline)
-        }
-        .combine(repository.todayProgress) { seed, progress -> seed to progress }
-        .combine(repository.mealLogs) { (seed, progress), mealLogs ->
-            DashboardMealsSeed(seed, progress, mealLogs)
-        }
-        .combine(repository.latestMealAnalysis) { seeded, latestAnalysis ->
-            val profile = seeded.seed.profile
-            val config = seeded.seed.config
-            val plan = seeded.seed.plan
-            CampusFitUiState(
-                profile = profile,
-                aiConfig = config,
-                themeMode = seeded.seed.themeMode,
-                setupCompleted = seeded.seed.setupCompleted,
-                personalizedPlan = plan,
-                dashboard = plan?.let { buildDashboard(it, seeded.progress, seeded.seed.discipline) },
-                meals = plan?.let { buildMealsSnapshot(it, seeded.progress, seeded.mealLogs, latestAnalysis) },
-                diet = plan?.dietRecommendation ?: createDietRecommendation(profile),
-                workout = plan?.workoutPlan ?: createWorkoutPlan(profile),
+    private val _personalizationState =
+        MutableStateFlow(PersonalizationState())
+
+    val personalizationState: StateFlow<PersonalizationState> =
+        _personalizationState.asStateFlow()
+
+    val uiState: StateFlow<CampusFitUiState> =
+        repository.profile
+            .combine(repository.aiConfig) { profile, config ->
+                profile to config
+            }
+            .combine(repository.themeMode) { (profile, config), themeMode ->
+                Triple(profile, config, themeMode)
+            }
+            .combine(repository.setupCompleted) {
+                    (profile, config, themeMode),
+                    setupCompleted ->
+
+                Quad(
+                    profile,
+                    config,
+                    themeMode,
+                    setupCompleted
+                )
+            }
+            .combine(repository.personalizedPlan) { seed, plan ->
+                seed to plan
+            }
+            .combine(repository.discipline) {
+                    (seed, plan),
+                    discipline ->
+
+                DashboardSeed(
+                    seed.profile,
+                    seed.config,
+                    seed.themeMode,
+                    seed.setupCompleted,
+                    plan,
+                    discipline
+                )
+            }
+            .combine(repository.todayProgress) { seed, progress ->
+                seed to progress
+            }
+            .combine(repository.mealLogs) {
+                    (seed, progress),
+                    mealLogs ->
+
+                DashboardMealsSeed(
+                    seed,
+                    progress,
+                    mealLogs
+                )
+            }
+            .combine(repository.latestMealAnalysis) {
+                    seeded,
+                    latestAnalysis ->
+
+                val profile = seeded.seed.profile
+                val config = seeded.seed.config
+                val plan = seeded.seed.plan
+
+                CampusFitUiState(
+                    profile = profile,
+                    aiConfig = config,
+                    themeMode = seeded.seed.themeMode,
+                    setupCompleted = seeded.seed.setupCompleted,
+                    personalizedPlan = plan,
+                    dashboard = plan?.let {
+                        buildDashboard(
+                            it,
+                            seeded.progress,
+                            seeded.seed.discipline
+                        )
+                    },
+                    meals = plan?.let {
+                        buildMealsSnapshot(
+                            it,
+                            seeded.progress,
+                            seeded.mealLogs,
+                            latestAnalysis
+                        )
+                    },
+                    diet = plan?.dietRecommendation
+                        ?: createDietRecommendation(profile),
+
+                    workout = plan?.workoutPlan
+                        ?: createWorkoutPlan(profile),
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = CampusFitUiState(),
             )
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = CampusFitUiState(),
-        )
 
-    fun updateProfile(profile: UserProfile) = repository.updateProfile(profile)
-    fun updateAiConfig(config: AiConfig) = repository.updateAiConfig(config)
-    fun updateThemeMode(mode: AppThemeMode) = repository.updateThemeMode(mode)
-    fun toggleReminders() = repository.toggleReminders()
-    fun addWater(amountLiters: Double) = repository.addWater(amountLiters)
+    fun updateProfile(profile: UserProfile) =
+        repository.updateProfile(profile)
 
-    fun bootstrapPersonalization(profile: UserProfile, config: AiConfig) {
+    fun updateThemeMode(mode: AppThemeMode) =
+        repository.updateThemeMode(mode)
+
+    fun toggleReminders() =
+        repository.toggleReminders()
+
+    fun addWater(amountLiters: Double) =
+        repository.addWater(amountLiters)
+
+    fun bootstrapPersonalization(profile: UserProfile) {
+
         viewModelScope.launch {
+
+            val config = AiConfig(
+                baseUrl = "https://openrouter.ai/api/v1",
+                apiKey = "",
+                modelName = "openai/gpt-4o-mini"
+            )
+
             try {
-                _personalizationState.value = PersonalizationState(true, 0.12f, "Saving your FitMate profile")
+
+                _personalizationState.value =
+                    PersonalizationState(
+                        isRunning = true,
+                        progress = 0.12f,
+                        status = "Saving your FitMate profile"
+                    )
+
                 repository.updateProfile(profile)
                 repository.updateAiConfig(config)
+
                 delay(300)
-                _personalizationState.value = PersonalizationState(true, 0.38f, "Generating your smart body goal system")
+
+                _personalizationState.value =
+                    PersonalizationState(
+                        isRunning = true,
+                        progress = 0.38f,
+                        status = "Generating your smart fitness system"
+                    )
+
                 delay(250)
-                val plan = createInitialPersonalizedPlan(profile, config)
-                _personalizationState.value = PersonalizationState(true, 0.67f, "Building your diet and workout memory")
+
+                val plan = runCatching {
+
+                    createInitialPersonalizedPlan(
+                        profile,
+                        config
+                    )
+
+                }.getOrElse {
+
+                    PersonalizedPlan(
+                        metrics = calculateGoalMetrics(profile),
+
+                        reasoning = GoalReasoning(
+                            summary = "Starter fitness plan generated locally.",
+                            calorieReasoning = "Calories adjusted for your goal.",
+                            proteinReasoning = "Protein optimized for recovery.",
+                            waterReasoning = "Hydration adjusted for your body.",
+                            coachingNotes = listOf(
+                                "Stay consistent daily.",
+                                "Track meals regularly.",
+                            )
+                        ),
+
+                        dietRecommendation =
+                            createDietRecommendation(profile),
+
+                        workoutPlan =
+                            createWorkoutPlan(profile),
+
+                        aiSummary =
+                            "Local FitMate starter profile"
+                    )
+                }
+
+                _personalizationState.value =
+                    PersonalizationState(
+                        isRunning = true,
+                        progress = 0.67f,
+                        status = "Building your workouts and nutrition"
+                    )
+
                 repository.savePersonalizedPlan(plan)
+
                 delay(250)
+
                 repository.markSetupCompleted(true)
-                _personalizationState.value = PersonalizationState(true, 1f, "Your personalised FitMate is ready")
-                delay(250)
-                _personalizationState.value = PersonalizationState()
+
+                _personalizationState.value =
+                    PersonalizationState(
+                        isRunning = true,
+                        progress = 1f,
+                        status = "Your FitMate is ready"
+                    )
+
+                delay(300)
+
+                _personalizationState.value =
+                    PersonalizationState()
+
             } catch (t: Throwable) {
-                _personalizationState.value = PersonalizationState(
-                    isRunning = false,
-                    progress = 0f,
-                    status = "Personalization failed",
-                    error = t.message ?: "Unknown AI setup error",
-                )
+
+                _personalizationState.value =
+                    PersonalizationState(
+                        isRunning = false,
+                        progress = 0f,
+                        status = "Personalization failed",
+                        error = t.message ?: "Unknown setup error"
+                    )
             }
         }
     }
 
-    fun analyzeMeal(slot: MealSlot, description: String) {
+    fun analyzeMeal(
+        slot: MealSlot,
+        description: String,
+    ) {
+
         if (description.isBlank()) return
+
         viewModelScope.launch {
+
             try {
+
                 val profile = uiState.value.profile
                 val config = uiState.value.aiConfig
-                val metrics = uiState.value.personalizedPlan?.metrics ?: calculateGoalMetrics(profile)
-                repository.saveMealAnalysis(analyzeMealUseCase(config, profile, slot, description, metrics))
+
+                val metrics =
+                    uiState.value.personalizedPlan?.metrics
+                        ?: calculateGoalMetrics(profile)
+
+                repository.saveMealAnalysis(
+                    analyzeMealUseCase(
+                        config,
+                        profile,
+                        slot,
+                        description,
+                        metrics
+                    )
+                )
+
             } catch (_: Throwable) {
             }
         }
@@ -171,11 +336,20 @@ class CampusFitViewModel(
     )
 
     companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return CampusFitViewModel(CampusFitRepositoryImpl()) as T
+
+        val Factory: ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+
+                override fun <T : ViewModel> create(
+                    modelClass: Class<T>
+                ): T {
+
+                    @Suppress("UNCHECKED_CAST")
+
+                    return CampusFitViewModel(
+                        CampusFitRepositoryImpl()
+                    ) as T
+                }
             }
-        }
     }
 }

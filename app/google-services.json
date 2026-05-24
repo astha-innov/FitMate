@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "898626057879",
-    "project_id": "fitmate-f4bad",
-    "storage_bucket": "fitmate-f4bad.firebasestorage.app"
+    "project_number": "170226877499",
+    "project_id": "fitmate-78b30",
+    "storage_bucket": "fitmate-78b30.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:898626057879:android:3e36894fc879e60e035bd2",
+        "mobilesdk_app_id": "1:170226877499:android:47d57b8198b281f30a481e",
         "android_client_info": {
           "package_name": "com.fitmate"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "170226877499-qs3g6e75hsdfj7gh58cc90f983dti7hs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCJQRQK83mIUKdenodnYl7Ki8co4ud1wmM"
+          "current_key": "AIzaSyBu7-9tUOsgKuVQjmYQ2ubBBIVDeSalrM8"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "170226877499-qs3g6e75hsdfj7gh58cc90f983dti7hs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
