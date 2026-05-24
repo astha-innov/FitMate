@@ -148,9 +148,6 @@ animated onboarding
 modern Material 3 components
 Future Improvements
 
-SPLASH SCREEN 
-<img width="722" height="1600" alt="image" src="https://github.com/user-attachments/assets/f0575077-941d-4b08-ac68-23032bafb687" />
-
 
 Planned enhancements include:
 
