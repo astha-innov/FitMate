@@ -22,12 +22,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.fitmate.R
 import com.fitmate.ui.navigation.Routes
 import com.fitmate.ui.viewmodel.AuthState
 import com.fitmate.ui.viewmodel.AuthViewModel
@@ -35,6 +37,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.fitmate.ui.viewmodel.FakeAuthViewModel
 import com.fitmate.ui.theme.FitMateTheme
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+
 
 // --- PREMIUM DESIGN CONSTANTS ---
 val NeonCyan = Color(0xFF00E5FF)
@@ -42,11 +55,67 @@ val DeepSpace = Color(0xFF05070A)
 val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.05f)
 val SurfaceBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
 
+fun Context.findActivity(): Activity {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> throw IllegalStateException("No Activity found")
+    }
+}
+
+@Suppress("DEPRECATION")
 @Composable
 fun SignInScreen(
     navController: NavController,
     viewModel: AuthViewModel
 ) {
+
+    val context = LocalContext.current
+    val activity = context.findActivity()
+
+    val auth = FirebaseAuth.getInstance()
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+
+            try {
+
+                val account = task.getResult(ApiException::class.java)
+
+                val credential = GoogleAuthProvider.getCredential(
+                    account.idToken,
+                    null
+                )
+
+                auth.signInWithCredential(credential)
+                    .addOnCompleteListener(activity) { authResult ->
+
+                        if (authResult.isSuccessful) {
+
+                            navController.navigate(Routes.Home.route) {
+                                popUpTo(Routes.SignIn.route) {
+                                    inclusive = true
+                                }
+                            }
+
+                        }
+                    }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -163,7 +232,7 @@ fun SignInScreen(
 
             PremiumSecondaryButton(
                 text = "Continue with Google",
-                onClick = { /* Google logic */ }
+                onClick = { launcher.launch(googleSignInClient.signInIntent) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
