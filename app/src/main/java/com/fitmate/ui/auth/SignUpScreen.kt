@@ -1,6 +1,7 @@
 package com.fitmate.ui.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,12 +29,69 @@ import com.fitmate.ui.theme.FitMateTheme
 import com.fitmate.ui.viewmodel.AuthState
 import com.fitmate.ui.viewmodel.AuthViewModel
 import com.fitmate.ui.viewmodel.FakeAuthViewModel
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.fitmate.R
 
+@Suppress("DEPRECATION")
 @Composable
 fun SignUpScreen(
     navController: NavController,
     viewModel: AuthViewModel
 ) {
+    val context = LocalContext.current
+    val activity = context.findActivity()
+
+    val auth = FirebaseAuth.getInstance()
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+
+            try {
+                val account = task.getResult(ApiException::class.java)
+
+                val credential =
+                    GoogleAuthProvider.getCredential(account.idToken, null)
+
+                auth.signInWithCredential(credential)
+                    .addOnCompleteListener(activity) { authResult ->
+
+                        if (authResult.isSuccessful) {
+
+                            navController.navigate(Routes.Home.route) {
+                                popUpTo(Routes.SignUp.route) {
+                                    inclusive = true
+                                }
+                            }
+
+                        } else {
+                            println(authResult.exception?.message)
+                        }
+                    }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -196,7 +254,8 @@ fun SignUpScreen(
             PremiumSecondaryButton(
                 text = "Continue with Google",
                 onClick = {
-                    // Google SignUp Logic
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
                 }
             )
 
