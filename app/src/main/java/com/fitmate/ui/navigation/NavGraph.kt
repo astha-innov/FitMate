@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.fitmate.ui.CampusFitApp
-import com.fitmate.ui.SplashScreen
+import com.fitmate.ui.splash.SplashScreen
 import com.fitmate.ui.auth.SignInScreen
 import com.fitmate.ui.auth.SignUpScreen
 import com.fitmate.ui.viewmodel.AuthViewModel

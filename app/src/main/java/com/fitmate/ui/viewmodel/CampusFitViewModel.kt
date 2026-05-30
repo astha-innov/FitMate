@@ -1,4 +1,4 @@
-package com.fitmate.ui
+package com.fitmate.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

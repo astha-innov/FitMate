@@ -1,4 +1,4 @@
-package com.fitmate.ui
+package com.fitmate.ui.splash
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
