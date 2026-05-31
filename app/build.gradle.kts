@@ -142,6 +142,8 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
 
+    implementation("io.coil-kt:coil-gif:2.6.0")
+
     // =========================
     // DESUGARING
     // =========================
@@ -163,6 +165,8 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+
 
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
