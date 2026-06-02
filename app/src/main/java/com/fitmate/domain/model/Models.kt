@@ -213,6 +213,8 @@ data class ExerciseLibraryEntry(
     val muscleGroup: String,
     val instructions: String,
     val postureImage: String = "",
+    val detailGifAsset: String = "",
+    val instructionMarkdownAsset: String = "",
     val metricType: ExerciseMetricType = ExerciseMetricType.REPS,
     val defaultAmount: Int = 12,
     val minAmount: Int = 6,
