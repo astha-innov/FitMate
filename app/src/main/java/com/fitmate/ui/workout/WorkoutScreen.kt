@@ -1,10 +1,15 @@
 package com.fitmate.ui.workout
 
+import android.os.Build
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +52,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -62,11 +69,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.compose.LocalImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import com.fitmate.data.LocalExerciseDatabase
 import com.fitmate.domain.model.ExerciseLibraryEntry
 import com.fitmate.domain.model.ExerciseMetricType
@@ -96,6 +108,19 @@ fun WorkoutScreen(
     state: CampusFitUiState,
     viewModel: CampusFitViewModel
 ) {
+    val context = LocalContext.current
+    val gifImageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
+    }
+
     val schedule = state.workoutSchedule
     var showPlanChoiceDialog by rememberSaveable { mutableStateOf(false) }
     var showPlanBuilder by rememberSaveable { mutableStateOf(false) }
@@ -120,6 +145,8 @@ fun WorkoutScreen(
             }
         )
     }
+
+    CompositionLocalProvider(LocalImageLoader provides gifImageLoader) {
 
     if (showPlanBuilder) {
         SequentialPlanBuilderDialog(
@@ -193,6 +220,10 @@ fun WorkoutScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 item {
+                    HeroGifCarousel()
+                }
+
+                item {
                     WorkoutHeroCard(
                         isCustom = schedule?.isCustom == true,
                         onCustomize = { showPlanBuilder = true }
@@ -207,9 +238,14 @@ fun WorkoutScreen(
                         )
                     }
                 }
+
+                item {
+                    MotivationBanner()
+                }
             }
         }
     }
+    } // CompositionLocalProvider
 }
 
 @Composable
@@ -1138,7 +1174,14 @@ private fun defaultExercisesForFocus(
 private fun focusPreviewImage(
     focus: WorkoutFocus
 ): String {
-    return availableExercisesForFocus(focus).firstOrNull()?.postureImage.orEmpty()
+    return when (focus) {
+        WorkoutFocus.CHEST_BICEPS -> "pushup.gif"
+        WorkoutFocus.BACK_REAR_DELTS -> "bench_press.gif"
+        WorkoutFocus.LEGS -> "lifting_weights.gif"
+        WorkoutFocus.SHOULDERS_TRICEPS -> "chest_press.gif"
+        WorkoutFocus.CORE_CONDITIONING -> "gym_buddy.gif"
+        WorkoutFocus.REST -> ""
+    }
 }
 
 private fun formatAmount(
@@ -1181,4 +1224,144 @@ private enum class DifficultyBand(
     EASY("Easy"),
     MEDIUM("Medium"),
     HARD("Hard"),
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun HeroGifCarousel() {
+    val heroGifs = remember {
+        listOf(
+            "gym_buddy.gif",
+            "doggo.gif",
+            "chest_press.gif",
+            "bench_press.gif",
+            "lifting_weights.gif"
+        )
+    }
+
+    val pageCount = 10000
+    val pagerState = rememberPagerState(
+        initialPage = 5000,
+        pageCount = { pageCount }
+    )
+
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(3500)
+            pagerState.animateScrollToPage(
+                page = pagerState.currentPage + 1,
+                animationSpec = tween(durationMillis = 800)
+            )
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = FitMateBlack),
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = false
+            ) { page ->
+                val actualIndex = page % heroGifs.size
+                AsyncImage(
+                    model = assetModel(heroGifs[actualIndex]),
+                    contentDescription = "Workout Carousel",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                FitMateBlack.copy(alpha = 0.4f),
+                                FitMateBlack.copy(alpha = 0.95f)
+                            ),
+                            startY = 400f
+                        )
+                    )
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(22.dp)
+            ) {
+                Text(
+                    text = "Weekly Training",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = FitMateBlue,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Your personalized weekly workout split",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = FitMateWhite.copy(alpha = 0.7f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MotivationBanner() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = FitMateGlass),
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AsyncImage(
+                model = assetModel("gym_motivation.gif"),
+                contentDescription = "Motivation",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.45f
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, FitMateBlack.copy(alpha = 0.9f))
+                        )
+                    )
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(22.dp)
+            ) {
+                Text(
+                    text = "DISCIPLINE BEATS MOTIVATION",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = FitMateWhite,
+                    fontWeight = FontWeight.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Stay Consistent. Trust The Process.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = FitMateWhite.copy(alpha = 0.7f)
+                )
+            }
+        }
+    }
 }
