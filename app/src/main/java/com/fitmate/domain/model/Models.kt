@@ -107,6 +107,42 @@ data class WorkoutPlan(
     val durationLabel: String,
 )
 
+enum class WorkoutWeekday(val label: String) {
+    SUNDAY("Sunday"),
+    MONDAY("Monday"),
+    TUESDAY("Tuesday"),
+    WEDNESDAY("Wednesday"),
+    THURSDAY("Thursday"),
+    FRIDAY("Friday"),
+    SATURDAY("Saturday"),
+}
+
+enum class WorkoutFocus(val label: String) {
+    CHEST_BICEPS("Chest + Biceps"),
+    BACK_REAR_DELTS("Back + Rear Delts"),
+    LEGS("Legs"),
+    SHOULDERS_TRICEPS("Shoulders + Triceps"),
+    CORE_CONDITIONING("Core + Conditioning"),
+    REST("Rest Day"),
+}
+
+data class WorkoutExerciseConfig(
+    val exerciseName: String,
+    val sets: Int,
+    val amount: Int,
+)
+
+data class WorkoutDaySchedule(
+    val weekday: WorkoutWeekday,
+    val focus: WorkoutFocus,
+    val exercises: List<WorkoutExerciseConfig> = emptyList(),
+)
+
+data class WeeklyWorkoutSchedule(
+    val days: List<WorkoutDaySchedule>,
+    val isCustom: Boolean,
+)
+
 data class PersonalizedPlan(
     val metrics: GoalMetrics,
     val reasoning: GoalReasoning,
@@ -171,3 +207,21 @@ data class MealsSnapshot(
     val progress: GoalProgress,
     val weeklySummary: List<DayProgressSummary>,
 )
+
+data class ExerciseLibraryEntry(
+    val name: String,
+    val muscleGroup: String,
+    val instructions: String,
+    val postureImage: String = "",
+    val metricType: ExerciseMetricType = ExerciseMetricType.REPS,
+    val defaultAmount: Int = 12,
+    val minAmount: Int = 6,
+    val maxAmount: Int = 20,
+    val easyMaxWorkload: Int = 36,
+    val mediumMaxWorkload: Int = 72,
+)
+
+enum class ExerciseMetricType(val unitLabel: String) {
+    REPS("reps"),
+    SECONDS("sec"),
+}

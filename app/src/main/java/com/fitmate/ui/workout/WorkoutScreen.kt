@@ -1,208 +1,914 @@
 package com.fitmate.ui.workout
 
-import android.os.Build
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.EventBusy
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
+import com.fitmate.data.LocalExerciseDatabase
+import com.fitmate.domain.model.ExerciseLibraryEntry
+import com.fitmate.domain.model.ExerciseMetricType
+import com.fitmate.domain.model.WeeklyWorkoutSchedule
+import com.fitmate.domain.model.WorkoutDaySchedule
+import com.fitmate.domain.model.WorkoutExerciseConfig
+import com.fitmate.domain.model.WorkoutFocus
+import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.ui.viewmodel.CampusFitUiState
-import kotlinx.coroutines.delay
+import com.fitmate.ui.viewmodel.CampusFitViewModel
 
-// --- Custom Color Palette ---
-val NeonCyan = Color(0xFF00E5FF)
-val DeepSpace = Color(0xFF05070A)
-val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.05f)
-val SurfaceBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
-val TextPrimary = Color(0xFFFFFFFF)
-val TextSecondary = Color(0xFFFFFFFF).copy(alpha = 0.7f)
+private val FitMateBlack = Color(0xFF0F0F11)
+private val FitMateDarkGrey = Color(0xFF1C1C1E)
+private val FitMateEmerald = Color(0xFF00E676)
+private val FitMateWhite = Color(0xFFFFFFFF)
+private val FitMateGlass = Color(0xFFFFFFFF).copy(alpha = 0.08f)
+private val FitMateGlassBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
+private val FitMateBlue = Color(0xFF00E5FF)
+private val RestAccent = Color(0xFFFFC857)
+private val EasyColor = Color(0xFF00E676)
+private val MediumColor = Color(0xFFFFB020)
+private val HardColor = Color(0xFFFF5A5F)
 
-// Helper to load exact asset names
-private fun String.toAssetPath(): String = "file:///android_asset/exercises/$this"
-
-@OptIn(ExperimentalFoundationApi::class)
-@Suppress("UNUSED_PARAMETER") // Silences the warning until you connect the ViewModel
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutScreen(
-    state: CampusFitUiState? = null
+    state: CampusFitUiState,
+    viewModel: CampusFitViewModel
 ) {
-    val context = LocalContext.current
+    val schedule = state.workoutSchedule
+    var showPlanChoiceDialog by rememberSaveable { mutableStateOf(false) }
+    var showPlanBuilder by rememberSaveable { mutableStateOf(false) }
+    var editingDay by remember { mutableStateOf<WorkoutDaySchedule?>(null) }
 
-    // Configures Coil to support GIF decoding
-    val imageLoader = remember {
-        ImageLoader.Builder(context)
-            .components {
-                if (Build.VERSION.SDK_INT >= 28) {
-                    add(ImageDecoderDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
-            }
-            .build()
+    LaunchedEffect(schedule) {
+        if (schedule == null) {
+            showPlanChoiceDialog = true
+        }
     }
 
-    val weeklyData = remember { generateWeeklyData() }
-
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DeepSpace), // Forces background to DeepSpace
-        containerColor = DeepSpace    // Forces Scaffold container to DeepSpace
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DeepSpace) // Extra safeguard for LazyColumn background
-                .padding(paddingValues),
-            contentPadding = PaddingValues(bottom = 32.dp, top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-
-            // 1. Auto-Scrolling Hero GIF Carousel
-            item {
-                HeroGifCarousel(imageLoader = imageLoader)
+    if (showPlanChoiceDialog) {
+        PlanChoiceDialog(
+            onDismiss = { showPlanChoiceDialog = false },
+            onChooseDefault = {
+                viewModel.saveWorkoutSchedule(createDefaultWorkoutSchedule())
+                showPlanChoiceDialog = false
+            },
+            onChooseCustom = {
+                showPlanChoiceDialog = false
+                showPlanBuilder = true
             }
+        )
+    }
 
-            // 2. Stats and Badges
-            item {
-                WeeklyStatsAndBadges()
+    if (showPlanBuilder) {
+        SequentialPlanBuilderDialog(
+            initialSchedule = schedule,
+            onDismiss = { showPlanBuilder = false },
+            onSave = {
+                viewModel.saveWorkoutSchedule(it)
+                showPlanBuilder = false
             }
+        )
+    }
 
-            // 3. 5-Day Split
-            items(weeklyData) { dayPlan ->
-                WorkoutDayCard(dayPlan, imageLoader)
+    editingDay?.let { day ->
+        WorkoutDayEditorDialog(
+            day = day,
+            onDismiss = { editingDay = null },
+            onSave = { updatedDay ->
+                val currentSchedule = state.workoutSchedule ?: createDefaultWorkoutSchedule()
+                viewModel.saveWorkoutSchedule(
+                    currentSchedule.copy(
+                        days = currentSchedule.days.map {
+                            if (it.weekday == updatedDay.weekday) updatedDay else it
+                        }
+                    )
+                )
+                editingDay = null
             }
+        )
+    }
 
-            // 4. Motivational Banner
-            item {
-                MotivationBanner(imageLoader)
+    MaterialTheme(
+        colorScheme = androidx.compose.material3.darkColorScheme(
+            background = FitMateBlack,
+            surface = FitMateDarkGrey,
+            primary = FitMateEmerald,
+            onPrimary = FitMateBlack,
+            onBackground = FitMateWhite,
+            onSurface = FitMateWhite
+        )
+    ) {
+        Scaffold(
+            containerColor = FitMateBlack,
+            topBar = {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = FitMateBlack,
+                        titleContentColor = FitMateWhite
+                    ),
+                    title = {
+                        Column {
+                            Text(
+                                text = "Workout Plan",
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Make your split flexible, visual, and easy to update.",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = FitMateWhite.copy(alpha = 0.65f)
+                            )
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(FitMateBlack)
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(20.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                item {
+                    WorkoutHeroCard(
+                        isCustom = schedule?.isCustom == true,
+                        onCustomize = { showPlanBuilder = true }
+                    )
+                }
+
+                schedule?.days?.let { days ->
+                    items(days, key = { it.weekday.name }) { day ->
+                        WorkoutDayCard(
+                            day = day,
+                            onEdit = { editingDay = day }
+                        )
+                    }
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HeroGifCarousel(imageLoader: ImageLoader) {
-    val heroGifs = remember {
-        listOf(
-            "gym_buddy.gif",
-            "doggo.gif",
-            "chest_press.gif",
-            "bench_press.gif",
-            "lifting_weights.gif"
-        )
-    }
-
-    // Set a large initial page to allow "infinite" scrolling behavior
-    // 5000 is evenly divisible by 5, so it maps cleanly to index 0
-    val pageCount = 10000
-    val pagerState = rememberPagerState(
-        initialPage = 5000,
-        pageCount = { pageCount }
-    )
-
-    // Auto-scroll loop
-    LaunchedEffect(pagerState) {
-        while (true) {
-            delay(3500)
-            pagerState.animateScrollToPage(
-                page = pagerState.currentPage + 1,
-                animationSpec = tween(durationMillis = 800) // Smooth slide transition
+private fun WorkoutHeroCard(
+    isCustom: Boolean,
+    onCustomize: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
+        border = BorderStroke(1.dp, FitMateGlassBorder),
+        shape = RoundedCornerShape(28.dp)
+    ) {
+        Column(modifier = Modifier.padding(22.dp)) {
+            Text(
+                text = if (isCustom) "Custom weekly split active" else "Build your weekly split",
+                style = MaterialTheme.typography.headlineSmall,
+                color = FitMateWhite,
+                fontWeight = FontWeight.ExtraBold
             )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Choose what to train on each weekday, keep at least one rest day, and tune every exercise with slider-based set and rep controls.",
+                color = FitMateWhite.copy(alpha = 0.72f),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+            Button(
+                onClick = onCustomize,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FitMateEmerald,
+                    contentColor = FitMateBlack
+                )
+            ) {
+                Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Make custom plan", fontWeight = FontWeight.Bold)
+            }
         }
     }
+}
+
+@Composable
+private fun WorkoutDayCard(
+    day: WorkoutDaySchedule,
+    onEdit: () -> Unit
+) {
+    val isRestDay = day.focus == WorkoutFocus.REST
+    val focusImage = focusPreviewImage(day.focus)
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .height(280.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = DeepSpace), // Blend empty space
-        border = BorderStroke(1.dp, SurfaceBorder)
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
+        border = BorderStroke(1.dp, if (isRestDay) RestAccent.copy(alpha = 0.6f) else FitMateGlassBorder),
+        shape = RoundedCornerShape(26.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+            ) {
+                if (focusImage.isNotBlank()) {
+                    AsyncImage(
+                        model = "file:///android_asset/exercises/$focusImage",
+                        contentDescription = day.focus.label,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(FitMateDarkGrey, Color(0xFF101D17))
+                                )
+                            )
+                    )
+                }
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                userScrollEnabled = false // No user interaction required
-            ) { page ->
-                val actualIndex = page % heroGifs.size
-
-                AsyncImage(
-                    model = heroGifs[actualIndex].toAssetPath(),
-                    imageLoader = imageLoader,
-                    contentDescription = "Workout Carousel",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillWidth // Ensures full GIF fits edge-to-edge horizontally
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, FitMateBlack.copy(alpha = 0.25f), FitMateBlack.copy(alpha = 0.92f))
+                            )
+                        )
                 )
+
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = day.weekday.label,
+                        color = if (isRestDay) RestAccent else FitMateBlue,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = day.focus.label,
+                        color = FitMateWhite,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+
+                IconButton(
+                    onClick = onEdit,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(10.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.Black.copy(alpha = 0.35f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Edit ${day.weekday.label}",
+                        tint = FitMateWhite
+                    )
+                }
             }
 
-            // Dark gradient overlay for text readability
+            Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                if (isRestDay) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.EventBusy, contentDescription = null, tint = RestAccent)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Rest day selected by you. Recovery, mobility, and lighter movement live here.",
+                            color = FitMateWhite.copy(alpha = 0.72f)
+                        )
+                    }
+                } else {
+                    day.exercises.forEach { exercise ->
+                        val entry = LocalExerciseDatabase.exerciseByName(exercise.exerciseName) ?: return@forEach
+                        ExerciseCardRow(
+                            config = exercise,
+                            entry = entry
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExerciseCardRow(
+    config: WorkoutExerciseConfig,
+    entry: ExerciseLibraryEntry
+) {
+    val workload = config.sets * config.amount
+    val band = difficultyBand(entry, workload)
+
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = FitMateGlass,
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            DifficultyPill(band = band)
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                AsyncImage(
+                    model = assetModel(entry.postureImage),
+                    contentDescription = entry.name,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(FitMateBlack),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = entry.name,
+                        color = FitMateWhite,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${config.sets} sets • ${formatAmount(entry, config.amount)}",
+                        color = FitMateBlue,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = entry.instructions,
+                        color = FitMateWhite.copy(alpha = 0.68f),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlanChoiceDialog(
+    onDismiss: () -> Unit,
+    onChooseDefault: () -> Unit,
+    onChooseCustom: () -> Unit
+) {
+    NeonDialogShell(
+        title = "Choose your workout setup",
+        onDismiss = onDismiss
+    ) {
+        Text(
+            text = "Start with the default weekly split or build your own schedule day by day.",
+            color = FitMateWhite.copy(alpha = 0.72f)
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(
+                onClick = onChooseDefault,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FitMateEmerald,
+                    contentColor = FitMateBlack
+                )
+            ) {
+                Text("Default plan")
+            }
+            OutlinedButton(
+                onClick = onChooseCustom,
+                modifier = Modifier.weight(1f),
+                border = BorderStroke(1.dp, FitMateGlassBorder)
+            ) {
+                Text("Custom plan", color = FitMateWhite)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SequentialPlanBuilderDialog(
+    initialSchedule: WeeklyWorkoutSchedule?,
+    onDismiss: () -> Unit,
+    onSave: (WeeklyWorkoutSchedule) -> Unit
+) {
+    val selections = remember(initialSchedule) {
+        mutableStateListOf<WorkoutDaySchedule>().apply {
+            addAll(initialSchedule?.days ?: createDefaultWorkoutSchedule().days)
+        }
+    }
+    var stepIndex by remember { mutableIntStateOf(0) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val day = selections[stepIndex]
+    val previewImage = focusPreviewImage(day.focus)
+    val previewExercises = availableExercisesForFocus(day.focus).take(3)
+
+    NeonDialogShell(
+        title = "Make custom plan",
+        onDismiss = onDismiss
+    ) {
+        Text(
+            text = "Step ${stepIndex + 1} of ${WorkoutWeekday.entries.size}",
+            color = FitMateBlue,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = day.weekday.label,
+            color = FitMateWhite,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "Pick what you want to train on ${day.weekday.label}. Workouts can repeat, and at least one day must stay as rest.",
+            color = FitMateWhite.copy(alpha = 0.72f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(FitMateGlass)
+        ) {
+            if (previewImage.isNotBlank()) {
+                AsyncImage(
+                    model = assetModel(previewImage),
+                    contentDescription = day.focus.label,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                DeepSpace.copy(alpha = 0.4f),
-                                DeepSpace.copy(alpha = 0.95f)
-                            ),
-                            startY = 200f // Push gradient lower
+                            listOf(Color.Transparent, FitMateBlack.copy(alpha = 0.88f))
                         )
                     )
             )
-
-            // Text Overlay
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(24.dp)
+                    .padding(16.dp)
             ) {
                 Text(
-                    text = "Weekly Training",
+                    text = day.focus.label,
+                    color = FitMateWhite,
                     style = MaterialTheme.typography.titleLarge,
-                    color = NeonCyan,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Stay consistent. Stay strong.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
+                if (day.focus != WorkoutFocus.REST && previewExercises.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = previewExercises.joinToString(" • ") { it.name },
+                        color = FitMateWhite.copy(alpha = 0.78f),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            WorkoutFocus.entries.forEach { focus ->
+                FocusChip(
+                    label = focus.label,
+                    selected = day.focus == focus,
+                    onClick = {
+                        selections[stepIndex] = WorkoutDaySchedule(
+                            weekday = day.weekday,
+                            focus = focus,
+                            exercises = defaultExercisesForFocus(focus)
+                        )
+                        errorMessage = null
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (day.focus != WorkoutFocus.REST && previewExercises.isNotEmpty()) {
+            Text(
+                text = "Preview exercises",
+                color = FitMateWhite,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                previewExercises.forEach { exercise ->
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        color = FitMateGlass,
+                        border = BorderStroke(1.dp, FitMateGlassBorder)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AsyncImage(
+                                model = assetModel(exercise.postureImage),
+                                contentDescription = exercise.name,
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(FitMateBlack),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(exercise.name, color = FitMateWhite, fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = exercise.instructions,
+                                    color = FitMateWhite.copy(alpha = 0.66f),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = it,
+                color = HardColor,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(
+                onClick = {
+                    if (stepIndex > 0) stepIndex--
+                },
+                modifier = Modifier.weight(1f),
+                enabled = stepIndex > 0,
+                border = BorderStroke(1.dp, FitMateGlassBorder)
+            ) {
+                Text("Back", color = FitMateWhite)
+            }
+
+            Button(
+                onClick = {
+                    val restCount = selections.count { it.focus == WorkoutFocus.REST }
+                    if (stepIndex < selections.lastIndex) {
+                        stepIndex++
+                    } else if (restCount < 1) {
+                        errorMessage = "Please keep at least 1 rest day in your week."
+                    } else {
+                        onSave(
+                            WeeklyWorkoutSchedule(
+                                days = selections.toList(),
+                                isCustom = true
+                            )
+                        )
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FitMateEmerald,
+                    contentColor = FitMateBlack
+                )
+            ) {
+                Text(if (stepIndex == selections.lastIndex) "Save plan" else "Next")
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutDayEditorDialog(
+    day: WorkoutDaySchedule,
+    onDismiss: () -> Unit,
+    onSave: (WorkoutDaySchedule) -> Unit
+) {
+    var workingFocus by remember(day) { mutableStateOf(day.focus) }
+    val exerciseStates = remember(day) {
+        mutableStateMapOf<String, EditableExerciseState>().apply {
+            availableExercisesForFocus(day.focus).forEach { entry ->
+                val existing = day.exercises.firstOrNull { it.exerciseName == entry.name }
+                this[entry.name] = EditableExerciseState(
+                    selected = existing != null,
+                    sets = existing?.sets ?: 3,
+                    amount = existing?.amount ?: entry.defaultAmount
+                )
+            }
+        }
+    }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    NeonDialogShell(
+        title = "Edit ${day.weekday.label}",
+        onDismiss = onDismiss,
+        widthFraction = 0.95f,
+        scrollable = true
+    ) {
+        Text(
+            text = "Pick the day's focus, then tune each exercise with sliders. Difficulty updates live as you change the load.",
+            color = FitMateWhite.copy(alpha = 0.72f)
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            WorkoutFocus.entries.forEach { focus ->
+                FocusChip(
+                    label = focus.label,
+                    selected = workingFocus == focus,
+                    onClick = {
+                        workingFocus = focus
+                        exerciseStates.clear()
+                        availableExercisesForFocus(focus).forEach { entry ->
+                            val existing = day.exercises.firstOrNull { it.exerciseName == entry.name }
+                            exerciseStates[entry.name] = EditableExerciseState(
+                                selected = existing != null,
+                                sets = existing?.sets ?: 3,
+                                amount = existing?.amount ?: entry.defaultAmount
+                            )
+                        }
+                        errorMessage = null
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        if (workingFocus == WorkoutFocus.REST) {
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = FitMateGlass,
+                border = BorderStroke(1.dp, RestAccent.copy(alpha = 0.6f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Outlined.EventBusy, contentDescription = null, tint = RestAccent)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "This day will be saved as a rest day.",
+                        color = FitMateWhite
+                    )
+                }
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                availableExercisesForFocus(workingFocus).forEach { entry ->
+                    val state = exerciseStates[entry.name] ?: return@forEach
+                    EditableExerciseCard(
+                        entry = entry,
+                        state = state,
+                        onToggle = {
+                            exerciseStates[entry.name] = state.copy(selected = !state.selected)
+                            errorMessage = null
+                        },
+                        onSetsChange = { sets ->
+                            exerciseStates[entry.name] = state.copy(sets = sets)
+                        },
+                        onAmountChange = { amount ->
+                            exerciseStates[entry.name] = state.copy(amount = amount)
+                        }
+                    )
+                }
+            }
+        }
+
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = it,
+                color = HardColor,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Cancel", color = FitMateWhite)
+            }
+            Button(
+                onClick = {
+                    if (workingFocus == WorkoutFocus.REST) {
+                        onSave(
+                            WorkoutDaySchedule(
+                                weekday = day.weekday,
+                                focus = WorkoutFocus.REST,
+                                exercises = emptyList()
+                            )
+                        )
+                    } else {
+                        val chosen = availableExercisesForFocus(workingFocus)
+                            .mapNotNull { entry ->
+                                val editable = exerciseStates[entry.name] ?: return@mapNotNull null
+                                if (!editable.selected) return@mapNotNull null
+                                WorkoutExerciseConfig(
+                                    exerciseName = entry.name,
+                                    sets = editable.sets,
+                                    amount = editable.amount
+                                )
+                            }
+                        if (chosen.isEmpty()) {
+                            errorMessage = "Select at least one exercise, or switch this day to rest."
+                        } else {
+                            onSave(
+                                WorkoutDaySchedule(
+                                    weekday = day.weekday,
+                                    focus = workingFocus,
+                                    exercises = chosen
+                                )
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FitMateEmerald,
+                    contentColor = FitMateBlack
+                )
+            ) {
+                Text("Save edits")
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditableExerciseCard(
+    entry: ExerciseLibraryEntry,
+    state: EditableExerciseState,
+    onToggle: () -> Unit,
+    onSetsChange: (Int) -> Unit,
+    onAmountChange: (Int) -> Unit
+) {
+    val workload = state.sets * state.amount
+    val band = difficultyBand(entry, workload)
+
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = if (state.selected) FitMateGlass else Color.White.copy(alpha = 0.03f),
+        border = BorderStroke(1.dp, if (state.selected) FitMateBlue.copy(alpha = 0.5f) else FitMateGlassBorder)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (state.selected) FitMateEmerald else Color.Transparent)
+                        .border(1.dp, if (state.selected) FitMateEmerald else FitMateGlassBorder, RoundedCornerShape(10.dp))
+                        .clickable { onToggle() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (state.selected) {
+                        Text("✓", color = FitMateBlack, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                DifficultyPill(band = band)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                AsyncImage(
+                    model = assetModel(entry.postureImage),
+                    contentDescription = entry.name,
+                    modifier = Modifier
+                        .size(88.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(FitMateBlack),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = entry.name,
+                        color = FitMateWhite,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = entry.instructions,
+                        color = FitMateWhite.copy(alpha = 0.68f),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            if (state.selected) {
+                Spacer(modifier = Modifier.height(16.dp))
+                WorkoutAmountSlider(
+                    title = "Sets",
+                    value = state.sets,
+                    range = 1..6,
+                    unit = "sets",
+                    onValueChange = onSetsChange
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                WorkoutAmountSlider(
+                    title = if (entry.metricType == ExerciseMetricType.REPS) "Reps" else "Duration",
+                    value = state.amount,
+                    range = entry.minAmount..entry.maxAmount,
+                    unit = entry.metricType.unitLabel,
+                    onValueChange = onAmountChange
                 )
             }
         }
@@ -210,428 +916,258 @@ fun HeroGifCarousel(imageLoader: ImageLoader) {
 }
 
 @Composable
-fun WeeklyStatsAndBadges() {
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+private fun WorkoutAmountSlider(
+    title: String,
+    value: Int,
+    range: IntRange,
+    unit: String,
+    onValueChange: (Int) -> Unit
+) {
+    Column {
         Text(
-            text = "Weekly Overview",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            text = title,
+            color = FitMateWhite.copy(alpha = 0.7f),
+            style = MaterialTheme.typography.labelMedium
         )
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatCard(modifier = Modifier.weight(1f), title = "Exercises", value = "24")
-            StatCard(modifier = Modifier.weight(1f), title = "Total Sets", value = "72")
-            StatCard(modifier = Modifier.weight(1f), title = "Cals Burned", value = "1240")
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = value.toString(),
+                color = FitMateWhite,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Black
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = unit,
+                color = FitMateWhite.copy(alpha = 0.55f),
+                style = MaterialTheme.typography.titleMedium
+            )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Achievements",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt()) },
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = (range.last - range.first - 1).coerceAtLeast(0),
+            colors = androidx.compose.material3.SliderDefaults.colors(
+                thumbColor = FitMateEmerald,
+                activeTrackColor = FitMateEmerald,
+                inactiveTrackColor = FitMateGlassBorder
+            )
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            item { BadgeChip("🔥 Consistent") }
-            item { BadgeChip("💪 Strength Builder") }
-            item { BadgeChip("🏆 Weekly Warrior") }
-        }
     }
 }
 
 @Composable
-fun StatCard(modifier: Modifier = Modifier, title: String, value: String) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = GlassWhite),
-        border = BorderStroke(1.dp, SurfaceBorder),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = NeonCyan
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
-            )
-        }
+private fun DifficultyPill(
+    band: DifficultyBand
+) {
+    val color = when (band) {
+        DifficultyBand.EASY -> EasyColor
+        DifficultyBand.MEDIUM -> MediumColor
+        DifficultyBand.HARD -> HardColor
     }
-}
-
-@Composable
-fun BadgeChip(text: String) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = GlassWhite,
-        border = BorderStroke(1.dp, NeonCyan.copy(alpha = 0.3f))
+        shape = RoundedCornerShape(50),
+        color = color.copy(alpha = 0.14f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.45f))
     ) {
         Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            text = band.label,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            color = color,
             style = MaterialTheme.typography.labelMedium,
-            color = NeonCyan,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-fun WorkoutDayCard(dayPlan: WorkoutDay, imageLoader: ImageLoader) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        colors = CardDefaults.cardColors(containerColor = GlassWhite),
-        border = BorderStroke(1.dp, SurfaceBorder),
-        shape = RoundedCornerShape(24.dp)
-    ) {
-        Column(modifier = Modifier.padding(top = 20.dp, bottom = 8.dp)) {
-            // Day Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = dayPlan.dayTitle,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = NeonCyan,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = dayPlan.splitName,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Black,
-                        color = TextPrimary
-                    )
-                }
-                if (dayPlan.isCompleted) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Completed",
-                        tint = NeonCyan,
-                        modifier = Modifier.size(32.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.RadioButtonUnchecked,
-                        contentDescription = "Pending",
-                        tint = TextSecondary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-            HorizontalDivider(color = SurfaceBorder, thickness = 1.dp)
-
-            // Exercises List
-            dayPlan.exercises.forEachIndexed { index, exercise ->
-                ExerciseRow(exercise, imageLoader)
-                if (index < dayPlan.exercises.size - 1) {
-                    HorizontalDivider(
-                        color = SurfaceBorder,
-                        modifier = Modifier.padding(horizontal = 72.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun ExerciseRow(exercise: Exercise, imageLoader: ImageLoader) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { expanded = !expanded }
-            .padding(20.dp)
-            .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow))
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AsyncImage(
-                model = exercise.assetName.toAssetPath(),
-                imageLoader = imageLoader,
-                contentDescription = exercise.name,
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(DeepSpace)
-                    .padding(1.dp)
-                    .clip(RoundedCornerShape(15.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = exercise.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.FitnessCenter,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = NeonCyan
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "${exercise.sets} Sets × ${exercise.reps}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
-                }
-            }
-
-            Icon(
-                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = "Expand details",
-                tint = NeonCyan
-            )
-        }
-
-        if (expanded) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ExerciseDetailChip(Icons.Default.AdsClick, exercise.targetMuscle)
-                ExerciseDetailChip(Icons.Default.LocalFireDepartment, "${exercise.calories} kcal")
-                ExerciseDetailChip(Icons.Default.Speed, exercise.difficulty)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Form Tips",
-                style = MaterialTheme.typography.labelLarge,
-                color = NeonCyan,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = exercise.formTips,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Common Mistakes",
-                style = MaterialTheme.typography.labelLarge,
-                color = Color(0xFFFF5252), // Softer red for dark mode
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = exercise.commonMistakes,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
-            )
-        }
-    }
-}
-
-@Composable
-fun ExerciseDetailChip(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+private fun FocusChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
     Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = GlassWhite,
-        border = BorderStroke(1.dp, SurfaceBorder)
+        shape = RoundedCornerShape(50),
+        color = if (selected) FitMateEmerald.copy(alpha = 0.15f) else FitMateGlass,
+        border = BorderStroke(1.dp, if (selected) FitMateEmerald else FitMateGlassBorder),
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = NeonCyan
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
-            )
-        }
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            color = if (selected) FitMateEmerald else FitMateWhite,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+        )
     }
 }
 
 @Composable
-fun MotivationBanner(imageLoader: ImageLoader) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .height(220.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = GlassWhite),
-        border = BorderStroke(1.dp, SurfaceBorder)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = "gym_motivation.gif".toAssetPath(),
-                imageLoader = imageLoader,
-                contentDescription = "Motivation",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                alpha = 0.5f // Dimmer for dark mode readability
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, DeepSpace.copy(alpha = 0.9f))
-                        )
-                    )
-            )
-
+private fun NeonDialogShell(
+    title: String,
+    onDismiss: () -> Unit,
+    widthFraction: Float = 0.92f,
+    scrollable: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(widthFraction)
+                .heightIn(max = 760.dp),
+            colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
+            border = BorderStroke(1.dp, FitMateGlassBorder),
+            shape = RoundedCornerShape(30.dp)
+        ) {
+            val bodyModifier = if (scrollable) {
+                Modifier.verticalScroll(rememberScrollState())
+            } else {
+                Modifier
+            }
             Column(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
                     .padding(24.dp)
+                    .then(bodyModifier),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 Text(
-                    text = "DISCIPLINE BEATS MOTIVATION",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Black
+                    text = title,
+                    color = FitMateWhite,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Stay Consistent. Trust The Process.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
+                Spacer(modifier = Modifier.height(18.dp))
+                content()
             }
         }
     }
 }
 
-// --- Data Models and Data Factory ---
+private fun createDefaultWorkoutSchedule(): WeeklyWorkoutSchedule {
+    val focusByDay = listOf(
+        WorkoutWeekday.SUNDAY to WorkoutFocus.CHEST_BICEPS,
+        WorkoutWeekday.MONDAY to WorkoutFocus.BACK_REAR_DELTS,
+        WorkoutWeekday.TUESDAY to WorkoutFocus.LEGS,
+        WorkoutWeekday.WEDNESDAY to WorkoutFocus.SHOULDERS_TRICEPS,
+        WorkoutWeekday.THURSDAY to WorkoutFocus.CORE_CONDITIONING,
+        WorkoutWeekday.FRIDAY to WorkoutFocus.REST,
+        WorkoutWeekday.SATURDAY to WorkoutFocus.REST,
+    )
 
-data class WorkoutDay(
-    val dayTitle: String,
-    val splitName: String,
-    val isCompleted: Boolean,
-    val exercises: List<Exercise>
-)
-
-data class Exercise(
-    val name: String,
-    val assetName: String,
-    val sets: Int,
-    val reps: String,
-    val targetMuscle: String,
-    val calories: Int,
-    val difficulty: String,
-    val formTips: String = "Maintain proper form and control the eccentric movement.",
-    val commonMistakes: String = "Using momentum instead of muscle contraction."
-)
-
-private fun generateWeeklyData(): List<WorkoutDay> {
-    return listOf(
-        WorkoutDay(
-            dayTitle = "DAY 1",
-            splitName = "CHEST + BICEPS",
-            isCompleted = true,
-            exercises = listOf(
-                Exercise("Pushups", "pushup.gif", 4, "Failure", "Chest/Triceps", 60, "Beginner"),
-                Exercise("Cable Chest Press", "cable_chest_press.jpg", 3, "10-12", "Chest", 75, "Intermediate"),
-                Exercise("Butterfly", "butterfly.jpg", 3, "12-15", "Inner Chest", 50, "Beginner"),
-                Exercise("Incline Inner Biceps Curls", "incline_inner_biceps_curls.jpg", 4, "10-12", "Biceps", 45, "Advanced")
+    return WeeklyWorkoutSchedule(
+        days = focusByDay.map { (weekday, focus) ->
+            WorkoutDaySchedule(
+                weekday = weekday,
+                focus = focus,
+                exercises = defaultExercisesForFocus(focus)
             )
-        ),
-        WorkoutDay(
-            dayTitle = "DAY 2",
-            splitName = "BACK + REAR DELTS",
-            isCompleted = true,
-            exercises = listOf(
-                Exercise("Barbell Rear Delt Row", "barbell_rearDelt_row.jpg", 4, "10", "Rear Deltoids", 80, "Intermediate"),
-                Exercise("Elevated Cable Rows", "elevated_cable_rows.jpg", 3, "12", "Lats/Mid Back", 70, "Intermediate"),
-                Exercise("Deadlift with Bands", "deadlift_with_bands.jpg", 4, "5-8", "Lower Back/Hamstrings", 120, "Advanced"),
-                Exercise("Deadlift with Chains", "deadlift_with_chains.jpg", 3, "3-5", "Full Posterior", 150, "Expert"),
-                Exercise("Dynamic Back Stretch", "dynamic_back_stretch.jpg", 2, "60 sec", "Mobility", 15, "Beginner")
-            )
-        ),
-        WorkoutDay(
-            dayTitle = "DAY 3",
-            splitName = "LEGS",
-            isCompleted = true,
-            exercises = listOf(
-                Exercise("Hack Squat", "hack_squat.jpg", 4, "10-12", "Quadriceps", 100, "Intermediate"),
-                Exercise("Barbell Lunge", "barbell_lunge.jpg", 3, "12 per leg", "Glutes/Quads", 90, "Advanced"),
-                Exercise("Elevated Back Lunge", "elevated_back_lunge.jpg", 3, "10 per leg", "Glutes", 85, "Intermediate"),
-                Exercise("Cable Hip Adduction", "cable_hip_aduction.jpg", 3, "15", "Inner Thighs", 40, "Beginner")
-            )
-        ),
-        WorkoutDay(
-            dayTitle = "DAY 4",
-            splitName = "SHOULDERS + TRICEPS",
-            isCompleted = false,
-            exercises = listOf(
-                Exercise("Shoulder Raise", "shoulder_raise.jpg", 4, "15", "Lateral Deltoids", 55, "Beginner"),
-                Exercise("Body Tricep Press", "body_tricep_press.jpg", 3, "10-12", "Triceps", 60, "Intermediate"),
-                Exercise("Tricep Extension", "tricep_extension.jpg", 3, "12-15", "Long Head Triceps", 50, "Beginner"),
-                Exercise("Bench Dips", "bench_dips.jpg", 3, "Failure", "Triceps/Chest", 45, "Beginner")
-            )
-        ),
-        WorkoutDay(
-            dayTitle = "DAY 5",
-            splitName = "CORE + CONDITIONING",
-            isCompleted = false,
-            exercises = listOf(
-                Exercise("Cable Crunch", "cable_crunch.jpg", 4, "15-20", "Abs", 50, "Intermediate"),
-                Exercise("Decline Reverse Crunch", "decline_reverse_crunch.jpg", 3, "15", "Lower Abs", 60, "Advanced"),
-                Exercise("Bent Knee Hip Raise", "bent_knee_hip_raise.jpg", 3, "20", "Core", 40, "Beginner"),
-                Exercise("Battling Ropes", "battling_ropes.jpg", 5, "30 sec", "Full Body Conditioning", 120, "Expert"),
-                Exercise("Bottoms Up", "bottoms_up.jpg", 3, "12", "Core Stability", 55, "Advanced")
-            )
-        )
+        },
+        isCustom = false
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WorkoutScreenPreview() {
-    MaterialTheme {
-        WorkoutScreen(null)
+private fun availableExercisesForFocus(
+    focus: WorkoutFocus
+): List<ExerciseLibraryEntry> {
+    val names = when (focus) {
+        WorkoutFocus.CHEST_BICEPS -> listOf(
+            "Push-Ups",
+            "Cable Chest Press",
+            "Butterfly",
+            "Incline Inner Biceps Curls",
+        )
+        WorkoutFocus.BACK_REAR_DELTS -> listOf(
+            "Barbell Rear Delt Row",
+            "Elevated Cable Rows",
+            "Deadlift with Bands",
+            "Deadlift with Chains",
+            "Dynamic Back Stretch",
+        )
+        WorkoutFocus.LEGS -> listOf(
+            "Hack Squat",
+            "Barbell Lunge",
+            "Elevated Back Lunge",
+            "Cable Hip Adduction",
+        )
+        WorkoutFocus.SHOULDERS_TRICEPS -> listOf(
+            "Shoulder Raise",
+            "Body Tricep Press",
+            "Tricep Extension",
+            "Bench Dips",
+        )
+        WorkoutFocus.CORE_CONDITIONING -> listOf(
+            "Cable Crunch",
+            "Decline Reverse Crunch",
+            "Bent Knee Hip Raise",
+            "Battling Ropes",
+            "Bottoms Up",
+            "Mountain Climber",
+            "Jumping Jack",
+            "Plank",
+            "Sit-Up",
+        )
+        WorkoutFocus.REST -> emptyList()
     }
+    return names.mapNotNull(LocalExerciseDatabase::exerciseByName)
+}
+
+private fun defaultExercisesForFocus(
+    focus: WorkoutFocus
+): List<WorkoutExerciseConfig> {
+    return availableExercisesForFocus(focus).map {
+        WorkoutExerciseConfig(
+            exerciseName = it.name,
+            sets = 3,
+            amount = it.defaultAmount
+        )
+    }
+}
+
+private fun focusPreviewImage(
+    focus: WorkoutFocus
+): String {
+    return availableExercisesForFocus(focus).firstOrNull()?.postureImage.orEmpty()
+}
+
+private fun formatAmount(
+    entry: ExerciseLibraryEntry,
+    amount: Int
+): String {
+    return if (entry.metricType == ExerciseMetricType.SECONDS) {
+        "$amount sec"
+    } else {
+        "$amount reps"
+    }
+}
+
+private fun assetModel(
+    assetName: String
+): String? {
+    return assetName.takeIf { it.isNotBlank() }?.let { "file:///android_asset/exercises/$it" }
+}
+
+private fun difficultyBand(
+    entry: ExerciseLibraryEntry,
+    workload: Int
+): DifficultyBand {
+    return when {
+        workload <= entry.easyMaxWorkload -> DifficultyBand.EASY
+        workload <= entry.mediumMaxWorkload -> DifficultyBand.MEDIUM
+        else -> DifficultyBand.HARD
+    }
+}
+
+private data class EditableExerciseState(
+    val selected: Boolean,
+    val sets: Int,
+    val amount: Int,
+)
+
+private enum class DifficultyBand(
+    val label: String
+) {
+    EASY("Easy"),
+    MEDIUM("Medium"),
+    HARD("Hard"),
 }

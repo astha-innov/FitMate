@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.LocalDining
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,7 +31,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.fitmate.ui.dashboard.DashboardScreen
-import com.fitmate.ui.meals.MealsScreen
 import com.fitmate.ui.profile.ProfileScreen
 import com.fitmate.ui.progress.ProgressScreen
 import com.fitmate.ui.viewmodel.CampusFitUiState
@@ -52,10 +50,6 @@ enum class HomeTab(
     DASHBOARD(
         "Dashboard",
         Icons.Outlined.Bolt
-    ),
-    MEALS(
-        "Meals",
-        Icons.Outlined.LocalDining
     ),
     WORKOUT(
         "Workout",
@@ -164,11 +158,8 @@ fun AppNavigation(
                 HomeTab.DASHBOARD ->
                     DashboardScreen(state)
 
-                HomeTab.MEALS ->
-                    MealsScreen(state, viewModel)
-
                 HomeTab.WORKOUT ->
-                    WorkoutScreen(state)
+                    WorkoutScreen(state, viewModel)
 
                 HomeTab.PROGRESS ->
                     ProgressScreen(state)

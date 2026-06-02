@@ -16,6 +16,7 @@ import com.fitmate.domain.model.MealSlot
 import com.fitmate.domain.model.MealsSnapshot
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutPlan
 import com.fitmate.domain.repository.CampusFitRepository
 import com.fitmate.domain.usecase.AnalyzeMealUseCase
@@ -44,6 +45,7 @@ data class CampusFitUiState(
     val meals: MealsSnapshot? = null,
     val diet: DietRecommendation? = null,
     val workout: WorkoutPlan? = null,
+    val workoutSchedule: WeeklyWorkoutSchedule? = null,
 )
 
 data class PersonalizationState(
@@ -125,6 +127,12 @@ class CampusFitViewModel(
                     seeded,
                     latestAnalysis ->
 
+                seeded to latestAnalysis
+            }
+            .combine(repository.workoutSchedule) {
+                    (seeded, latestAnalysis),
+                    workoutSchedule ->
+
                 val profile = seeded.seed.profile
                 val config = seeded.seed.config
                 val plan = seeded.seed.plan
@@ -155,6 +163,7 @@ class CampusFitViewModel(
 
                     workout = plan?.workoutPlan
                         ?: createWorkoutPlan(profile),
+                    workoutSchedule = workoutSchedule,
                 )
             }
             .stateIn(
@@ -174,6 +183,9 @@ class CampusFitViewModel(
 
     fun addWater(amountLiters: Double) =
         repository.addWater(amountLiters)
+
+    fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule) =
+        repository.saveWorkoutSchedule(schedule)
 
     fun bootstrapPersonalization(profile: UserProfile) {
 

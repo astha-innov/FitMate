@@ -8,6 +8,7 @@ import com.fitmate.domain.model.MealAnalysis
 import com.fitmate.domain.model.MealLog
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.repository.CampusFitRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,7 @@ class CampusFitRepositoryImpl(
     private val _todayProgress = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadGoalProgress() ?: GoalProgress(LocalDate.now()) else GoalProgress(LocalDate.now()))
     private val _mealLogs = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadMealLogs() else emptyList())
     private val _latestMealAnalysis = MutableStateFlow(_mealLogs.value.firstOrNull()?.analysis)
+    private val _workoutSchedule = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutSchedule() else null)
 
     override val profile: StateFlow<UserProfile> = _profile.asStateFlow()
     override val aiConfig: StateFlow<AiConfig> = _aiConfig.asStateFlow()
@@ -43,6 +45,7 @@ class CampusFitRepositoryImpl(
     override val todayProgress: StateFlow<GoalProgress> = _todayProgress.asStateFlow()
     override val mealLogs: StateFlow<List<MealLog>> = _mealLogs.asStateFlow()
     override val latestMealAnalysis: StateFlow<MealAnalysis?> = _latestMealAnalysis.asStateFlow()
+    override val workoutSchedule: StateFlow<WeeklyWorkoutSchedule?> = _workoutSchedule.asStateFlow()
 
     init {
         normalizeDailyProgress()
@@ -107,6 +110,12 @@ class CampusFitRepositoryImpl(
         syncToBackend()
     }
 
+    override fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule) {
+        _workoutSchedule.value = schedule
+        persistLocalState()
+        syncToBackend()
+    }
+
     private suspend fun bootstrapBackend() {
         if (!backendService.isConfigured()) return
         val remoteState = runCatching { backendService.loadState() }.getOrNull()
@@ -125,6 +134,7 @@ class CampusFitRepositoryImpl(
             _mealLogs.value = it.sortedByDescending(MealLog::date)
             _latestMealAnalysis.value = it.firstOrNull()?.analysis
         }
+        state.workoutSchedule?.let { _workoutSchedule.value = it }
         normalizeDailyProgress()
         persistLocalState()
     }
@@ -142,6 +152,7 @@ class CampusFitRepositoryImpl(
         discipline = _discipline.value,
         todayProgress = _todayProgress.value,
         mealLogs = _mealLogs.value.take(60),
+        workoutSchedule = _workoutSchedule.value,
     )
 
     private fun persistLocalState() {
@@ -154,6 +165,7 @@ class CampusFitRepositoryImpl(
         AppStorage.saveDiscipline(_discipline.value)
         AppStorage.saveGoalProgress(_todayProgress.value)
         AppStorage.saveMealLogs(_mealLogs.value.take(60))
+        _workoutSchedule.value?.let(AppStorage::saveWorkoutSchedule)
     }
 
     private fun normalizeDailyProgress() {
