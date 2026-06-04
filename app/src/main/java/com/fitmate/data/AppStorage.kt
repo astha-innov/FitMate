@@ -19,7 +19,9 @@ import com.fitmate.domain.model.MealLog
 import com.fitmate.domain.model.MealSlot
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WorkoutDayLog
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
+import com.fitmate.domain.model.WorkoutExerciseProgress
 import com.fitmate.domain.model.WorkoutDaySchedule
 import com.fitmate.domain.model.WorkoutExerciseConfig
 import com.fitmate.domain.model.WorkoutFocus
@@ -112,6 +114,16 @@ object AppStorage {
     fun loadWorkoutSchedule(): WeeklyWorkoutSchedule? {
         val raw = prefs.getString("workout_schedule_json", null) ?: return null
         return workoutScheduleFromJson(JSONObject(raw))
+    }
+
+    fun saveWorkoutLogs(logs: List<WorkoutDayLog>) {
+        prefs.edit().putString("workout_logs_json", JSONArray(logs.map(::workoutDayLogToJson)).toString()).apply()
+    }
+
+    fun loadWorkoutLogs(): List<WorkoutDayLog> {
+        val raw = prefs.getString("workout_logs_json", null) ?: return emptyList()
+        val array = JSONArray(raw)
+        return List(array.length()) { index -> workoutDayLogFromJson(array.getJSONObject(index)) }
     }
 
     internal fun profileToJson(profile: UserProfile): JSONObject = JSONObject()
@@ -330,6 +342,38 @@ object AppStorage {
         exerciseName = json.getString("exerciseName"),
         sets = json.optInt("sets", 3),
         amount = json.optInt("amount", json.optString("reps", "10").filter(Char::isDigit).toIntOrNull() ?: 10),
+    )
+
+    internal fun workoutDayLogToJson(log: WorkoutDayLog): JSONObject = JSONObject()
+        .put("date", log.date.toString())
+        .put("weekday", log.weekday.name)
+        .put("focus", log.focus.name)
+        .put("exercises", JSONArray(log.exercises.map(::workoutExerciseProgressToJson)))
+
+    internal fun workoutDayLogFromJson(json: JSONObject): WorkoutDayLog = WorkoutDayLog(
+        date = LocalDate.parse(json.optString("date", LocalDate.now().toString())),
+        weekday = WorkoutWeekday.valueOf(json.optString("weekday", WorkoutWeekday.MONDAY.name)),
+        focus = WorkoutFocus.valueOf(json.optString("focus", WorkoutFocus.REST.name)),
+        exercises = json.optJSONArray("exercises")?.let { array ->
+            List(array.length()) { index ->
+                workoutExerciseProgressFromJson(array.getJSONObject(index))
+            }
+        } ?: emptyList(),
+    )
+
+    internal fun workoutExerciseProgressToJson(progress: WorkoutExerciseProgress): JSONObject = JSONObject()
+        .put("exerciseName", progress.exerciseName)
+        .put("completedSets", progress.completedSets)
+        .put("totalSets", progress.totalSets)
+        .put("lastElapsedSeconds", progress.lastElapsedSeconds)
+        .put("sessionCount", progress.sessionCount)
+
+    internal fun workoutExerciseProgressFromJson(json: JSONObject): WorkoutExerciseProgress = WorkoutExerciseProgress(
+        exerciseName = json.optString("exerciseName", ""),
+        completedSets = json.optInt("completedSets", 0),
+        totalSets = json.optInt("totalSets", 0),
+        lastElapsedSeconds = json.optInt("lastElapsedSeconds", 0),
+        sessionCount = json.optInt("sessionCount", 0),
     )
 
     private fun jsonArrayToStringList(array: JSONArray): List<String> = buildList {

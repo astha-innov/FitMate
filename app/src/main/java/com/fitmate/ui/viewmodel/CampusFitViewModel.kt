@@ -16,6 +16,9 @@ import com.fitmate.domain.model.MealSlot
 import com.fitmate.domain.model.MealsSnapshot
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WorkoutDayLog
+import com.fitmate.domain.model.WorkoutFocus
+import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutPlan
 import com.fitmate.domain.repository.CampusFitRepository
@@ -46,6 +49,7 @@ data class CampusFitUiState(
     val diet: DietRecommendation? = null,
     val workout: WorkoutPlan? = null,
     val workoutSchedule: WeeklyWorkoutSchedule? = null,
+    val workoutLogs: List<WorkoutDayLog> = emptyList(),
 )
 
 data class PersonalizationState(
@@ -132,6 +136,11 @@ class CampusFitViewModel(
             .combine(repository.workoutSchedule) {
                     (seeded, latestAnalysis),
                     workoutSchedule ->
+                Triple(seeded, latestAnalysis, workoutSchedule)
+            }
+            .combine(repository.workoutLogs) {
+                    (seeded, latestAnalysis, workoutSchedule),
+                    workoutLogs ->
 
                 val profile = seeded.seed.profile
                 val config = seeded.seed.config
@@ -164,6 +173,7 @@ class CampusFitViewModel(
                     workout = plan?.workoutPlan
                         ?: createWorkoutPlan(profile),
                     workoutSchedule = workoutSchedule,
+                    workoutLogs = workoutLogs,
                 )
             }
             .stateIn(
@@ -186,6 +196,22 @@ class CampusFitViewModel(
 
     fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule) =
         repository.saveWorkoutSchedule(schedule)
+
+    fun recordWorkoutSet(
+        weekday: WorkoutWeekday,
+        focus: WorkoutFocus,
+        exerciseName: String,
+        totalSets: Int,
+        elapsedSeconds: Int,
+        incrementCompletedSet: Boolean,
+    ) = repository.recordWorkoutSet(
+        weekday = weekday,
+        focus = focus,
+        exerciseName = exerciseName,
+        totalSets = totalSets,
+        elapsedSeconds = elapsedSeconds,
+        incrementCompletedSet = incrementCompletedSet,
+    )
 
     fun bootstrapPersonalization(profile: UserProfile) {
 

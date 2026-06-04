@@ -143,6 +143,29 @@ data class WeeklyWorkoutSchedule(
     val isCustom: Boolean,
 )
 
+data class WorkoutExerciseProgress(
+    val exerciseName: String,
+    val completedSets: Int = 0,
+    val totalSets: Int,
+    val lastElapsedSeconds: Int = 0,
+    val sessionCount: Int = 0,
+)
+
+data class WorkoutDayLog(
+    val date: LocalDate,
+    val weekday: WorkoutWeekday,
+    val focus: WorkoutFocus,
+    val exercises: List<WorkoutExerciseProgress> = emptyList(),
+)
+
+enum class WorkoutDayStatus {
+    COMPLETED,
+    PARTIAL,
+    MISSED,
+    REST,
+    NONE,
+}
+
 data class PersonalizedPlan(
     val metrics: GoalMetrics,
     val reasoning: GoalReasoning,

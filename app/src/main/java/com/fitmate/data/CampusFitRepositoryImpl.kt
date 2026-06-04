@@ -8,6 +8,11 @@ import com.fitmate.domain.model.MealAnalysis
 import com.fitmate.domain.model.MealLog
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WorkoutDayLog
+import com.fitmate.domain.model.WorkoutDayStatus
+import com.fitmate.domain.model.WorkoutExerciseProgress
+import com.fitmate.domain.model.WorkoutFocus
+import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.repository.CampusFitRepository
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +40,7 @@ class CampusFitRepositoryImpl(
     private val _mealLogs = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadMealLogs() else emptyList())
     private val _latestMealAnalysis = MutableStateFlow(_mealLogs.value.firstOrNull()?.analysis)
     private val _workoutSchedule = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutSchedule() else null)
+    private val _workoutLogs = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutLogs() else emptyList())
 
     override val profile: StateFlow<UserProfile> = _profile.asStateFlow()
     override val aiConfig: StateFlow<AiConfig> = _aiConfig.asStateFlow()
@@ -46,6 +52,7 @@ class CampusFitRepositoryImpl(
     override val mealLogs: StateFlow<List<MealLog>> = _mealLogs.asStateFlow()
     override val latestMealAnalysis: StateFlow<MealAnalysis?> = _latestMealAnalysis.asStateFlow()
     override val workoutSchedule: StateFlow<WeeklyWorkoutSchedule?> = _workoutSchedule.asStateFlow()
+    override val workoutLogs: StateFlow<List<WorkoutDayLog>> = _workoutLogs.asStateFlow()
 
     init {
         normalizeDailyProgress()
@@ -85,7 +92,6 @@ class CampusFitRepositoryImpl(
             caloriesConsumed = _todayProgress.value.caloriesConsumed + analysis.estimatedCalories,
             proteinConsumed = _todayProgress.value.proteinConsumed + analysis.estimatedProtein,
         )
-        updateRewardState()
         persistLocalState()
         syncToBackend()
     }
@@ -93,7 +99,6 @@ class CampusFitRepositoryImpl(
     override fun addWater(amountLiters: Double) {
         normalizeDailyProgress()
         _todayProgress.value = _todayProgress.value.copy(waterLitersConsumed = _todayProgress.value.waterLitersConsumed + amountLiters)
-        updateRewardState()
         persistLocalState()
         syncToBackend()
     }
@@ -112,6 +117,60 @@ class CampusFitRepositoryImpl(
 
     override fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule) {
         _workoutSchedule.value = schedule
+        recalculateWorkoutDiscipline()
+        persistLocalState()
+        syncToBackend()
+    }
+
+    override fun recordWorkoutSet(
+        weekday: WorkoutWeekday,
+        focus: WorkoutFocus,
+        exerciseName: String,
+        totalSets: Int,
+        elapsedSeconds: Int,
+        incrementCompletedSet: Boolean,
+    ) {
+        val today = LocalDate.now()
+        val currentDay = _workoutLogs.value.firstOrNull { it.date == today && it.weekday == weekday }
+            ?: WorkoutDayLog(
+                date = today,
+                weekday = weekday,
+                focus = focus,
+                exercises = emptyList(),
+            )
+
+        val existingExercise = currentDay.exercises.firstOrNull { it.exerciseName == exerciseName }
+            ?: WorkoutExerciseProgress(
+                exerciseName = exerciseName,
+                completedSets = 0,
+                totalSets = totalSets,
+                lastElapsedSeconds = 0,
+                sessionCount = 0,
+            )
+
+        val updatedExercise = existingExercise.copy(
+            completedSets = if (incrementCompletedSet) {
+                (existingExercise.completedSets + 1).coerceAtMost(totalSets)
+            } else {
+                existingExercise.completedSets.coerceAtMost(totalSets)
+            },
+            totalSets = totalSets,
+            lastElapsedSeconds = elapsedSeconds.coerceAtLeast(0),
+            sessionCount = existingExercise.sessionCount + 1,
+        )
+
+        val updatedExercises = (currentDay.exercises.filterNot { it.exerciseName == exerciseName } + updatedExercise)
+            .sortedBy(WorkoutExerciseProgress::exerciseName)
+
+        val updatedDay = currentDay.copy(
+            focus = focus,
+            exercises = updatedExercises,
+        )
+
+        _workoutLogs.value = (_workoutLogs.value.filterNot { it.date == today && it.weekday == weekday } + updatedDay)
+            .sortedByDescending(WorkoutDayLog::date)
+
+        recalculateWorkoutDiscipline()
         persistLocalState()
         syncToBackend()
     }
@@ -135,7 +194,9 @@ class CampusFitRepositoryImpl(
             _latestMealAnalysis.value = it.firstOrNull()?.analysis
         }
         state.workoutSchedule?.let { _workoutSchedule.value = it }
+        state.workoutLogs?.let { _workoutLogs.value = it.sortedByDescending(WorkoutDayLog::date) }
         normalizeDailyProgress()
+        recalculateWorkoutDiscipline()
         persistLocalState()
     }
 
@@ -153,6 +214,7 @@ class CampusFitRepositoryImpl(
         todayProgress = _todayProgress.value,
         mealLogs = _mealLogs.value.take(60),
         workoutSchedule = _workoutSchedule.value,
+        workoutLogs = _workoutLogs.value.take(180),
     )
 
     private fun persistLocalState() {
@@ -166,6 +228,7 @@ class CampusFitRepositoryImpl(
         AppStorage.saveGoalProgress(_todayProgress.value)
         AppStorage.saveMealLogs(_mealLogs.value.take(60))
         _workoutSchedule.value?.let(AppStorage::saveWorkoutSchedule)
+        AppStorage.saveWorkoutLogs(_workoutLogs.value.take(180))
     }
 
     private fun normalizeDailyProgress() {
@@ -174,20 +237,40 @@ class CampusFitRepositoryImpl(
             _todayProgress.value = GoalProgress(date = today)
             _discipline.value = _discipline.value.copy(completedToday = false)
         }
+        pruneOldWorkoutLogs()
     }
 
-    private fun updateRewardState() {
-        val targets = _personalizedPlan.value?.metrics
-        val completedToday = when {
-            targets == null -> _todayProgress.value.caloriesConsumed >= 1800 && _todayProgress.value.proteinConsumed >= 90
-            else -> _todayProgress.value.caloriesConsumed >= targets.caloriesTarget &&
-                    _todayProgress.value.proteinConsumed >= targets.proteinTarget &&
-                    _todayProgress.value.waterLitersConsumed >= targets.waterLitersTarget
+    private fun pruneOldWorkoutLogs() {
+        val cutoff = LocalDate.now().minusMonths(6)
+        _workoutLogs.value = _workoutLogs.value
+            .filter { !it.date.isBefore(cutoff) }
+            .sortedByDescending(WorkoutDayLog::date)
+    }
+
+    private fun recalculateWorkoutDiscipline() {
+        val today = LocalDate.now()
+        val completedToday = workoutStatusForDate(today) == WorkoutDayStatus.COMPLETED
+        var streakDays = 0
+        var cursor = today
+
+        while (true) {
+            when (workoutStatusForDate(cursor)) {
+                WorkoutDayStatus.COMPLETED -> {
+                    streakDays += 1
+                    cursor = cursor.minusDays(1)
+                }
+                WorkoutDayStatus.REST,
+                WorkoutDayStatus.NONE -> {
+                    cursor = cursor.minusDays(1)
+                }
+                WorkoutDayStatus.PARTIAL,
+                WorkoutDayStatus.MISSED -> break
+            }
+            if (cursor.isBefore(today.minusYears(2))) break
         }
-        val wasCompleted = _discipline.value.completedToday
-        val streakDays = if (completedToday && !wasCompleted) _discipline.value.streakDays + 1 else _discipline.value.streakDays
+
         val milestone = listOf(5, 10, 15, 21, 30).firstOrNull { it > streakDays } ?: 30
-        val points = if (completedToday && !wasCompleted) _discipline.value.rewardPoints + 25 else _discipline.value.rewardPoints
+        val points = streakDays * 25
         val encouragement = when {
             streakDays >= 15 -> "Elite consistency. Your routine is turning into identity."
             streakDays >= 10 -> "Double digits. This is where confidence becomes visible."
@@ -203,12 +286,45 @@ class CampusFitRepositoryImpl(
         )
     }
 
+    private fun workoutStatusForDate(date: LocalDate): WorkoutDayStatus {
+        val scheduleDay = _workoutSchedule.value
+            ?.days
+            ?.firstOrNull { it.weekday == date.toWorkoutWeekday() }
+
+        if (scheduleDay == null) return WorkoutDayStatus.NONE
+        if (scheduleDay.focus == WorkoutFocus.REST) return WorkoutDayStatus.REST
+
+        val log = _workoutLogs.value.firstOrNull { it.date == date && it.weekday == scheduleDay.weekday }
+            ?: return if (date.isBefore(LocalDate.now())) WorkoutDayStatus.MISSED else WorkoutDayStatus.NONE
+
+        val isCompleted = scheduleDay.exercises.isNotEmpty() &&
+            scheduleDay.exercises.all { config ->
+                val progress = log.exercises.firstOrNull { it.exerciseName == config.exerciseName }
+                progress != null && progress.completedSets >= config.sets
+            }
+
+        if (isCompleted) return WorkoutDayStatus.COMPLETED
+
+        val hasStarted = log.exercises.any { it.sessionCount > 0 || it.completedSets > 0 }
+        return if (hasStarted) WorkoutDayStatus.PARTIAL else if (date.isBefore(LocalDate.now())) WorkoutDayStatus.MISSED else WorkoutDayStatus.NONE
+    }
+
     private fun defaultDisciplineState(): DisciplineState = DisciplineState(
-        streakDays = 3,
-        rewardPoints = 120,
+        streakDays = 0,
+        rewardPoints = 0,
         remindersEnabled = true,
         completedToday = false,
         nextMilestone = 5,
-        encouragement = "You are 2 solid days away from your next streak badge.",
+        encouragement = "One good day stacks into the next. Keep feeding the chain.",
     )
+}
+
+private fun LocalDate.toWorkoutWeekday(): WorkoutWeekday = when (dayOfWeek.value % 7) {
+    0 -> WorkoutWeekday.SUNDAY
+    1 -> WorkoutWeekday.MONDAY
+    2 -> WorkoutWeekday.TUESDAY
+    3 -> WorkoutWeekday.WEDNESDAY
+    4 -> WorkoutWeekday.THURSDAY
+    5 -> WorkoutWeekday.FRIDAY
+    else -> WorkoutWeekday.SATURDAY
 }

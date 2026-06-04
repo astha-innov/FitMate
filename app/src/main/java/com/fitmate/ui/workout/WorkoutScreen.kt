@@ -2,7 +2,11 @@ package com.fitmate.ui.workout
 
 import android.os.Build
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -34,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -47,6 +52,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -87,9 +93,11 @@ import coil.decode.ImageDecoderDecoder
 import com.fitmate.data.LocalExerciseDatabase
 import com.fitmate.domain.model.ExerciseLibraryEntry
 import com.fitmate.domain.model.ExerciseMetricType
+import com.fitmate.domain.model.WorkoutDayLog
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutDaySchedule
 import com.fitmate.domain.model.WorkoutExerciseConfig
+import com.fitmate.domain.model.WorkoutExerciseProgress
 import com.fitmate.domain.model.WorkoutFocus
 import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.ui.viewmodel.CampusFitUiState
@@ -106,6 +114,7 @@ private val RestAccent = Color(0xFFFFC857)
 private val EasyColor = Color(0xFF00E676)
 private val MediumColor = Color(0xFFFFB020)
 private val HardColor = Color(0xFFFF5A5F)
+private val FitMateRed = Color(0xFFFF5252)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,7 +140,7 @@ fun WorkoutScreen(
     var showPlanChoiceDialog by rememberSaveable { mutableStateOf(false) }
     var showPlanBuilder by rememberSaveable { mutableStateOf(false) }
     var editingDay by remember { mutableStateOf<WorkoutDaySchedule?>(null) }
-    var selectedInstructionExercise by remember { mutableStateOf<ExerciseLibraryEntry?>(null) }
+    var selectedInstructionExercise by remember { mutableStateOf<SelectedExerciseDetail?>(null) }
     val collapsedDays = remember {
         mutableStateMapOf<String, Boolean>()
     }
@@ -199,7 +208,9 @@ fun WorkoutScreen(
     ) {
         if (selectedInstructionExercise != null) {
             WorkoutInstructionScreen(
-                exercise = selectedInstructionExercise!!,
+                detail = selectedInstructionExercise!!,
+                workoutLogs = state.workoutLogs,
+                viewModel = viewModel,
                 onBack = { selectedInstructionExercise = null }
             )
         } else {
@@ -250,17 +261,18 @@ fun WorkoutScreen(
                     schedule?.days?.let { days ->
                         items(days, key = { it.weekday.name }) { day ->
                             WorkoutDayCard(
-                            day = day,
-                            onEdit = { editingDay = day },
-                            onShowInstructions = { selectedInstructionExercise = it },
-                            collapsed = collapsedDays[day.weekday.name] == true,
-                            onToggleCollapse = {
-                                val key = day.weekday.name
-                                collapsedDays[key] = !(collapsedDays[key] == true)
-                            }
-                        )
+                                day = day,
+                                workoutLogs = state.workoutLogs,
+                                onEdit = { editingDay = day },
+                                onShowInstructions = { selectedInstructionExercise = it },
+                                collapsed = collapsedDays[day.weekday.name] == true,
+                                onToggleCollapse = {
+                                    val key = day.weekday.name
+                                    collapsedDays[key] = !(collapsedDays[key] == true)
+                                }
+                            )
+                        }
                     }
-                }
 
                     item {
                         MotivationBanner()
@@ -317,8 +329,9 @@ private fun WorkoutHeroCard(
 @Composable
 private fun WorkoutDayCard(
     day: WorkoutDaySchedule,
+    workoutLogs: List<WorkoutDayLog>,
     onEdit: () -> Unit,
-    onShowInstructions: (ExerciseLibraryEntry) -> Unit,
+    onShowInstructions: (SelectedExerciseDetail) -> Unit,
     collapsed: Boolean,
     onToggleCollapse: () -> Unit
 ) {
@@ -442,7 +455,17 @@ private fun WorkoutDayCard(
                         ExerciseCardRow(
                             config = exercise,
                             entry = entry,
-                            onShowInstructions = { onShowInstructions(entry) }
+                            progress = todayProgressFor(day.weekday, exercise.exerciseName, workoutLogs),
+                            onShowInstructions = {
+                                onShowInstructions(
+                                    SelectedExerciseDetail(
+                                        exercise = entry,
+                                        config = exercise,
+                                        weekday = day.weekday,
+                                        focus = day.focus,
+                                    )
+                                )
+                            }
                         )
                     }
                 }
@@ -456,10 +479,12 @@ private fun WorkoutDayCard(
 private fun ExerciseCardRow(
     config: WorkoutExerciseConfig,
     entry: ExerciseLibraryEntry,
+    progress: WorkoutExerciseProgress?,
     onShowInstructions: () -> Unit
 ) {
     val workload = config.sets * config.amount
     val band = difficultyBand(entry, workload)
+    val isCompleted = (progress?.completedSets ?: 0) >= config.sets && config.sets > 0
 
     Surface(
         shape = RoundedCornerShape(22.dp),
@@ -509,7 +534,38 @@ private fun ExerciseCardRow(
                         shape = RoundedCornerShape(18.dp),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                     ) {
-                        Text("Instructions", color = FitMateWhite)
+                        Text("Open", color = FitMateWhite)
+                    }
+                    AnimatedVisibility(
+                        visible = isCompleted,
+                        enter = fadeIn(tween(250)) + scaleIn(tween(250), initialScale = 0.84f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(top = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Surface(
+                                modifier = Modifier.size(28.dp),
+                                shape = RoundedCornerShape(999.dp),
+                                color = FitMateEmerald
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Check,
+                                        contentDescription = "Exercise completed",
+                                        tint = FitMateWhite,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "Completed",
+                                color = FitMateEmerald,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -520,14 +576,45 @@ private fun ExerciseCardRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WorkoutInstructionScreen(
-    exercise: ExerciseLibraryEntry,
+    detail: SelectedExerciseDetail,
+    workoutLogs: List<WorkoutDayLog>,
+    viewModel: CampusFitViewModel,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val exercise = detail.exercise
+    val totalSets = detail.config.sets.coerceAtLeast(1)
     val markdown = remember(exercise.instructionMarkdownAsset) {
         loadAssetText(context, "workout_details/instructions/${exercise.instructionMarkdownAsset}")
     }
     val parsed = remember(markdown) { parseInstructionMarkdown(markdown) }
+    val persistedProgress = remember(workoutLogs, detail.weekday, exercise.name) {
+        todayProgressFor(detail.weekday, exercise.name, workoutLogs)
+    }
+    var instructionsExpanded by rememberSaveable(exercise.name) { mutableStateOf(false) }
+    var elapsedSeconds by rememberSaveable(exercise.name, detail.weekday.name) {
+        mutableIntStateOf(persistedProgress?.lastElapsedSeconds ?: 0)
+    }
+    var isTimerRunning by rememberSaveable(exercise.name) { mutableStateOf(false) }
+    var completedSets by rememberSaveable(exercise.name, detail.weekday.name) {
+        mutableIntStateOf((persistedProgress?.completedSets ?: 0).coerceAtMost(totalSets))
+    }
+    var questionnaireVisible by rememberSaveable(exercise.name) { mutableStateOf(false) }
+    var selectedStopReason by rememberSaveable(exercise.name) { mutableStateOf<StopReason?>(null) }
+    var questionnaireSubmitted by rememberSaveable(exercise.name) { mutableStateOf(false) }
+    var questionnaireError by rememberSaveable(exercise.name) { mutableStateOf<String?>(null) }
+    val progressRatio by animateFloatAsState(
+        targetValue = (completedSets.toFloat() / totalSets.toFloat()).coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 500),
+        label = "workout-progress"
+    )
+
+    LaunchedEffect(isTimerRunning) {
+        while (isTimerRunning) {
+            delay(1000)
+            elapsedSeconds += 1
+        }
+    }
 
     Scaffold(
         containerColor = FitMateBlack,
@@ -592,44 +679,412 @@ private fun WorkoutInstructionScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = parsed.title.ifBlank { exercise.name },
-                                color = FitMateWhite,
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.ExtraBold
+                                text = "${detail.config.sets} sets • ${formatAmount(exercise, detail.config.amount)}",
+                                color = FitMateBlue,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
                             )
-                            parsed.steps.forEachIndexed { index, step ->
-                                Surface(
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = FitMateGlass,
-                                    border = BorderStroke(1.dp, FitMateGlassBorder)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(14.dp),
-                                        verticalAlignment = Alignment.Top
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(28.dp)
-                                                .clip(RoundedCornerShape(14.dp))
-                                                .background(FitMateEmerald.copy(alpha = 0.16f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = "${index + 1}",
-                                                color = FitMateEmerald,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Text(
-                                            text = step,
-                                            color = FitMateWhite.copy(alpha = 0.85f),
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
+                            WorkoutProgressCard(
+                                completedSets = completedSets,
+                                totalSets = totalSets,
+                                progressRatio = progressRatio
+                            )
+                            WorkoutTimerCard(
+                                elapsedSeconds = elapsedSeconds,
+                                isTimerRunning = isTimerRunning,
+                                workoutComplete = completedSets >= totalSets,
+                                onStart = {
+                                    if (completedSets >= totalSets) return@WorkoutTimerCard
+                                    if (!isTimerRunning) {
+                                        elapsedSeconds = 0
+                                        isTimerRunning = true
+                                        questionnaireVisible = false
+                                        selectedStopReason = null
+                                        questionnaireSubmitted = false
+                                        questionnaireError = null
                                     }
+                                },
+                                onStop = {
+                                    if (!isTimerRunning) return@WorkoutTimerCard
+                                    isTimerRunning = false
+                                    questionnaireVisible = true
+                                    questionnaireError = null
                                 }
+                            )
+                            if (questionnaireVisible) {
+                                WorkoutStopQuestionnaire(
+                                    selectedReason = selectedStopReason,
+                                    submitted = questionnaireSubmitted,
+                                    errorMessage = questionnaireError,
+                                    onSelect = { reason ->
+                                        if (!questionnaireSubmitted) {
+                                            selectedStopReason = reason
+                                            questionnaireError = null
+                                        }
+                                    },
+                                    onSubmit = {
+                                        when {
+                                            questionnaireSubmitted -> Unit
+                                            selectedStopReason == null -> {
+                                                questionnaireError = "Select a reason before submitting."
+                                            }
+                                            else -> {
+                                                if (selectedStopReason == StopReason.COMPLETED_SET) {
+                                                    completedSets = (completedSets + 1).coerceAtMost(totalSets)
+                                                }
+                                                viewModel.recordWorkoutSet(
+                                                    weekday = detail.weekday,
+                                                    focus = detail.focus,
+                                                    exerciseName = exercise.name,
+                                                    totalSets = totalSets,
+                                                    elapsedSeconds = elapsedSeconds,
+                                                    incrementCompletedSet = selectedStopReason == StopReason.COMPLETED_SET,
+                                                )
+                                                questionnaireSubmitted = true
+                                                questionnaireVisible = false
+                                                questionnaireError = null
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                            InstructionsAccordion(
+                                title = parsed.title.ifBlank { "${exercise.name} instructions" },
+                                steps = parsed.steps,
+                                expanded = instructionsExpanded,
+                                onToggle = { instructionsExpanded = !instructionsExpanded }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutProgressCard(
+    completedSets: Int,
+    totalSets: Int,
+    progressRatio: Float
+) {
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = FitMateGlass,
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Set progress",
+                    color = FitMateWhite,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "$completedSets / $totalSets sets",
+                    color = if (completedSets >= totalSets) FitMateEmerald else FitMateBlue,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            LinearProgressIndicator(
+                progress = { progressRatio },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(999.dp)),
+                color = if (completedSets >= totalSets) FitMateEmerald else FitMateBlue,
+                trackColor = FitMateWhite.copy(alpha = 0.1f)
+            )
+            Text(
+                text = if (completedSets >= totalSets) {
+                    "You’ve completed every planned set for this exercise."
+                } else {
+                    "Complete a set, stop the timer, and log the outcome to move this bar forward."
+                },
+                color = FitMateWhite.copy(alpha = 0.68f),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun WorkoutTimerCard(
+    elapsedSeconds: Int,
+    isTimerRunning: Boolean,
+    workoutComplete: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = FitMateGlass,
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = "Workout timer",
+                color = FitMateWhite,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Button(
+                    onClick = onStart,
+                    enabled = !isTimerRunning && !workoutComplete,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = FitMateEmerald,
+                        contentColor = FitMateBlack,
+                        disabledContainerColor = FitMateEmerald.copy(alpha = 0.3f),
+                        disabledContentColor = FitMateBlack.copy(alpha = 0.55f)
+                    )
+                ) {
+                    Text("Start Workout", fontWeight = FontWeight.Bold)
+                }
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color.Black.copy(alpha = 0.25f),
+                    border = BorderStroke(1.dp, FitMateGlassBorder)
+                ) {
+                    Box(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 14.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = formatElapsedTime(elapsedSeconds),
+                            color = FitMateWhite,
+                            fontWeight = FontWeight.ExtraBold,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                OutlinedButton(
+                    onClick = onStop,
+                    enabled = isTimerRunning,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(18.dp),
+                    border = BorderStroke(1.dp, FitMateRed.copy(alpha = 0.7f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = FitMateRed,
+                        disabledContentColor = FitMateRed.copy(alpha = 0.35f)
+                    )
+                ) {
+                    Text("Stop Workout", fontWeight = FontWeight.Bold)
+                }
+            }
+            Text(
+                text = when {
+                    workoutComplete -> "All planned sets are complete for this exercise."
+                    isTimerRunning -> "Timer is live. Stop it when the current set ends."
+                    elapsedSeconds > 0 -> "Timer paused. Submit the reason below to log this round."
+                    else -> "Start the timer when you begin your current set."
+                },
+                color = FitMateWhite.copy(alpha = 0.68f),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun WorkoutStopQuestionnaire(
+    selectedReason: StopReason?,
+    submitted: Boolean,
+    errorMessage: String?,
+    onSelect: (StopReason) -> Unit,
+    onSubmit: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = FitMateGlass,
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Why did you stop the timer?",
+                color = FitMateWhite,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            StopReasonOption(
+                text = "Completed my current set",
+                selected = selectedReason == StopReason.COMPLETED_SET,
+                enabled = !submitted,
+                onClick = { onSelect(StopReason.COMPLETED_SET) }
+            )
+            StopReasonOption(
+                text = "Can't continue anymore, I give up :(",
+                selected = selectedReason == StopReason.GIVE_UP,
+                enabled = !submitted,
+                onClick = { onSelect(StopReason.GIVE_UP) }
+            )
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = HardColor,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Button(
+                onClick = onSubmit,
+                enabled = !submitted,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FitMateBlue,
+                    contentColor = FitMateBlack,
+                    disabledContainerColor = FitMateBlue.copy(alpha = 0.32f),
+                    disabledContentColor = FitMateBlack.copy(alpha = 0.55f)
+                )
+            ) {
+                Text("Submit", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun StopReasonOption(
+    text: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    val alpha = if (enabled) 1f else 0.68f
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .clickable(enabled = enabled, onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
+        color = Color.Black.copy(alpha = 0.18f),
+        border = BorderStroke(1.dp, if (selected) FitMateEmerald.copy(alpha = alpha) else FitMateGlassBorder)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(18.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(
+                        if (selected) FitMateEmerald.copy(alpha = alpha) else Color.Transparent
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (selected) FitMateEmerald.copy(alpha = alpha) else FitMateWhite.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = text,
+                color = FitMateWhite.copy(alpha = alpha),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+            )
+        }
+    }
+}
+
+@Composable
+private fun InstructionsAccordion(
+    title: String,
+    steps: List<String>,
+    expanded: Boolean,
+    onToggle: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = FitMateGlass,
+        border = BorderStroke(1.dp, FitMateGlassBorder)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggle)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Instructions",
+                        color = FitMateWhite,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (expanded) "Tap to collapse" else "Tap to view step-by-step instructions",
+                        color = FitMateWhite.copy(alpha = 0.65f),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                    contentDescription = if (expanded) "Collapse instructions" else "Expand instructions",
+                    tint = FitMateBlue
+                )
+            }
+            if (expanded) {
+                Column(
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    steps.forEachIndexed { index, step ->
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = Color.Black.copy(alpha = 0.18f),
+                            border = BorderStroke(1.dp, FitMateGlassBorder)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(FitMateEmerald.copy(alpha = 0.16f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        color = FitMateEmerald,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = step,
+                                    color = FitMateWhite.copy(alpha = 0.85f),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
                         }
                     }
@@ -1430,6 +1885,32 @@ private fun difficultyBand(
     }
 }
 
+private fun formatElapsedTime(
+    totalSeconds: Int
+): String {
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d:%02d".format(hours, minutes, seconds)
+}
+
+private fun todayProgressFor(
+    weekday: WorkoutWeekday,
+    exerciseName: String,
+    workoutLogs: List<WorkoutDayLog>
+): WorkoutExerciseProgress? {
+    return workoutLogs.firstOrNull {
+        it.date == java.time.LocalDate.now() && it.weekday == weekday
+    }?.exercises?.firstOrNull { it.exerciseName == exerciseName }
+}
+
+private data class SelectedExerciseDetail(
+    val exercise: ExerciseLibraryEntry,
+    val config: WorkoutExerciseConfig,
+    val weekday: WorkoutWeekday,
+    val focus: WorkoutFocus,
+)
+
 private data class EditableExerciseState(
     val selected: Boolean,
     val sets: Int,
@@ -1447,6 +1928,11 @@ private enum class DifficultyBand(
     EASY("Easy"),
     MEDIUM("Medium"),
     HARD("Hard"),
+}
+
+private enum class StopReason {
+    COMPLETED_SET,
+    GIVE_UP,
 }
 
 @OptIn(ExperimentalFoundationApi::class)

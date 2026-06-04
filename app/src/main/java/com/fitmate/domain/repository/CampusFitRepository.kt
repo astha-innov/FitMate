@@ -8,6 +8,9 @@ import com.fitmate.domain.model.MealAnalysis
 import com.fitmate.domain.model.MealLog
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WorkoutDayLog
+import com.fitmate.domain.model.WorkoutFocus
+import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import kotlinx.coroutines.flow.StateFlow
 
@@ -22,6 +25,7 @@ interface CampusFitRepository {
     val mealLogs: StateFlow<List<MealLog>>
     val latestMealAnalysis: StateFlow<MealAnalysis?>
     val workoutSchedule: StateFlow<WeeklyWorkoutSchedule?>
+    val workoutLogs: StateFlow<List<WorkoutDayLog>>
 
     fun updateProfile(profile: UserProfile)
     fun updateAiConfig(config: AiConfig)
@@ -32,4 +36,12 @@ interface CampusFitRepository {
     fun savePersonalizedPlan(plan: PersonalizedPlan)
     fun markSetupCompleted(completed: Boolean)
     fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule)
+    fun recordWorkoutSet(
+        weekday: WorkoutWeekday,
+        focus: WorkoutFocus,
+        exerciseName: String,
+        totalSets: Int,
+        elapsedSeconds: Int,
+        incrementCompletedSet: Boolean,
+    )
 }

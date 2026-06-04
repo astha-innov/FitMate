@@ -82,6 +82,16 @@ class FirebaseBackendService {
             workoutSchedule =
                 decodeJson(data["workoutSchedule"])
                     ?.let(AppStorage::workoutScheduleFromJson),
+
+            workoutLogs =
+                decodeJsonArray(data["workoutLogs"])
+                    ?.let { array ->
+                        List(array.length()) { index ->
+                            AppStorage.workoutDayLogFromJson(
+                                array.getJSONObject(index)
+                            )
+                        }
+                    },
         )
     }
 
@@ -140,6 +150,13 @@ class FirebaseBackendService {
         state.workoutSchedule?.let {
             payload["workoutSchedule"] =
                 AppStorage.workoutScheduleToJson(it).toString()
+        }
+
+        state.workoutLogs?.let {
+            payload["workoutLogs"] =
+                JSONArray(
+                    it.map(AppStorage::workoutDayLogToJson)
+                ).toString()
         }
 
         firestore()

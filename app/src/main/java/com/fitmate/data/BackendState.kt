@@ -7,6 +7,7 @@ import com.fitmate.domain.model.GoalProgress
 import com.fitmate.domain.model.MealLog
 import com.fitmate.domain.model.PersonalizedPlan
 import com.fitmate.domain.model.UserProfile
+import com.fitmate.domain.model.WorkoutDayLog
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 
 data class BackendState(
@@ -19,4 +20,5 @@ data class BackendState(
     val todayProgress: GoalProgress? = null,
     val mealLogs: List<MealLog>? = null,
     val workoutSchedule: WeeklyWorkoutSchedule? = null,
+    val workoutLogs: List<WorkoutDayLog>? = null,
 )
