@@ -33,6 +33,7 @@ import com.fitmate.R
 import com.fitmate.ui.navigation.Routes
 import com.fitmate.ui.viewmodel.AuthState
 import com.fitmate.ui.viewmodel.AuthViewModel
+import com.fitmate.ui.viewmodel.PhoneAuthUiState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.fitmate.ui.viewmodel.FakeAuthViewModel
@@ -46,7 +47,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.FirebaseAuth
 
 
 // --- PREMIUM DESIGN CONSTANTS ---
@@ -73,8 +73,6 @@ fun SignInScreen(
     val context = LocalContext.current
     val activity = context.findActivity()
 
-    val auth = FirebaseAuth.getInstance()
-
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestEmail()
@@ -92,27 +90,19 @@ fun SignInScreen(
 
                 val account = task.getResult(ApiException::class.java)
 
-                val credential = GoogleAuthProvider.getCredential(
-                    account.idToken,
-                    null
-                )
+                val idToken = account.idToken
+                if (idToken.isNullOrBlank()) {
+                    viewModel.showError("Google Sign-In did not return an ID token. Check Firebase SHA and OAuth client configuration.")
+                    return@rememberLauncherForActivityResult
+                }
 
-                auth.signInWithCredential(credential)
-                    .addOnCompleteListener(activity) { authResult ->
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                viewModel.signInWithCredential(credential, "Google Sign-In failed")
 
-                        if (authResult.isSuccessful) {
-
-                            navController.navigate(Routes.Home.route) {
-                                popUpTo(Routes.SignIn.route) {
-                                    inclusive = true
-                                }
-                            }
-
-                        }
-                    }
-
+            } catch (e: ApiException) {
+                viewModel.showError("Google Sign-In failed: ${e.statusCode}. Check SHA fingerprints and google-services.json.")
             } catch (e: Exception) {
-                e.printStackTrace()
+                viewModel.showError(e.message ?: "Google Sign-In failed.")
             }
         }
 
@@ -121,6 +111,7 @@ fun SignInScreen(
     var phoneNumber by remember { mutableStateOf("") }
 
     val authState by viewModel.authState.collectAsState()
+    val phoneAuthState by viewModel.phoneAuthState.collectAsState()
     val loading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(authState) {
@@ -129,6 +120,12 @@ fun SignInScreen(
                 popUpTo(Routes.SignIn.route) { inclusive = true }
             }
             viewModel.resetState()
+        }
+    }
+
+    LaunchedEffect(phoneAuthState) {
+        if (phoneAuthState is PhoneAuthUiState.CodeSent) {
+            navController.navigate(Routes.OtpVerification.route)
         }
     }
 
@@ -203,7 +200,7 @@ fun SignInScreen(
                     )
 
                     TextButton(
-                        onClick = { /* Handle Forgot */ },
+                        onClick = { navController.navigate(Routes.ForgotPassword.route) },
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Forgot Password?", color = NeonCyan, fontSize = 12.sp)
@@ -249,7 +246,8 @@ fun SignInScreen(
             PremiumButton(
                 text = "Send OTP",
                 isSecondary = true,
-                onClick = { /* Send OTP logic */ }
+                loading = phoneAuthState is PhoneAuthUiState.Sending,
+                onClick = { viewModel.sendOtp(activity, phoneNumber) }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -268,6 +266,14 @@ fun SignInScreen(
             if (authState is AuthState.Error) {
                 Text(
                     text = (authState as AuthState.Error).message,
+                    color = Color(0xFFFF4B4B),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            if (phoneAuthState is PhoneAuthUiState.Error) {
+                Text(
+                    text = (phoneAuthState as PhoneAuthUiState.Error).message,
                     color = Color(0xFFFF4B4B),
                     modifier = Modifier.padding(top = 8.dp)
                 )

@@ -7,9 +7,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.fitmate.ui.CampusFitApp
 import com.fitmate.ui.splash.SplashScreen
+import com.fitmate.ui.auth.ForgotPasswordScreen
+import com.fitmate.ui.auth.OtpVerificationScreen
 import com.fitmate.ui.auth.SignInScreen
 import com.fitmate.ui.auth.SignUpScreen
 import com.fitmate.ui.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NavGraph() {
@@ -36,7 +39,11 @@ fun NavGraph() {
                 onSplashFinished = {
 
                     navController.navigate(
-                        Routes.SignUp.route
+                        if (FirebaseAuth.getInstance().currentUser != null) {
+                            Routes.Home.route
+                        } else {
+                            Routes.SignUp.route
+                        }
                     ) {
 
                         popUpTo(
@@ -68,6 +75,30 @@ fun NavGraph() {
         ) {
 
             SignInScreen(
+                navController = navController,
+                viewModel = authViewModel
+            )
+        }
+
+        // ================= OTP VERIFICATION =================
+
+        composable(
+            route = Routes.OtpVerification.route
+        ) {
+
+            OtpVerificationScreen(
+                navController = navController,
+                viewModel = authViewModel
+            )
+        }
+
+        // ================= FORGOT PASSWORD =================
+
+        composable(
+            route = Routes.ForgotPassword.route
+        ) {
+
+            ForgotPasswordScreen(
                 navController = navController,
                 viewModel = authViewModel
             )

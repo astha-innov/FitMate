@@ -19,4 +19,12 @@ sealed class Routes(
     data object Home : Routes(
         route = "home"
     )
+
+    data object OtpVerification : Routes(
+        route = "otp_verification"
+    )
+
+    data object ForgotPassword : Routes(
+        route = "forgot_password"
+    )
 }
