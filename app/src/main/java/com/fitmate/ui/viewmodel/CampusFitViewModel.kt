@@ -22,12 +22,12 @@ import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutPlan
 import com.fitmate.domain.repository.CampusFitRepository
-import com.fitmate.domain.usecase.AnalyzeMealUseCase
+
 import com.fitmate.domain.usecase.BuildDashboardUseCase
 import com.fitmate.domain.usecase.BuildMealsSnapshotUseCase
 import com.fitmate.domain.usecase.CalculateGoalMetricsUseCase
 import com.fitmate.domain.usecase.CreateDietRecommendationUseCase
-import com.fitmate.domain.usecase.CreateInitialPersonalizedPlanUseCase
+
 import com.fitmate.domain.usecase.CreateWorkoutPlanUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +37,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.fitmate.domain.analytics.AnalyticsEngine
+import com.fitmate.domain.analytics.AnalyticsSnapshot
 
 data class CampusFitUiState(
     val profile: UserProfile = UserProfile(),
@@ -50,6 +52,9 @@ data class CampusFitUiState(
     val workout: WorkoutPlan? = null,
     val workoutSchedule: WeeklyWorkoutSchedule? = null,
     val workoutLogs: List<WorkoutDayLog> = emptyList(),
+
+    val analytics: AnalyticsSnapshot =
+        AnalyticsSnapshot(),
 )
 
 data class PersonalizationState(
@@ -64,14 +69,16 @@ class CampusFitViewModel(
     private val buildDashboard: BuildDashboardUseCase = BuildDashboardUseCase(),
     private val buildMealsSnapshot: BuildMealsSnapshotUseCase = BuildMealsSnapshotUseCase(),
     private val calculateGoalMetrics: CalculateGoalMetricsUseCase = CalculateGoalMetricsUseCase(),
-    private val analyzeMealUseCase: AnalyzeMealUseCase = AnalyzeMealUseCase(),
-    private val createInitialPersonalizedPlan: CreateInitialPersonalizedPlanUseCase =
-        CreateInitialPersonalizedPlanUseCase(),
+
+
     private val createDietRecommendation: CreateDietRecommendationUseCase =
         CreateDietRecommendationUseCase(),
     private val createWorkoutPlan: CreateWorkoutPlanUseCase =
         CreateWorkoutPlanUseCase(),
 ) : ViewModel() {
+
+    private val analyticsEngine =
+        AnalyticsEngine()
 
     private val _personalizationState =
         MutableStateFlow(PersonalizationState())
@@ -173,7 +180,13 @@ class CampusFitViewModel(
                     workout = plan?.workoutPlan
                         ?: createWorkoutPlan(profile),
                     workoutSchedule = workoutSchedule,
+
                     workoutLogs = workoutLogs,
+
+                    analytics =
+                        analyticsEngine.generate(
+                            workoutLogs
+                        ),
                 )
             }
             .stateIn(
@@ -246,39 +259,29 @@ class CampusFitViewModel(
 
                 delay(250)
 
-                val plan = runCatching {
+                val plan = PersonalizedPlan(
+                    metrics = calculateGoalMetrics(profile),
 
-                    createInitialPersonalizedPlan(
-                        profile,
-                        config
-                    )
+                    reasoning = GoalReasoning(
+                        summary = "Starter fitness plan generated locally.",
+                        calorieReasoning = "Calories adjusted for your goal.",
+                        proteinReasoning = "Protein optimized for recovery.",
+                        waterReasoning = "Hydration adjusted for your body.",
+                        coachingNotes = listOf(
+                            "Stay consistent daily.",
+                            "Track meals regularly."
+                        )
+                    ),
 
-                }.getOrElse {
+                    dietRecommendation =
+                        createDietRecommendation(profile),
 
-                    PersonalizedPlan(
-                        metrics = calculateGoalMetrics(profile),
+                    workoutPlan =
+                        createWorkoutPlan(profile),
 
-                        reasoning = GoalReasoning(
-                            summary = "Starter fitness plan generated locally.",
-                            calorieReasoning = "Calories adjusted for your goal.",
-                            proteinReasoning = "Protein optimized for recovery.",
-                            waterReasoning = "Hydration adjusted for your body.",
-                            coachingNotes = listOf(
-                                "Stay consistent daily.",
-                                "Track meals regularly.",
-                            )
-                        ),
-
-                        dietRecommendation =
-                            createDietRecommendation(profile),
-
-                        workoutPlan =
-                            createWorkoutPlan(profile),
-
-                        aiSummary =
-                            "Local FitMate starter profile"
-                    )
-                }
+                    aiSummary =
+                        "FitMate AI Coach Ready"
+                )
 
                 _personalizationState.value =
                     PersonalizationState(
@@ -318,38 +321,7 @@ class CampusFitViewModel(
         }
     }
 
-    fun analyzeMeal(
-        slot: MealSlot,
-        description: String,
-    ) {
 
-        if (description.isBlank()) return
-
-        viewModelScope.launch {
-
-            try {
-
-                val profile = uiState.value.profile
-                val config = uiState.value.aiConfig
-
-                val metrics =
-                    uiState.value.personalizedPlan?.metrics
-                        ?: calculateGoalMetrics(profile)
-
-                repository.saveMealAnalysis(
-                    analyzeMealUseCase(
-                        config,
-                        profile,
-                        slot,
-                        description,
-                        metrics
-                    )
-                )
-
-            } catch (_: Throwable) {
-            }
-        }
-    }
 
     private data class Quad(
         val profile: UserProfile,

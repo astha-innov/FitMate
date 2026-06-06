@@ -36,6 +36,8 @@ import com.fitmate.ui.progress.ProgressScreen
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 import com.fitmate.ui.workout.WorkoutScreen
+import androidx.compose.material.icons.outlined.AutoAwesome
+import com.fitmate.ui.coach.CoachChatScreen
 
 private val NeonCyan = Color(0xFF00E5FF)
 private val DeepSpace = Color(0xFF05070A)
@@ -59,6 +61,11 @@ enum class HomeTab(
         "Progress",
         Icons.Outlined.QueryStats
     ),
+    COACH(
+        "Coach",
+        Icons.Outlined.AutoAwesome
+    ),
+
     PROFILE(
         "Profile",
         Icons.Outlined.Person
@@ -162,7 +169,15 @@ fun AppNavigation(
                     WorkoutScreen(state, viewModel)
 
                 HomeTab.PROGRESS ->
-                    ProgressScreen(state)
+                    ProgressScreen(
+                        state = state,
+                        onOpenCoach = {
+                            selectedTab = HomeTab.COACH
+                        }
+                    )
+
+                HomeTab.COACH ->
+                    CoachChatScreen()
 
                 HomeTab.PROFILE ->
                     ProfileScreen(state)

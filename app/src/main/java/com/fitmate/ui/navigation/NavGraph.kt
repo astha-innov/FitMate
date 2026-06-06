@@ -13,6 +13,7 @@ import com.fitmate.ui.auth.SignInScreen
 import com.fitmate.ui.auth.SignUpScreen
 import com.fitmate.ui.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.fitmate.ui.coach.CoachChatScreen
 
 @Composable
 fun NavGraph() {
@@ -111,6 +112,11 @@ fun NavGraph() {
         ) {
 
             CampusFitApp()
+        }
+        composable(
+            route = Routes.CoachChat.route
+        ) {
+            CoachChatScreen()
         }
     }
 }
