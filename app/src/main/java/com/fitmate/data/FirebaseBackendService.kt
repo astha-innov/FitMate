@@ -178,15 +178,6 @@ class FirebaseBackendService {
         auth().signOut()
     }
 
-    suspend fun clearUserDocument() {
-        val userId = currentUserId() ?: return
-        firestore()
-            .collection(USERS_COLLECTION)
-            .document(userId)
-            .delete()
-            .await()
-    }
-
     private fun auth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
     }

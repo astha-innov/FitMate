@@ -17,6 +17,9 @@ class MainActivity : ComponentActivity() {
 
         AppStorage.init(applicationContext)
 
+        // FORCE onboarding to show again
+        AppStorage.saveSetupCompleted(false)
+
         FirebaseApp.initializeApp(this)
 
         auth = FirebaseAuth.getInstance()

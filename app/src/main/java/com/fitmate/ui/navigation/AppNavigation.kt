@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +36,8 @@ import com.fitmate.ui.progress.ProgressScreen
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 import com.fitmate.ui.workout.WorkoutScreen
+import androidx.compose.material.icons.outlined.AutoAwesome
+import com.fitmate.ui.coach.CoachChatScreen
 
 private val NeonCyan = Color(0xFF00E5FF)
 private val DeepSpace = Color(0xFF05070A)
@@ -48,8 +50,8 @@ enum class HomeTab(
     val icon: ImageVector
 ) {
     DASHBOARD(
-        "Profile",
-        Icons.Outlined.Person
+        "Dashboard",
+        Icons.Outlined.Bolt
     ),
     WORKOUT(
         "Workout",
@@ -59,9 +61,14 @@ enum class HomeTab(
         "Progress",
         Icons.Outlined.QueryStats
     ),
+    COACH(
+        "Coach",
+        Icons.Outlined.AutoAwesome
+    ),
+
     PROFILE(
-        "More",
-        Icons.Outlined.MoreHoriz
+        "Profile",
+        Icons.Outlined.Person
     )
 }
 
@@ -162,10 +169,18 @@ fun AppNavigation(
                     WorkoutScreen(state, viewModel)
 
                 HomeTab.PROGRESS ->
-                    ProgressScreen(state)
+                    ProgressScreen(
+                        state = state,
+                        onOpenCoach = {
+                            selectedTab = HomeTab.COACH
+                        }
+                    )
+
+                HomeTab.COACH ->
+                    CoachChatScreen()
 
                 HomeTab.PROFILE ->
-                    ProfileScreen(state, viewModel)
+                    ProfileScreen(state)
             }
         }
     }

@@ -33,7 +33,6 @@ import java.time.LocalDate
 
 object AppStorage {
     private lateinit var prefs: SharedPreferences
-    private const val KEY_LAST_USER_ID = "last_user_id"
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences("fitmate_prefs", Context.MODE_PRIVATE)
@@ -125,26 +124,6 @@ object AppStorage {
         val raw = prefs.getString("workout_logs_json", null) ?: return emptyList()
         val array = JSONArray(raw)
         return List(array.length()) { index -> workoutDayLogFromJson(array.getJSONObject(index)) }
-    }
-
-    fun saveLastUserId(userId: String?) {
-        prefs.edit().putString(KEY_LAST_USER_ID, userId).apply()
-    }
-
-    fun loadLastUserId(): String? = prefs.getString(KEY_LAST_USER_ID, null)
-
-    fun clearUserScopedData() {
-        prefs.edit()
-            .remove("setup_completed")
-            .remove("profile_json")
-            .remove("ai_config_json")
-            .remove("plan_json")
-            .remove("discipline_json")
-            .remove("goal_progress_json")
-            .remove("meal_logs_json")
-            .remove("workout_schedule_json")
-            .remove("workout_logs_json")
-            .apply()
     }
 
     internal fun profileToJson(profile: UserProfile): JSONObject = JSONObject()
