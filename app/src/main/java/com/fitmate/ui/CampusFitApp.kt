@@ -30,8 +30,10 @@ fun CampusFitApp(
     val personalizationState by
     viewModel.personalizationState.collectAsStateWithLifecycle()
 
-    var stage by rememberSaveable {
-        mutableStateOf(IntroStage.WELCOME)
+    var stage by rememberSaveable(uiState.setupCompleted) {
+        mutableStateOf(
+            if (uiState.setupCompleted) IntroStage.HOME else IntroStage.WELCOME
+        )
     }
 
     // Move to personalization screen
@@ -46,6 +48,10 @@ fun CampusFitApp(
         personalizationState.isRunning,
         uiState.setupCompleted
     ) {
+        if (!personalizationState.isRunning && uiState.setupCompleted && stage != IntroStage.PERSONALIZING) {
+            stage = IntroStage.HOME
+        }
+
         if (
             !personalizationState.isRunning &&
             uiState.setupCompleted &&

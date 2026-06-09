@@ -1,25 +1,17 @@
 package com.fitmate.ui.profile
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.util.Patterns
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,70 +22,118 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Feedback
+import androidx.compose.material.icons.outlined.GppGood
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.ManageAccounts
+import androidx.compose.material.icons.outlined.Policy
+import androidx.compose.material.icons.outlined.PrivacyTip
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.fitmate.ui.components.SectionCard
+import com.fitmate.MainActivity
+import com.fitmate.data.AppStorage
+import com.fitmate.data.FirebaseBackendService
+import com.fitmate.domain.model.ActivityLevel
+import com.fitmate.domain.model.ExperienceLevel
+import com.fitmate.domain.model.FoodPreference
+import com.fitmate.domain.model.GoalType
+import com.fitmate.domain.model.UserProfile
 import com.fitmate.ui.viewmodel.CampusFitUiState
-import kotlinx.coroutines.delay
+import com.fitmate.ui.viewmodel.CampusFitViewModel
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-// ── Private palette — no conflicts with any theme Color.kt ────────────────────
-private val P_Cyan        = Color(0xFF00E5FF)
-private val P_DeepSpace   = Color(0xFF05070A)
-private val P_Glass       = Color(0x0DFFFFFF)
-private val P_Border      = Color(0x1FFFFFFF)
-private val P_Gold        = Color(0xFFFFB300)
-private val P_Green       = Color(0xFF00E676)
-private val P_Surface     = Color(0xFF0D1117)
-private val P_TextPrimary = Color(0xFFEEEEEE)
-private val P_TextDim     = Color(0x80FFFFFF)
+private val MoreBg = Color(0xFF05070A)
+private val MoreGlass = Color.White.copy(alpha = 0.05f)
+private val MoreBorder = Color.White.copy(alpha = 0.11f)
+private val MoreCard = Color(0xFF10151D)
+private val MoreText = Color(0xFFF4F7FA)
+private val MoreMuted = Color.White.copy(alpha = 0.64f)
+private val MoreCyan = Color(0xFF00E5FF)
+private val MoreGreen = Color(0xFF00E676)
+private val MoreGold = Color(0xFFFFC857)
+private val MoreRed = Color(0xFFFF5A5F)
 
-private fun Color.fa(alpha: Float): Color =
-    Color(red = this.red, green = this.green, blue = this.blue, alpha = alpha)
-
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun ProfileScreen(
-    state: CampusFitUiState
+    state: CampusFitUiState,
+    viewModel: CampusFitViewModel
 ) {
-    var showDiet     by remember { mutableStateOf(false) }
-    var showHabits   by remember { mutableStateOf(false) }
-    var showSettings by remember { mutableStateOf(false) }
-
-    // staggered entrance
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val auth = remember { FirebaseAuth.getInstance() }
+    val backendService = remember { FirebaseBackendService() }
+    var activeDialog by rememberSaveable { mutableStateOf<MoreDialog?>(null) }
+    var showDeleteConfirm by rememberSaveable { mutableStateOf(false) }
+    var privacyStatus by rememberSaveable { mutableStateOf<String?>(null) }
     var entered by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { delay(60); entered = true }
+
+    LaunchedEffect(Unit) {
+        entered = true
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(P_DeepSpace)
+            .background(MoreBg)
     ) {
-        ProfileGridBg()
-        ProfileParticles()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(MoreCyan.copy(alpha = 0.16f), Color.Transparent)
+                    )
+                )
+        )
 
         Column(
             modifier = Modifier
@@ -102,553 +142,830 @@ fun ProfileScreen(
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── Avatar + headline ──────────────────────────────────────────
             AnimatedVisibility(
                 visible = entered,
-                enter = fadeIn(tween(500)) + expandVertically(spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                enter = fadeIn() + slideInVertically { -it / 5 }
             ) {
-                ProfileHeader(state = state)
+                MoreHeader()
             }
 
-            // ── Stats row ──────────────────────────────────────────────────
-            AnimatedVisibility(
-                visible = entered,
-                enter = fadeIn(tween(500, 100))
-            ) {
-                StatsRow(state = state)
-            }
-
-            // ── Diet card ──────────────────────────────────────────────────
-            AnimatedVisibility(
-                visible = entered,
-                enter = fadeIn(tween(500, 180))
-            ) {
-                ExpandableNeonCard(
-                    title = "Diet",
-                    icon = "🥗",
-                    accentColor = P_Green,
-                    expanded = showDiet,
-                    onToggle = { showDiet = !showDiet }
-                ) {
-                    NeonRow("Goal", state.profile.goal.label, P_Green)
-                    NeonRow("Food Type", state.profile.foodPreference.label, P_Green)
-                    state.personalizedPlan?.dietRecommendation?.let { diet ->
-                        Spacer(Modifier.height(12.dp))
-                        NeonSectionLabel(diet.title, P_Green)
-                        Spacer(Modifier.height(6.dp))
-                        diet.meals.forEach { meal ->
-                            BulletItem(meal, P_Green)
-                        }
-                    }
-                }
-            }
-
-            // ── Habits card ────────────────────────────────────────────────
-            AnimatedVisibility(
-                visible = entered,
-                enter = fadeIn(tween(500, 260))
-            ) {
-                ExpandableNeonCard(
-                    title = "Habits",
-                    icon = "⚡",
-                    accentColor = P_Gold,
-                    expanded = showHabits,
-                    onToggle = { showHabits = !showHabits }
-                ) {
-                    HabitCheckRow("Drink enough water", P_Gold)
-                    HabitCheckRow("Complete workout", P_Gold)
-                    HabitCheckRow("Hit protein goal", P_Gold)
-                    state.dashboard?.disciplineState?.let { ds ->
-                        Spacer(Modifier.height(12.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            MiniStatChip(
-                                label = "STREAK",
-                                value = "${ds.streakDays}d",
-                                color = P_Gold,
-                                modifier = Modifier.weight(1f)
-                            )
-                            MiniStatChip(
-                                label = "POINTS",
-                                value = "${ds.rewardPoints}",
-                                color = P_Cyan,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // ── Settings card ──────────────────────────────────────────────
-            AnimatedVisibility(
-                visible = entered,
-                enter = fadeIn(tween(500, 340))
-            ) {
-                ExpandableNeonCard(
-                    title = "Settings",
-                    icon = "⚙",
-                    accentColor = P_Cyan,
-                    expanded = showSettings,
-                    onToggle = { showSettings = !showSettings }
-                ) {
-                    NeonRow("AI Provider", state.aiConfig.providerMode.label, P_Cyan)
-                    NeonRow("Theme",       state.themeMode.label,             P_Cyan)
-                    NeonRow("Model",       state.aiConfig.modelName,          P_Cyan)
-                }
-            }
-
-            Spacer(Modifier.height(8.dp))
-        }
-    }
-}
-
-// ── Profile header with pulsing avatar ring ────────────────────────────────────
-@Composable
-private fun ProfileHeader(state: CampusFitUiState) {
-    val pulse = rememberInfiniteTransition(label = "avatar_pulse")
-    val ringAlpha by pulse.animateFloat(
-        initialValue = 0.3f, targetValue = 0.9f,
-        animationSpec = infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "ring"
-    )
-    val glowRadius by pulse.animateFloat(
-        initialValue = 18f, targetValue = 28f,
-        animationSpec = infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "glow"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(P_Glass)
-            .border(1.dp, P_Border, RoundedCornerShape(24.dp))
-            .padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Avatar
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(72.dp)
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawCircle(
-                    color = P_Cyan.fa(0.12f),
-                    radius = glowRadius.dp.toPx()
-                )
-                drawCircle(
-                    color = P_Cyan.fa(ringAlpha),
-                    radius = size.minDimension / 2f,
-                    style = Stroke(width = 1.5.dp.toPx())
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(P_Cyan.fa(0.2f), P_Cyan.fa(0.05f))
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("👤", fontSize = 28.sp)
-            }
-        }
-
-        // Name + stats
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = "ATHLETE",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 2.sp,
-                color = P_Cyan.fa(0.7f)
+            SettingsActionCard(
+                title = "Edit Profile",
+                subtitle = "Update the details you gave during setup.",
+                icon = Icons.Outlined.EditNote,
+                accent = MoreCyan,
+                onClick = { activeDialog = MoreDialog.EDIT_PROFILE }
             )
-            Text(
-                text = state.profile.goal.label,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = P_TextPrimary
+
+            SettingsActionCard(
+                title = "Account & Security",
+                subtitle = "Manage your email, password, and account identity.",
+                icon = Icons.Outlined.GppGood,
+                accent = MoreGreen,
+                onClick = { activeDialog = MoreDialog.ACCOUNT_SECURITY }
             )
-            Text(
-                text = "${state.profile.activityLevel.label} • ${state.profile.foodPreference.label}",
-                fontSize = 12.sp,
-                color = P_TextDim
+
+            SettingsActionCard(
+                title = "Data & Privacy",
+                subtitle = "Clear app data or permanently delete your account.",
+                icon = Icons.Outlined.PrivacyTip,
+                accent = MoreGold,
+                onClick = { activeDialog = MoreDialog.DATA_PRIVACY }
+            )
+
+            SettingsActionCard(
+                title = "Feedback",
+                subtitle = "Share ideas, issues, and suggestions for FitMate.",
+                icon = Icons.Outlined.Feedback,
+                accent = MoreCyan,
+                onClick = { activeDialog = MoreDialog.FEEDBACK }
+            )
+
+            SettingsActionCard(
+                title = "Legal & About",
+                subtitle = "Read policies and learn what FitMate is about.",
+                icon = Icons.Outlined.Info,
+                accent = MoreGreen,
+                onClick = { activeDialog = MoreDialog.LEGAL }
             )
         }
     }
+
+    when (activeDialog) {
+        MoreDialog.EDIT_PROFILE -> EditProfileDialog(
+            state = state,
+            viewModel = viewModel,
+            onDismiss = { activeDialog = null }
+        )
+        MoreDialog.ACCOUNT_SECURITY -> AccountSecurityDialog(
+            auth = auth,
+            onDismiss = { activeDialog = null }
+        )
+        MoreDialog.DATA_PRIVACY -> DataPrivacyDialog(
+            message = privacyStatus,
+            onDismiss = { activeDialog = null },
+            onClearData = {
+                scope.launch {
+                    privacyStatus = runCatching {
+                        backendService.clearUserDocument()
+                        AppStorage.clearUserScopedData()
+                        AppStorage.saveLastUserId(auth.currentUser?.uid)
+                        restartApp(context)
+                        "Your saved FitMate data has been cleared."
+                    }.getOrElse { it.message ?: "Could not clear your data right now." }
+                }
+            },
+            onDeleteAccount = { showDeleteConfirm = true }
+        )
+        MoreDialog.FEEDBACK -> FeedbackDialog(
+            auth = auth,
+            onDismiss = { activeDialog = null }
+        )
+        MoreDialog.LEGAL -> LegalAboutDialog(
+            onDismiss = { activeDialog = null }
+        )
+        null -> Unit
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        scope.launch {
+                            privacyStatus = runCatching {
+                                val currentUser = auth.currentUser ?: error("No active account found.")
+                                backendService.clearUserDocument()
+                                currentUser.delete().await()
+                                auth.signOut()
+                                AppStorage.clearUserScopedData()
+                                AppStorage.saveLastUserId(null)
+                                restartApp(context)
+                                "Your account has been deleted."
+                            }.getOrElse {
+                                it.message ?: "Account deletion failed. Please sign in again and retry."
+                            }
+                        }
+                    }
+                ) {
+                    Text("Delete", color = MoreRed, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Cancel", color = MoreMuted)
+                }
+            },
+            containerColor = MoreCard,
+            title = {
+                Text("Delete Account", color = MoreText, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(
+                    "Upon clicking this, your account will be permanently deleted along with all your progress till now. Do you wish to continue?",
+                    color = MoreMuted
+                )
+            }
+        )
+    }
 }
 
-// ── Compact stats row ──────────────────────────────────────────────────────────
 @Composable
-private fun StatsRow(state: CampusFitUiState) {
-    Row(
+private fun MoreHeader() {
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = MoreGlass),
+        border = BorderStroke(1.dp, MoreBorder)
     ) {
-        StatPill(label = "AGE",    value = "${state.profile.age}y",               color = P_Cyan,  modifier = Modifier.weight(1f))
-        StatPill(label = "HEIGHT", value = "${state.profile.heightCm}cm",         color = P_Green, modifier = Modifier.weight(1f))
-        StatPill(label = "WEIGHT", value = "${state.profile.weightKg}kg",         color = P_Gold,  modifier = Modifier.weight(1f))
-        StatPill(label = "WORKOUT",value = "${state.profile.workoutMinutes}m",    color = P_Cyan,  modifier = Modifier.weight(1f))
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "More",
+                color = MoreText,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = "Keep your account, profile, privacy, and app details in one clean place.",
+                color = MoreMuted,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 
 @Composable
-private fun StatPill(
-    label: String,
-    value: String,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    val glow = rememberInfiniteTransition(label = "pill_$label")
-    val borderAlpha by glow.animateFloat(
-        initialValue = 0.15f, targetValue = 0.45f,
-        animationSpec = infiniteRepeatable(tween(1600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "pill_border"
-    )
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(color.fa(0.06f))
-            .border(1.dp, color.fa(borderAlpha), RoundedCornerShape(16.dp))
-            .padding(vertical = 12.dp, horizontal = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = value,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = color
-        )
-        Text(
-            text = label,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-            color = color.fa(0.6f)
-        )
-    }
-}
-
-// ── Expandable neon card ───────────────────────────────────────────────────────
-@Composable
-private fun ExpandableNeonCard(
+private fun SettingsActionCard(
     title: String,
-    icon: String,
-    accentColor: Color,
-    expanded: Boolean,
-    onToggle: () -> Unit,
-    content: @Composable () -> Unit
+    subtitle: String,
+    icon: ImageVector,
+    accent: Color,
+    onClick: () -> Unit
 ) {
-    val borderColor by animateColorAsState(
-        targetValue = if (expanded) accentColor.fa(0.4f) else P_Border,
-        animationSpec = tween(300),
-        label = "card_border"
-    )
-    val bgColor by animateColorAsState(
-        targetValue = if (expanded) accentColor.fa(0.06f) else P_Glass,
-        animationSpec = tween(300),
-        label = "card_bg"
-    )
-    val chevronRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "chevron"
-    )
-
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MoreCard),
+        border = BorderStroke(1.dp, MoreBorder)
     ) {
-        // Header row — tap to toggle
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onToggle() }
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Icon bubble
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(accentColor.fa(0.12f))
-                    .border(1.dp, accentColor.fa(0.3f), RoundedCornerShape(10.dp)),
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(accent.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(icon, fontSize = 16.sp)
+                Icon(icon, contentDescription = null, tint = accent)
             }
-
-            Text(
-                text = title.uppercase(),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.5.sp,
-                color = accentColor,
-                modifier = Modifier.weight(1f)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = title,
+                    color = MoreText,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = subtitle,
+                    color = MoreMuted,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MoreMuted
             )
-
-            // Chevron
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.fa(0.1f)),
-                contentAlignment = Alignment.Center
-            ) {
-                // Draw a simple chevron via Canvas so no Icon import needed
-                Canvas(modifier = Modifier.size(14.dp)) {
-                    val cx = size.width / 2f
-                    val cy = size.height / 2f
-                    val arm = size.width * 0.35f
-                    val drop = size.height * 0.2f
-                    // rotate by chevronRotation around center
-                    val rad = Math.toRadians(chevronRotation.toDouble()).toFloat()
-                    val cos = kotlin.math.cos(rad)
-                    val sin = kotlin.math.sin(rad)
-                    fun rot(x: Float, y: Float): Offset {
-                        val rx = x - cx; val ry = y - cy
-                        return Offset(cx + rx * cos - ry * sin, cy + rx * sin + ry * cos)
-                    }
-                    val p1 = rot(cx - arm, cy - drop)
-                    val p2 = rot(cx,       cy + drop)
-                    val p3 = rot(cx + arm, cy - drop)
-                    drawLine(accentColor, p1, p2, strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
-                    drawLine(accentColor, p2, p3, strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
-                }
-            }
         }
+    }
+}
 
-        // Neon separator line
-        if (expanded) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .padding(horizontal = 20.dp)
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(Color.Transparent, accentColor.fa(0.4f), Color.Transparent)
-                        )
+@Composable
+private fun EditProfileDialog(
+    state: CampusFitUiState,
+    viewModel: CampusFitViewModel,
+    onDismiss: () -> Unit
+) {
+    var age by rememberSaveable { mutableStateOf(state.profile.age.toString()) }
+    var height by rememberSaveable { mutableStateOf(state.profile.heightCm.toString()) }
+    var weight by rememberSaveable { mutableStateOf(state.profile.weightKg.toString()) }
+    var gender by rememberSaveable { mutableStateOf(state.profile.gender) }
+    var budget by rememberSaveable { mutableStateOf(state.profile.budgetInr.toString()) }
+    var workoutMinutes by rememberSaveable { mutableStateOf(state.profile.workoutMinutes.toString()) }
+    var equipment by rememberSaveable {
+        mutableStateOf(
+            state.profile.equipment
+                .toList()
+                .sorted()
+                .joinToString(", ")
+        )
+    }
+    var goal by rememberSaveable { mutableStateOf(state.profile.goal) }
+    var foodPreference by rememberSaveable { mutableStateOf(state.profile.foodPreference) }
+    var activityLevel by rememberSaveable { mutableStateOf(state.profile.activityLevel) }
+    var experienceLevel by rememberSaveable { mutableStateOf(state.profile.experienceLevel) }
+    var saveMessage by remember { mutableStateOf<String?>(null) }
+
+    MoreDialogShell(
+        title = "Edit Profile",
+        subtitle = "Change your saved setup information here.",
+        onDismiss = onDismiss
+    ) {
+        MoreTextField("Age", age, { age = it.filter(Char::isDigit) }, KeyboardType.Number)
+        MoreTextField("Height (cm)", height, { height = it.filter(Char::isDigit) }, KeyboardType.Number)
+        MoreTextField("Weight (kg)", weight, { weight = it.filter(Char::isDigit) }, KeyboardType.Number)
+        MoreTextField("Gender", gender, { gender = it })
+        MoreTextField("Food budget (INR)", budget, { budget = it.filter(Char::isDigit) }, KeyboardType.Number)
+        MoreTextField("Workout time (minutes)", workoutMinutes, { workoutMinutes = it.filter(Char::isDigit) }, KeyboardType.Number)
+        MoreTextField("Equipment (comma separated)", equipment, { equipment = it })
+
+        EnumSelector(
+            title = "Body Goal",
+            items = GoalType.entries,
+            selected = goal,
+            labelFor = GoalType::label,
+            onSelect = { goal = it }
+        )
+        EnumSelector(
+            title = "Food Preference",
+            items = FoodPreference.entries,
+            selected = foodPreference,
+            labelFor = FoodPreference::label,
+            onSelect = { foodPreference = it }
+        )
+        EnumSelector(
+            title = "Activity Level",
+            items = ActivityLevel.entries,
+            selected = activityLevel,
+            labelFor = ActivityLevel::label,
+            onSelect = { activityLevel = it }
+        )
+        EnumSelector(
+            title = "Fitness Level",
+            items = ExperienceLevel.entries,
+            selected = experienceLevel,
+            labelFor = ExperienceLevel::label,
+            onSelect = { experienceLevel = it }
+        )
+
+        Button(
+            onClick = {
+                viewModel.updateProfile(
+                    state.profile.copy(
+                        age = age.toIntOrNull() ?: state.profile.age,
+                        heightCm = height.toIntOrNull() ?: state.profile.heightCm,
+                        weightKg = weight.toIntOrNull() ?: state.profile.weightKg,
+                        gender = gender.ifBlank { state.profile.gender },
+                        budgetInr = budget.toIntOrNull() ?: state.profile.budgetInr,
+                        workoutMinutes = workoutMinutes.toIntOrNull() ?: state.profile.workoutMinutes,
+                        goal = goal,
+                        foodPreference = foodPreference,
+                        activityLevel = activityLevel,
+                        experienceLevel = experienceLevel,
+                        equipment = equipment
+                            .split(",")
+                            .mapNotNull { value ->
+                                value.trim()
+                                    .takeIf(String::isNotEmpty)
+                            }
+                            .toSet()
+                            .ifEmpty { state.profile.equipment }
                     )
+                )
+                saveMessage = "Profile updated successfully."
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MoreCyan,
+                contentColor = Color.Black
+            )
+        ) {
+            Text("Save Changes", fontWeight = FontWeight.Bold)
+        }
+
+        saveMessage?.let {
+            Text(
+                text = it,
+                color = MoreGreen,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun AccountSecurityDialog(
+    auth: FirebaseAuth,
+    onDismiss: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    val currentUser = auth.currentUser
+    var newEmail by rememberSaveable { mutableStateOf(currentUser?.email.orEmpty()) }
+    var currentPassword by rememberSaveable { mutableStateOf("") }
+    var newPassword by rememberSaveable { mutableStateOf("") }
+    var message by remember { mutableStateOf<String?>(null) }
+    val providerIds = currentUser
+        ?.providerData
+        ?.mapNotNull { provider ->
+            provider.providerId.takeIf(String::isNotBlank)
+        }
+        ?.distinct()
+        ?: emptyList()
+    val hasPasswordProvider = providerIds.contains(EmailAuthProvider.PROVIDER_ID)
+    val username = currentUser?.displayName?.takeIf { it.isNotBlank() }
+        ?: currentUser?.email?.substringBefore("@")
+        ?: "FitMate User"
+
+    MoreDialogShell(
+        title = "Account & Security",
+        subtitle = "Review your account details and update secure credentials.",
+        onDismiss = onDismiss
+    ) {
+        StaticInfoRow("Current email", currentUser?.email ?: "No email linked")
+        StaticInfoRow("Username", username)
+        StaticInfoRow("Sign-in method", providerIds.joinToString(", ").ifBlank { "Unknown" })
+        StaticInfoRow("Password", "********")
+
+        MoreTextField("New email", newEmail, { newEmail = it }, KeyboardType.Email)
+        MoreTextField("Current password", currentPassword, { currentPassword = it }, KeyboardType.Password, true)
+        MoreTextField("New password", newPassword, { newPassword = it }, KeyboardType.Password, true)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Button(
+                onClick = {
+                    scope.launch {
+                        message = runCatching {
+                            val user = auth.currentUser ?: error("No active user.")
+                            if (!hasPasswordProvider) {
+                                error("Email updates are only available for email-password accounts in this screen.")
+                            }
+                            if (!Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+                                error("Enter a valid email address.")
+                            }
+                            user.verifyBeforeUpdateEmail(newEmail).await()
+                            "Verification email sent. Confirm it to finish updating your email."
+                        }.getOrElse { it.message ?: "Could not update email." }
+                    }
+                },
+                enabled = hasPasswordProvider,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MoreCyan, contentColor = Color.Black)
+            ) {
+                Text("Update Email", fontWeight = FontWeight.Bold)
+            }
+            Button(
+                onClick = {
+                    scope.launch {
+                        message = runCatching {
+                            val user = auth.currentUser ?: error("No active user.")
+                            if (!hasPasswordProvider) {
+                                error("Password updates are only available for email-password accounts in this screen.")
+                            }
+                            if (newPassword.length < 6) {
+                                error("Password should be at least 6 characters.")
+                            }
+                            val email = user.email ?: error("No email linked to this account.")
+                            if (currentPassword.isBlank()) {
+                                error("Enter your current password to update the password.")
+                            }
+                            val credential = EmailAuthProvider.getCredential(email, currentPassword)
+                            user.reauthenticate(credential).await()
+                            user.updatePassword(newPassword).await()
+                            "Password updated successfully."
+                        }.getOrElse { it.message ?: "Could not update password." }
+                    }
+                },
+                enabled = hasPasswordProvider,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MoreGreen, contentColor = Color.Black)
+            ) {
+                Text("Update Password", fontWeight = FontWeight.Bold)
+            }
+        }
+
+        if (!hasPasswordProvider) {
+            InfoNote(
+                icon = Icons.Outlined.Lock,
+                text = "This account is managed by Google or phone sign-in, so email and password updates are not handled here."
             )
         }
 
-        // Expandable content
-        AnimatedVisibility(
-            visible = expanded,
-            enter = fadeIn(tween(250)) + expandVertically(tween(300, easing = FastOutSlowInEasing)),
-            exit  = fadeOut(tween(200)) + shrinkVertically(tween(250))
+        message?.let {
+            Text(
+                text = it,
+                color = if (it.contains("success", true) || it.contains("sent", true)) MoreGreen else MoreRed,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun DataPrivacyDialog(
+    message: String?,
+    onDismiss: () -> Unit,
+    onClearData: () -> Unit,
+    onDeleteAccount: () -> Unit
+) {
+    MoreDialogShell(
+        title = "Data & Privacy",
+        subtitle = "Control your saved FitMate data with care.",
+        onDismiss = onDismiss
+    ) {
+        MoreWarningCard(
+            title = "Clear Data",
+            body = "This removes your saved profile setup, workout history, and progress from this account.",
+            accent = MoreGold,
+            buttonLabel = "Clear Data",
+            onClick = onClearData
+        )
+        MoreWarningCard(
+            title = "Delete Account",
+            body = "This permanently removes your FitMate account and all progress tied to it.",
+            accent = MoreRed,
+            buttonLabel = "Delete Account",
+            onClick = onDeleteAccount
+        )
+        message?.let {
+            Text(
+                text = it,
+                color = if (it.contains("cleared", true) || it.contains("deleted", true)) MoreGreen else MoreRed,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeedbackDialog(
+    auth: FirebaseAuth,
+    onDismiss: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    var feedback by rememberSaveable { mutableStateOf("") }
+    var message by remember { mutableStateOf<String?>(null) }
+
+    MoreDialogShell(
+        title = "Feedback",
+        subtitle = "Tell us what would make FitMate better for you.",
+        onDismiss = onDismiss
+    ) {
+        OutlinedTextField(
+            value = feedback,
+            onValueChange = { feedback = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp),
+            placeholder = { Text("Write your feedback here...", color = MoreMuted) },
+            colors = moreFieldColors(),
+            shape = RoundedCornerShape(18.dp)
+        )
+
+        Button(
+            onClick = {
+                scope.launch {
+                    message = runCatching {
+                        if (feedback.isBlank()) {
+                            error("Write a little feedback before submitting.")
+                        }
+                        if (runCatching { FirebaseApp.getInstance() }.isSuccess) {
+                            FirebaseFirestore.getInstance()
+                                .collection("feedback")
+                                .add(
+                                    hashMapOf(
+                                        "uid" to (auth.currentUser?.uid ?: "anonymous"),
+                                        "email" to (auth.currentUser?.email ?: ""),
+                                        "message" to feedback.trim(),
+                                        "createdAt" to FieldValue.serverTimestamp(),
+                                    )
+                                )
+                                .await()
+                        }
+                        feedback = ""
+                        "Thanks. Your feedback was submitted successfully."
+                    }.getOrElse { it.message ?: "Could not submit feedback." }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MoreCyan, contentColor = Color.Black)
         ) {
+            Text("Submit", fontWeight = FontWeight.Bold)
+        }
+
+        message?.let {
+            Text(
+                text = it,
+                color = if (it.contains("successfully", true) || it.contains("thanks", true)) MoreGreen else MoreRed,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun LegalAboutDialog(
+    onDismiss: () -> Unit
+) {
+    MoreDialogShell(
+        title = "Legal & About",
+        subtitle = "Key documents and a quick note about FitMate.",
+        onDismiss = onDismiss
+    ) {
+        LegalBlock(
+            icon = Icons.Outlined.Policy,
+            title = "Terms of Service",
+            body = "FitMate is designed to support healthy fitness planning and tracking. Use it responsibly and stop any activity that feels unsafe for your body."
+        )
+        LegalBlock(
+            icon = Icons.Outlined.Shield,
+            title = "Privacy Policy",
+            body = "Your profile, workout progress, and feedback are used only to power your FitMate experience. Sensitive credentials are never shown in plain text."
+        )
+        LegalBlock(
+            icon = Icons.Outlined.Info,
+            title = "About",
+            body = "FitMate is a workout-first fitness app built to help students and young professionals stay consistent with practical, customizable training plans."
+        )
+    }
+}
+
+@Composable
+private fun InfoNote(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MoreCyan.copy(alpha = 0.08f))
+            .border(1.dp, MoreCyan.copy(alpha = 0.16f), RoundedCornerShape(14.dp))
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MoreCyan,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = text,
+            color = MoreMuted,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+@Composable
+private fun MoreDialogShell(
+    title: String,
+    subtitle: String,
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        dismissButton = {},
+        containerColor = MoreCard,
+        title = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = title,
+                    color = MoreText,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = subtitle,
+                    color = MoreMuted,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        },
+        text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 content()
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Close", color = MoreMuted)
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun MoreTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isPassword: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+        label = { Text(label) },
+        colors = moreFieldColors(),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+private fun moreFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = MoreCyan,
+    unfocusedBorderColor = MoreBorder,
+    focusedTextColor = MoreText,
+    unfocusedTextColor = MoreText,
+    focusedContainerColor = MoreGlass,
+    unfocusedContainerColor = MoreGlass,
+    focusedLabelColor = MoreCyan,
+    unfocusedLabelColor = MoreMuted,
+    cursorColor = MoreCyan
+)
+
+@Composable
+private fun <T> EnumSelector(
+    title: String,
+    items: List<T>,
+    selected: T,
+    labelFor: (T) -> String,
+    onSelect: (T) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = title,
+            color = MoreMuted,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            items.forEach { item ->
+                val active = item == selected
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSelect(item) },
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (active) MoreCyan.copy(alpha = 0.12f) else MoreGlass,
+                    border = BorderStroke(1.dp, if (active) MoreCyan.copy(alpha = 0.4f) else MoreBorder)
+                ) {
+                    Text(
+                        text = labelFor(item),
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                        color = if (active) MoreText else MoreMuted,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
             }
         }
     }
 }
 
-// ── Key-value row ──────────────────────────────────────────────────────────────
 @Composable
-private fun NeonRow(label: String, value: String, accent: Color) {
+private fun StaticInfoRow(
+    label: String,
+    value: String
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(accent.fa(0.04f))
-            .border(1.dp, accent.fa(0.1f), RoundedCornerShape(10.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .clip(RoundedCornerShape(14.dp))
+            .background(MoreGlass)
+            .border(1.dp, MoreBorder, RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label.uppercase(),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-            color = accent.fa(0.65f)
-        )
+        Text(label, color = MoreMuted, style = MaterialTheme.typography.labelMedium)
         Text(
             text = value,
-            fontSize = 13.sp,
+            color = MoreText,
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
-            color = P_TextPrimary,
             textAlign = TextAlign.End
         )
     }
 }
 
-// ── Section label inside card ──────────────────────────────────────────────────
 @Composable
-private fun NeonSectionLabel(text: String, accent: Color) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+private fun MoreWarningCard(
+    title: String,
+    body: String,
+    accent: Color,
+    buttonLabel: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = accent.copy(alpha = 0.08f)),
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.24f))
     ) {
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .height(14.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(accent)
-        )
-        Text(
-            text = text,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = P_TextPrimary
-        )
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(text = title, color = MoreText, fontWeight = FontWeight.Bold)
+            Text(text = body, color = MoreMuted, style = MaterialTheme.typography.bodySmall)
+            Button(
+                onClick = onClick,
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = accent, contentColor = Color.Black)
+            ) {
+                Text(buttonLabel, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 
-// ── Bullet item ────────────────────────────────────────────────────────────────
 @Composable
-private fun BulletItem(text: String, accent: Color) {
+private fun LegalBlock(
+    icon: ImageVector,
+    title: String,
+    body: String
+) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MoreGlass)
+            .border(1.dp, MoreBorder, RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top
     ) {
         Box(
             modifier = Modifier
-                .padding(top = 6.dp)
-                .size(5.dp)
-                .clip(CircleShape)
-                .background(accent.fa(0.7f))
-        )
-        Text(text = text, fontSize = 13.sp, color = P_TextDim, lineHeight = 18.sp)
-    }
-}
-
-// ── Habit check row ────────────────────────────────────────────────────────────
-@Composable
-private fun HabitCheckRow(text: String, accent: Color) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(accent.fa(0.04f))
-            .border(1.dp, accent.fa(0.1f), RoundedCornerShape(10.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Check circle
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(accent.fa(0.15f))
-                .border(1.dp, accent.fa(0.5f), CircleShape),
+                .size(34.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MoreCyan.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            Text("✓", fontSize = 11.sp, color = accent)
+            Icon(icon, contentDescription = null, tint = MoreCyan, modifier = Modifier.size(20.dp))
         }
-        Text(
-            text = text,
-            fontSize = 13.sp,
-            color = P_TextPrimary,
-            modifier = Modifier.weight(1f)
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = title, color = MoreText, fontWeight = FontWeight.Bold)
+            Text(text = body, color = MoreMuted, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
-// ── Mini stat chip (streak / points) ──────────────────────────────────────────
-@Composable
-private fun MiniStatChip(
-    label: String,
-    value: String,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(color.fa(0.08f))
-            .border(1.dp, color.fa(0.25f), RoundedCornerShape(12.dp))
-            .padding(vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = value,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = color
-        )
-        Text(
-            text = label,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.5.sp,
-            color = color.fa(0.6f)
-        )
+private fun restartApp(context: Context) {
+    val activity = context.findActivity()
+    val intent = Intent(activity, MainActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+    }
+    activity.startActivity(intent)
+    activity.finish()
+}
+
+private tailrec fun Context.findActivity(): Activity {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> error("No Activity found")
     }
 }
 
-// ── Ambient grid background ────────────────────────────────────────────────────
-@Composable
-private fun ProfileGridBg() {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val step = 52.dp.toPx()
-        val c = P_Cyan.fa(0.025f)
-        var x = 0f
-        while (x < size.width)  { drawLine(c, Offset(x,0f), Offset(x,size.height), 1f); x += step }
-        var y = 0f
-        while (y < size.height) { drawLine(c, Offset(0f,y), Offset(size.width,y),  1f); y += step }
-        // Subtle radial glow top-center
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(P_Cyan.fa(0.04f), Color.Transparent),
-                center = Offset(size.width / 2f, 0f),
-                radius = size.width * 0.7f
-            ),
-            radius = size.width * 0.7f,
-            center = Offset(size.width / 2f, 0f)
-        )
-    }
-}
-
-// ── Floating particles ─────────────────────────────────────────────────────────
-@Composable
-private fun ProfileParticles() {
-    data class Dot(val x: Float, val y: Float, val r: Float, val a: Float)
-    val dots = remember {
-        List(30) {
-            Dot(
-                x = (0..1000).random() / 1000f,
-                y = (0..1000).random() / 1000f,
-                r = (2..10).random() / 10f,
-                a = (1..3).random() / 10f
-            )
-        }
-    }
-    val inf = rememberInfiniteTransition(label = "pdrift")
-    val t by inf.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(14000, easing = LinearEasing)),
-        label = "pdrift_t"
-    )
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        dots.forEach { d ->
-            val px = (d.x * size.width  + t * 60f) % size.width
-            val py = (d.y * size.height + t * 30f) % size.height
-            drawCircle(P_Cyan.fa(d.a), radius = d.r.dp.toPx(), center = Offset(px, py))
-        }
-    }
+private enum class MoreDialog {
+    EDIT_PROFILE,
+    ACCOUNT_SECURITY,
+    DATA_PRIVACY,
+    FEEDBACK,
+    LEGAL,
 }

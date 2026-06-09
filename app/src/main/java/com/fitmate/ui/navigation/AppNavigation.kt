@@ -165,7 +165,7 @@ fun AppNavigation(
                     ProgressScreen(state)
 
                 HomeTab.PROFILE ->
-                    ProfileScreen(state)
+                    ProfileScreen(state, viewModel)
             }
         }
     }

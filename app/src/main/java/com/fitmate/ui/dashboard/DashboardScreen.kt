@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -150,6 +151,41 @@ fun DashboardScreen(state: CampusFitUiState) {
                     ),
                 )
             )
+
+            InsightCard(
+                title = "Diet",
+                icon = "🥗",
+                accent = ProfileGreen
+            ) {
+                InsightRow("Goal", profile.goal.label, ProfileGreen)
+                InsightRow("Food Preference", profile.foodPreference.label, ProfileGreen)
+                state.personalizedPlan?.dietRecommendation?.title?.let {
+                    InsightText(it, ProfileMuted)
+                }
+                state.personalizedPlan?.dietRecommendation?.meals?.take(3)?.forEach { meal ->
+                    InsightBullet(meal, ProfileGreen)
+                }
+            }
+
+            InsightCard(
+                title = "Habits",
+                icon = "⚡",
+                accent = ProfileGold
+            ) {
+                InsightBullet("Drink enough water", ProfileGold)
+                InsightBullet("Complete workout", ProfileGold)
+                InsightBullet("Hit protein goal", ProfileGold)
+                state.dashboard?.disciplineState?.let { discipline ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        MiniInsightChip("STREAK", "${discipline.streakDays}d", ProfileGold, Modifier.weight(1f))
+                        MiniInsightChip("POINTS", "${discipline.rewardPoints}", ProfileCyan, Modifier.weight(1f))
+                    }
+                }
+            }
 
             MotivationalCard()
             Spacer(modifier = Modifier.height(8.dp))
@@ -382,6 +418,148 @@ private fun MotivationalCard() {
                 fontWeight = FontWeight.Medium
             )
         }
+    }
+}
+
+@Composable
+private fun InsightCard(
+    title: String,
+    icon: String,
+    accent: Color,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = ProfileCard),
+        border = BorderStroke(1.dp, ProfileBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(accent.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = icon)
+                }
+                Text(
+                    text = title,
+                    color = ProfileText,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun InsightRow(
+    label: String,
+    value: String,
+    accent: Color
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(accent.copy(alpha = 0.06f))
+            .border(1.dp, accent.copy(alpha = 0.16f), RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 11.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = accent,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = value,
+            color = ProfileText,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun InsightText(
+    text: String,
+    color: Color
+) {
+    Text(
+        text = text,
+        color = color,
+        style = MaterialTheme.typography.bodyMedium
+    )
+}
+
+@Composable
+private fun InsightBullet(
+    text: String,
+    accent: Color
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(top = 7.dp)
+                .size(5.dp)
+                .clip(CircleShape)
+                .background(accent)
+        )
+        Text(
+            text = text,
+            color = ProfileMuted,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+@Composable
+private fun MiniInsightChip(
+    label: String,
+    value: String,
+    accent: Color,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(accent.copy(alpha = 0.08f))
+            .border(1.dp, accent.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+            .padding(vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = value,
+            color = ProfileText,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Text(
+            text = label,
+            color = accent,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 

@@ -15,6 +15,7 @@ import com.fitmate.domain.model.WorkoutFocus
 import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.repository.CampusFitRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,18 +30,39 @@ class CampusFitRepositoryImpl(
     private val backendService: FirebaseBackendService = FirebaseBackendService(),
 ) : CampusFitRepository {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var userScopeChecked = false
+    private val authStateListener = FirebaseAuth.AuthStateListener {
+        handleUserSessionChange()
+    }
 
-    private val _profile = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadProfile() ?: UserProfile() else UserProfile())
-    private val _aiConfig = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadAiConfig() ?: AiConfig() else AiConfig())
+    private fun ensureUserScopeReady(): Boolean {
+        if (!AppStorage.isReady()) return false
+        if (!userScopeChecked) {
+            val currentUserId = backendService.currentUserId()
+            val lastUserId = AppStorage.loadLastUserId()
+            if (currentUserId != null && currentUserId != lastUserId) {
+                AppStorage.clearUserScopedData()
+                AppStorage.saveLastUserId(currentUserId)
+            } else if (currentUserId == null && lastUserId != null) {
+                AppStorage.clearUserScopedData()
+                AppStorage.saveLastUserId(null)
+            }
+            userScopeChecked = true
+        }
+        return true
+    }
+
+    private val _profile = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadProfile() ?: UserProfile() else UserProfile())
+    private val _aiConfig = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadAiConfig() ?: AiConfig() else AiConfig())
     private val _themeMode = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadThemeMode() else AppThemeMode.LIGHT)
-    private val _setupCompleted = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadSetupCompleted() else false)
-    private val _personalizedPlan = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadPlan() else null)
-    private val _discipline = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadDiscipline() ?: defaultDisciplineState() else defaultDisciplineState())
-    private val _todayProgress = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadGoalProgress() ?: GoalProgress(LocalDate.now()) else GoalProgress(LocalDate.now()))
-    private val _mealLogs = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadMealLogs() else emptyList())
+    private val _setupCompleted = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadSetupCompleted() else false)
+    private val _personalizedPlan = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadPlan() else null)
+    private val _discipline = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadDiscipline() ?: defaultDisciplineState() else defaultDisciplineState())
+    private val _todayProgress = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadGoalProgress() ?: GoalProgress(LocalDate.now()) else GoalProgress(LocalDate.now()))
+    private val _mealLogs = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadMealLogs() else emptyList())
     private val _latestMealAnalysis = MutableStateFlow(_mealLogs.value.firstOrNull()?.analysis)
-    private val _workoutSchedule = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutSchedule() else null)
-    private val _workoutLogs = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutLogs() else emptyList())
+    private val _workoutSchedule = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadWorkoutSchedule() else null)
+    private val _workoutLogs = MutableStateFlow(if (ensureUserScopeReady()) AppStorage.loadWorkoutLogs() else emptyList())
 
     override val profile: StateFlow<UserProfile> = _profile.asStateFlow()
     override val aiConfig: StateFlow<AiConfig> = _aiConfig.asStateFlow()
@@ -56,6 +78,7 @@ class CampusFitRepositoryImpl(
 
     init {
         normalizeDailyProgress()
+        FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
         scope.launch { bootstrapBackend() }
     }
 
@@ -202,6 +225,37 @@ class CampusFitRepositoryImpl(
 
     private fun syncToBackend() {
         scope.launch { runCatching { backendService.saveState(snapshotState()) } }
+    }
+
+    private fun handleUserSessionChange() {
+        if (!AppStorage.isReady()) return
+
+        val currentUserId = backendService.currentUserId()
+        val lastUserId = AppStorage.loadLastUserId()
+
+        if (currentUserId == lastUserId) return
+
+        AppStorage.clearUserScopedData()
+        AppStorage.saveLastUserId(currentUserId)
+        userScopeChecked = true
+        resetUserScopedState()
+
+        if (currentUserId != null) {
+            scope.launch { bootstrapBackend() }
+        }
+    }
+
+    private fun resetUserScopedState() {
+        _profile.value = UserProfile()
+        _aiConfig.value = AiConfig()
+        _setupCompleted.value = false
+        _personalizedPlan.value = null
+        _discipline.value = defaultDisciplineState()
+        _todayProgress.value = GoalProgress(LocalDate.now())
+        _mealLogs.value = emptyList()
+        _latestMealAnalysis.value = null
+        _workoutSchedule.value = null
+        _workoutLogs.value = emptyList()
     }
 
     private fun snapshotState(): BackendState = BackendState(
