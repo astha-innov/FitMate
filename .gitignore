@@ -22,6 +22,7 @@ keystore.properties
 signing.properties
 secrets.properties
 local.properties
+gradle.properties
 
 # Environment and API secret files
 .env
