@@ -27,8 +27,4 @@ sealed class Routes(
     data object ForgotPassword : Routes(
         route = "forgot_password"
     )
-
-    data object CoachChat : Routes(
-        route = "coach_chat"
-    )
 }

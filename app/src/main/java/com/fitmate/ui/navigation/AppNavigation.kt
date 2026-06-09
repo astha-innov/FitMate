@@ -1,4 +1,4 @@
-package com.fitmate.ui.navigation
+﻿package com.fitmate.ui.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,14 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.fitmate.ui.dashboard.DashboardScreen
+import com.fitmate.ui.more.MoreScreen
 import com.fitmate.ui.profile.ProfileScreen
 import com.fitmate.ui.progress.ProgressScreen
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 import com.fitmate.ui.workout.WorkoutScreen
-import androidx.compose.material.icons.outlined.AutoAwesome
-import com.fitmate.ui.coach.CoachChatScreen
 
 private val NeonCyan = Color(0xFF00E5FF)
 private val DeepSpace = Color(0xFF05070A)
@@ -49,9 +47,9 @@ enum class HomeTab(
     val label: String,
     val icon: ImageVector
 ) {
-    DASHBOARD(
-        "Dashboard",
-        Icons.Outlined.Bolt
+    PROFILE(
+        "Profile",
+        Icons.Outlined.Person
     ),
     WORKOUT(
         "Workout",
@@ -61,14 +59,9 @@ enum class HomeTab(
         "Progress",
         Icons.Outlined.QueryStats
     ),
-    COACH(
-        "Coach",
-        Icons.Outlined.AutoAwesome
-    ),
-
-    PROFILE(
-        "Profile",
-        Icons.Outlined.Person
+    MORE(
+        "More",
+        Icons.Outlined.MoreHoriz
     )
 }
 
@@ -79,7 +72,7 @@ fun AppNavigation(
     viewModel: CampusFitViewModel
 ) {
     var selectedTab by rememberSaveable {
-        mutableStateOf(HomeTab.DASHBOARD)
+        mutableStateOf(HomeTab.PROFILE)
     }
 
     val currentTab = remember(selectedTab) {
@@ -162,26 +155,19 @@ fun AppNavigation(
 
             when (currentTab) {
 
-                HomeTab.DASHBOARD ->
-                    DashboardScreen(state)
+                HomeTab.PROFILE ->
+                    ProfileScreen(state)
 
                 HomeTab.WORKOUT ->
                     WorkoutScreen(state, viewModel)
 
                 HomeTab.PROGRESS ->
-                    ProgressScreen(
-                        state = state,
-                        onOpenCoach = {
-                            selectedTab = HomeTab.COACH
-                        }
-                    )
+                    ProgressScreen(state)
 
-                HomeTab.COACH ->
-                    CoachChatScreen()
-
-                HomeTab.PROFILE ->
-                    ProfileScreen(state)
+                HomeTab.MORE ->
+                    MoreScreen(state, viewModel)
             }
         }
     }
 }
+

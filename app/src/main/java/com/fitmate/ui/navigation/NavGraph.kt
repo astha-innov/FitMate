@@ -6,14 +6,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.fitmate.ui.CampusFitApp
-import com.fitmate.ui.splash.SplashScreen
 import com.fitmate.ui.auth.ForgotPasswordScreen
 import com.fitmate.ui.auth.OtpVerificationScreen
 import com.fitmate.ui.auth.SignInScreen
 import com.fitmate.ui.auth.SignUpScreen
+import com.fitmate.ui.splash.SplashScreen
 import com.fitmate.ui.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.fitmate.ui.coach.CoachChatScreen
 
 @Composable
 fun NavGraph() {
@@ -25,11 +24,8 @@ fun NavGraph() {
     NavHost(
         navController = navController,
 
-        // SPLASH FIRST
         startDestination = Routes.Splash.route
     ) {
-
-        // ================= SPLASH =================
 
         composable(
             route = Routes.Splash.route
@@ -57,8 +53,6 @@ fun NavGraph() {
             )
         }
 
-        // ================= SIGN UP =================
-
         composable(
             route = Routes.SignUp.route
         ) {
@@ -68,8 +62,6 @@ fun NavGraph() {
                 viewModel = authViewModel
             )
         }
-
-        // ================= SIGN IN =================
 
         composable(
             route = Routes.SignIn.route
@@ -81,8 +73,6 @@ fun NavGraph() {
             )
         }
 
-        // ================= OTP VERIFICATION =================
-
         composable(
             route = Routes.OtpVerification.route
         ) {
@@ -92,8 +82,6 @@ fun NavGraph() {
                 viewModel = authViewModel
             )
         }
-
-        // ================= FORGOT PASSWORD =================
 
         composable(
             route = Routes.ForgotPassword.route
@@ -105,18 +93,11 @@ fun NavGraph() {
             )
         }
 
-        // ================= HOME =================
-
         composable(
             route = Routes.Home.route
         ) {
 
             CampusFitApp()
-        }
-        composable(
-            route = Routes.CoachChat.route
-        ) {
-            CoachChatScreen()
         }
     }
 }

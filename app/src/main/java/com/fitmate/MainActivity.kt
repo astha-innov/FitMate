@@ -1,4 +1,4 @@
-package com.fitmate
+﻿package com.fitmate
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,9 +16,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         AppStorage.init(applicationContext)
-
-        // FORCE onboarding to show again
-        AppStorage.saveSetupCompleted(false)
 
         FirebaseApp.initializeApp(this)
 

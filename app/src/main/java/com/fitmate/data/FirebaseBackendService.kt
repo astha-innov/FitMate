@@ -1,4 +1,4 @@
-package com.fitmate.data
+﻿package com.fitmate.data
 
 import com.fitmate.domain.model.AppThemeMode
 import com.google.firebase.FirebaseApp
@@ -176,6 +176,15 @@ class FirebaseBackendService {
 
     fun signOut() {
         auth().signOut()
+    }
+
+    suspend fun clearUserDocument() {
+        val userId = currentUserId() ?: return
+        firestore()
+            .collection(USERS_COLLECTION)
+            .document(userId)
+            .delete()
+            .await()
     }
 
     private fun auth(): FirebaseAuth {

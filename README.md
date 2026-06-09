@@ -1,4 +1,4 @@
-# FitMate
+﻿# FitMate
 
 FitMate is a workout-focused Android fitness app built with Kotlin, Jetpack Compose, Firebase, and a modern neon-dark design system.
 
@@ -24,10 +24,10 @@ FitMate currently focuses on the workout side of fitness:
 
 After signing in, users move into the main app experience with four core sections:
 
-- `Dashboard`
+- `Profile`
 - `Workout`
 - `Progress`
-- `Profile`
+- `More`
 
 The workout page is the main feature area and supports both a default plan and a custom plan flow.
 
@@ -91,7 +91,7 @@ app/
     domain/
     ui/
       auth/
-      dashboard/
+      more/
       navigation/
       onboarding/
       profile/
@@ -105,3 +105,4 @@ app/
     workout_details/
       gifs/
       instructions/
+

@@ -1,4 +1,4 @@
-package com.fitmate.ui.viewmodel
+﻿package com.fitmate.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.fitmate.data.CampusFitRepositoryImpl
 import com.fitmate.domain.model.AiConfig
 import com.fitmate.domain.model.AppThemeMode
-import com.fitmate.domain.model.DashboardSnapshot
+import com.fitmate.domain.model.ProfileSnapshot
 import com.fitmate.domain.model.DietRecommendation
 import com.fitmate.domain.model.DisciplineState
 import com.fitmate.domain.model.GoalProgress
@@ -22,12 +22,12 @@ import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutPlan
 import com.fitmate.domain.repository.CampusFitRepository
-
-import com.fitmate.domain.usecase.BuildDashboardUseCase
+import com.fitmate.domain.usecase.AnalyzeMealUseCase
+import com.fitmate.domain.usecase.BuildProfileSnapshotUseCase
 import com.fitmate.domain.usecase.BuildMealsSnapshotUseCase
 import com.fitmate.domain.usecase.CalculateGoalMetricsUseCase
 import com.fitmate.domain.usecase.CreateDietRecommendationUseCase
-
+import com.fitmate.domain.usecase.CreateInitialPersonalizedPlanUseCase
 import com.fitmate.domain.usecase.CreateWorkoutPlanUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +37,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.fitmate.domain.analytics.AnalyticsEngine
-import com.fitmate.domain.analytics.AnalyticsSnapshot
 
 data class CampusFitUiState(
     val profile: UserProfile = UserProfile(),
@@ -46,15 +44,12 @@ data class CampusFitUiState(
     val themeMode: AppThemeMode = AppThemeMode.LIGHT,
     val setupCompleted: Boolean = false,
     val personalizedPlan: PersonalizedPlan? = null,
-    val dashboard: DashboardSnapshot? = null,
+    val profileSnapshot: ProfileSnapshot? = null,
     val meals: MealsSnapshot? = null,
     val diet: DietRecommendation? = null,
     val workout: WorkoutPlan? = null,
     val workoutSchedule: WeeklyWorkoutSchedule? = null,
     val workoutLogs: List<WorkoutDayLog> = emptyList(),
-
-    val analytics: AnalyticsSnapshot =
-        AnalyticsSnapshot(),
 )
 
 data class PersonalizationState(
@@ -66,19 +61,17 @@ data class PersonalizationState(
 
 class CampusFitViewModel(
     private val repository: CampusFitRepository,
-    private val buildDashboard: BuildDashboardUseCase = BuildDashboardUseCase(),
+    private val buildProfileSnapshot: BuildProfileSnapshotUseCase = BuildProfileSnapshotUseCase(),
     private val buildMealsSnapshot: BuildMealsSnapshotUseCase = BuildMealsSnapshotUseCase(),
     private val calculateGoalMetrics: CalculateGoalMetricsUseCase = CalculateGoalMetricsUseCase(),
-
-
+    private val analyzeMealUseCase: AnalyzeMealUseCase = AnalyzeMealUseCase(),
+    private val createInitialPersonalizedPlan: CreateInitialPersonalizedPlanUseCase =
+        CreateInitialPersonalizedPlanUseCase(),
     private val createDietRecommendation: CreateDietRecommendationUseCase =
         CreateDietRecommendationUseCase(),
     private val createWorkoutPlan: CreateWorkoutPlanUseCase =
         CreateWorkoutPlanUseCase(),
 ) : ViewModel() {
-
-    private val analyticsEngine =
-        AnalyticsEngine()
 
     private val _personalizationState =
         MutableStateFlow(PersonalizationState())
@@ -112,7 +105,7 @@ class CampusFitViewModel(
                     (seed, plan),
                     discipline ->
 
-                DashboardSeed(
+                ProfileSeed(
                     seed.profile,
                     seed.config,
                     seed.themeMode,
@@ -128,7 +121,7 @@ class CampusFitViewModel(
                     (seed, progress),
                     mealLogs ->
 
-                DashboardMealsSeed(
+                ProfileMealsSeed(
                     seed,
                     progress,
                     mealLogs
@@ -159,8 +152,8 @@ class CampusFitViewModel(
                     themeMode = seeded.seed.themeMode,
                     setupCompleted = seeded.seed.setupCompleted,
                     personalizedPlan = plan,
-                    dashboard = plan?.let {
-                        buildDashboard(
+                    profileSnapshot = plan?.let {
+                        buildProfileSnapshot(
                             it,
                             seeded.progress,
                             seeded.seed.discipline
@@ -180,13 +173,7 @@ class CampusFitViewModel(
                     workout = plan?.workoutPlan
                         ?: createWorkoutPlan(profile),
                     workoutSchedule = workoutSchedule,
-
                     workoutLogs = workoutLogs,
-
-                    analytics =
-                        analyticsEngine.generate(
-                            workoutLogs
-                        ),
                 )
             }
             .stateIn(
@@ -259,29 +246,39 @@ class CampusFitViewModel(
 
                 delay(250)
 
-                val plan = PersonalizedPlan(
-                    metrics = calculateGoalMetrics(profile),
+                val plan = runCatching {
 
-                    reasoning = GoalReasoning(
-                        summary = "Starter fitness plan generated locally.",
-                        calorieReasoning = "Calories adjusted for your goal.",
-                        proteinReasoning = "Protein optimized for recovery.",
-                        waterReasoning = "Hydration adjusted for your body.",
-                        coachingNotes = listOf(
-                            "Stay consistent daily.",
-                            "Track meals regularly."
-                        )
-                    ),
+                    createInitialPersonalizedPlan(
+                        profile,
+                        config
+                    )
 
-                    dietRecommendation =
-                        createDietRecommendation(profile),
+                }.getOrElse {
 
-                    workoutPlan =
-                        createWorkoutPlan(profile),
+                    PersonalizedPlan(
+                        metrics = calculateGoalMetrics(profile),
 
-                    aiSummary =
-                        "FitMate AI Coach Ready"
-                )
+                        reasoning = GoalReasoning(
+                            summary = "Starter fitness plan generated locally.",
+                            calorieReasoning = "Calories adjusted for your goal.",
+                            proteinReasoning = "Protein optimized for recovery.",
+                            waterReasoning = "Hydration adjusted for your body.",
+                            coachingNotes = listOf(
+                                "Stay consistent daily.",
+                                "Track meals regularly.",
+                            )
+                        ),
+
+                        dietRecommendation =
+                            createDietRecommendation(profile),
+
+                        workoutPlan =
+                            createWorkoutPlan(profile),
+
+                        aiSummary =
+                            "Local FitMate starter profile"
+                    )
+                }
 
                 _personalizationState.value =
                     PersonalizationState(
@@ -321,7 +318,38 @@ class CampusFitViewModel(
         }
     }
 
+    fun analyzeMeal(
+        slot: MealSlot,
+        description: String,
+    ) {
 
+        if (description.isBlank()) return
+
+        viewModelScope.launch {
+
+            try {
+
+                val profile = uiState.value.profile
+                val config = uiState.value.aiConfig
+
+                val metrics =
+                    uiState.value.personalizedPlan?.metrics
+                        ?: calculateGoalMetrics(profile)
+
+                repository.saveMealAnalysis(
+                    analyzeMealUseCase(
+                        config,
+                        profile,
+                        slot,
+                        description,
+                        metrics
+                    )
+                )
+
+            } catch (_: Throwable) {
+            }
+        }
+    }
 
     private data class Quad(
         val profile: UserProfile,
@@ -330,7 +358,7 @@ class CampusFitViewModel(
         val setupCompleted: Boolean,
     )
 
-    private data class DashboardSeed(
+    private data class ProfileSeed(
         val profile: UserProfile,
         val config: AiConfig,
         val themeMode: AppThemeMode,
@@ -339,8 +367,8 @@ class CampusFitViewModel(
         val discipline: DisciplineState,
     )
 
-    private data class DashboardMealsSeed(
-        val seed: DashboardSeed,
+    private data class ProfileMealsSeed(
+        val seed: ProfileSeed,
         val progress: GoalProgress,
         val mealLogs: List<MealLog>,
     )
@@ -363,3 +391,4 @@ class CampusFitViewModel(
             }
     }
 }
+

@@ -1,4 +1,4 @@
-package com.fitmate.domain.model
+﻿package com.fitmate.domain.model
 
 import java.time.LocalDate
 
@@ -216,7 +216,7 @@ data class DayProgressSummary(
     val completed: Boolean,
 )
 
-data class DashboardSnapshot(
+data class ProfileSnapshot(
     val metrics: GoalMetrics,
     val progress: GoalProgress,
     val reasoning: GoalReasoning,
@@ -250,3 +250,4 @@ enum class ExerciseMetricType(val unitLabel: String) {
     REPS("reps"),
     SECONDS("sec"),
 }
+

@@ -1,4 +1,4 @@
-package com.fitmate.ui.settings
+﻿package com.fitmate.ui.settings
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -132,7 +132,7 @@ fun SettingsScreen(
             Text("Daily reminders")
 
             Switch(
-                checked = state.dashboard
+                checked = state.profileSnapshot
                     ?.disciplineState
                     ?.remindersEnabled == true,
 
