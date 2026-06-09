@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,8 +48,8 @@ enum class HomeTab(
     val icon: ImageVector
 ) {
     DASHBOARD(
-        "Dashboard",
-        Icons.Outlined.Bolt
+        "Profile",
+        Icons.Outlined.Person
     ),
     WORKOUT(
         "Workout",
@@ -60,8 +60,8 @@ enum class HomeTab(
         Icons.Outlined.QueryStats
     ),
     PROFILE(
-        "Profile",
-        Icons.Outlined.Person
+        "More",
+        Icons.Outlined.MoreHoriz
     )
 }
 
