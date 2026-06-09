@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fitmate.data.CampusFitRepositoryImpl
+import com.fitmate.domain.analytics.AnalyticsEngine
+import com.fitmate.domain.analytics.AnalyticsSnapshot
 import com.fitmate.domain.model.AiConfig
 import com.fitmate.domain.model.AppThemeMode
 import com.fitmate.domain.model.ProfileSnapshot
@@ -50,6 +52,7 @@ data class CampusFitUiState(
     val workout: WorkoutPlan? = null,
     val workoutSchedule: WeeklyWorkoutSchedule? = null,
     val workoutLogs: List<WorkoutDayLog> = emptyList(),
+    val analytics: AnalyticsSnapshot = AnalyticsSnapshot(),
 )
 
 data class PersonalizationState(
@@ -71,6 +74,7 @@ class CampusFitViewModel(
         CreateDietRecommendationUseCase(),
     private val createWorkoutPlan: CreateWorkoutPlanUseCase =
         CreateWorkoutPlanUseCase(),
+    private val analyticsEngine: AnalyticsEngine = AnalyticsEngine(),
 ) : ViewModel() {
 
     private val _personalizationState =
@@ -174,6 +178,7 @@ class CampusFitViewModel(
                         ?: createWorkoutPlan(profile),
                     workoutSchedule = workoutSchedule,
                     workoutLogs = workoutLogs,
+                    analytics = analyticsEngine.generate(workoutLogs),
                 )
             }
             .stateIn(

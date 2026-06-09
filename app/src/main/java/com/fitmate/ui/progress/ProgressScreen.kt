@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -73,6 +75,7 @@ private val ProgressTodayBorder = Color(0xFF8BE9FD)
 @Composable
 fun ProgressScreen(
     state: CampusFitUiState,
+    onOpenCoach: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val today = remember { LocalDate.now() }
@@ -108,6 +111,10 @@ fun ProgressScreen(
             today = today
         )
 
+        if (onOpenCoach != null) {
+            AiCoachShortcutCard(onClick = onOpenCoach)
+        }
+
         WorkoutCalendarCard(
             visibleMonth = visibleMonth,
             today = today,
@@ -116,6 +123,62 @@ fun ProgressScreen(
             onPreviousMonth = { visibleMonth = visibleMonth.minusMonths(1) },
             onNextMonth = { visibleMonth = visibleMonth.plusMonths(1) }
         )
+    }
+}
+
+@Composable
+private fun AiCoachShortcutCard(
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = ProgressCard),
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            ProgressBlue.copy(alpha = 0.28f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(ProgressBlue.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    tint = ProgressBlue,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "AI Coach",
+                    color = ProgressTextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "Ask FitMate for workout, recovery, and consistency guidance.",
+                    color = ProgressTextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
     }
 }
 

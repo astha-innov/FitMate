@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.fitmate.ui.coach.CoachChatScreen
 import com.fitmate.ui.more.MoreScreen
 import com.fitmate.ui.profile.ProfileScreen
 import com.fitmate.ui.progress.ProgressScreen
@@ -58,6 +60,10 @@ enum class HomeTab(
     PROGRESS(
         "Progress",
         Icons.Outlined.QueryStats
+    ),
+    COACH(
+        "Coach",
+        Icons.Outlined.AutoAwesome
     ),
     MORE(
         "More",
@@ -162,7 +168,15 @@ fun AppNavigation(
                     WorkoutScreen(state, viewModel)
 
                 HomeTab.PROGRESS ->
-                    ProgressScreen(state)
+                    ProgressScreen(
+                        state = state,
+                        onOpenCoach = {
+                            selectedTab = HomeTab.COACH
+                        }
+                    )
+
+                HomeTab.COACH ->
+                    CoachChatScreen()
 
                 HomeTab.MORE ->
                     MoreScreen(state, viewModel)
