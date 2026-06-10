@@ -37,11 +37,7 @@ fun NavGraph() {
                 onSplashFinished = {
 
                     navController.navigate(
-                        if (FirebaseAuth.getInstance().currentUser != null) {
-                            Routes.Home.route
-                        } else {
-                            Routes.SignUp.route
-                        }
+                        Routes.SignUp.route
                     ) {
 
                         popUpTo(

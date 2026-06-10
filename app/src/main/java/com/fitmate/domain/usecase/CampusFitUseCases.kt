@@ -1,8 +1,6 @@
 ﻿package com.fitmate.domain.usecase
 
-import com.fitmate.ai.AiClient
-import com.fitmate.ai.AiParser
-import com.fitmate.ai.PromptFactory
+
 import com.fitmate.domain.model.AiConfig
 import com.fitmate.domain.model.AiProviderMode
 import com.fitmate.domain.model.DayProgressSummary
@@ -81,16 +79,7 @@ class GenerateGoalReasoningUseCase {
     }
 }
 
-class AnalyzeMealUseCase(private val aiClient: AiClient = AiClient()) {
-    suspend operator fun invoke(config: AiConfig, profile: UserProfile, slot: MealSlot, description: String, metrics: GoalMetrics): MealAnalysis {
-        val json = aiClient.requestStructuredJson(
-            config = config,
-            systemPrompt = PromptFactory.mealAnalysisSystemPrompt(),
-            userPrompt = PromptFactory.mealAnalysisUserPrompt(profile, slot, description, metrics),
-        )
-        return AiParser.parseMealAnalysis(slot, description, json)
-    }
-}
+
 
 class BuildProfileSnapshotUseCase {
     operator fun invoke(plan: PersonalizedPlan, todayProgress: GoalProgress, disciplineState: DisciplineState): ProfileSnapshot {
@@ -132,16 +121,7 @@ class BuildMealsSnapshotUseCase {
     }
 }
 
-class CreateInitialPersonalizedPlanUseCase(private val aiClient: AiClient = AiClient()) {
-    suspend operator fun invoke(profile: UserProfile, config: AiConfig): PersonalizedPlan {
-        val json = aiClient.requestStructuredJson(
-            config = config,
-            systemPrompt = PromptFactory.personalizationSystemPrompt(),
-            userPrompt = PromptFactory.personalizationUserPrompt(profile),
-        )
-        return AiParser.parsePersonalizedPlan(json)
-    }
-}
+
 
 class CreateDietRecommendationUseCase {
     operator fun invoke(profile: UserProfile): DietRecommendation {

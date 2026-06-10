@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.QueryStats
@@ -31,13 +30,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.fitmate.ui.coach.CoachChatScreen
 import com.fitmate.ui.more.MoreScreen
 import com.fitmate.ui.profile.ProfileScreen
 import com.fitmate.ui.progress.ProgressScreen
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 import com.fitmate.ui.workout.WorkoutScreen
+import com.fitmate.ui.coach.CoachChatScreen
+import androidx.compose.material.icons.outlined.SmartToy
+import com.fitmate.ui.coach.CoachIntroScreen
+import androidx.compose.material.icons.outlined.Chat
 
 private val NeonCyan = Color(0xFF00E5FF)
 private val DeepSpace = Color(0xFF05070A)
@@ -63,8 +65,9 @@ enum class HomeTab(
     ),
     COACH(
         "Coach",
-        Icons.Outlined.AutoAwesome
+        Icons.Outlined.SmartToy
     ),
+
     MORE(
         "More",
         Icons.Outlined.MoreHoriz
@@ -79,6 +82,9 @@ fun AppNavigation(
 ) {
     var selectedTab by rememberSaveable {
         mutableStateOf(HomeTab.PROFILE)
+    }
+    var showCoachChat by rememberSaveable {
+        mutableStateOf(false)
     }
 
     val currentTab = remember(selectedTab) {
@@ -123,8 +129,10 @@ fun AppNavigation(
                         selected = currentTab == tab,
 
                         onClick = {
-                            if (selectedTab != tab) {
-                                selectedTab = tab
+                            selectedTab = tab
+
+                            if (tab == HomeTab.COACH) {
+                                showCoachChat = false
                             }
                         },
 
@@ -171,12 +179,22 @@ fun AppNavigation(
                     ProgressScreen(
                         state = state,
                         onOpenCoach = {
+                            showCoachChat = false
                             selectedTab = HomeTab.COACH
+
                         }
                     )
-
-                HomeTab.COACH ->
-                    CoachChatScreen()
+                HomeTab.COACH -> {
+                    if (showCoachChat) {
+                        CoachChatScreen()
+                    } else {
+                        CoachIntroScreen(
+                            onGetStarted = {
+                                showCoachChat = true
+                            }
+                        )
+                    }
+                }
 
                 HomeTab.MORE ->
                     MoreScreen(state, viewModel)

@@ -103,18 +103,27 @@ import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 
-private val FitMateBlack = Color(0xFF0F0F11)
-private val FitMateDarkGrey = Color(0xFF1C1C1E)
-private val FitMateEmerald = Color(0xFF00E676)
-private val FitMateWhite = Color(0xFFFFFFFF)
-private val FitMateGlass = Color(0xFFFFFFFF).copy(alpha = 0.08f)
-private val FitMateGlassBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
-private val FitMateBlue = Color(0xFF00E5FF)
-private val RestAccent = Color(0xFFFFC857)
-private val EasyColor = Color(0xFF00E676)
-private val MediumColor = Color(0xFFFFB020)
-private val HardColor = Color(0xFFFF5A5F)
-private val FitMateRed = Color(0xFFFF5252)
+// ── Premium Light Palette ──────────────────────────────────────────────────
+private val FitMateWhiteBackground = Color(0xFFFFFFFF)
+private val FitMateCard            = Color(0xFFF8FAFC)
+private val FitMateSurface         = Color(0xFFFFFFFF)
+
+private val FitMateTextPrimary     = Color(0xFF111827)
+private val FitMateTextSecondary   = Color(0xFF6B7280)
+
+private val FitMateGreen           = Color(0xFF10B981)
+private val FitMateGreenLight      = Color(0xFF34D399)
+
+private val FitMateBlue            = Color(0xFF3B82F6)
+private val FitMateRed             = Color(0xFFEF4444)
+
+private val FitMateBorder          = Color(0xFFE5E7EB)
+
+private val RestAccent             = Color(0xFF3B82F6)
+private val EasyColor              = Color(0xFF10B981)
+private val MediumColor            = Color(0xFFF59E0B)
+private val HardColor              = Color(0xFFEF4444)
+// ──────────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -167,120 +176,120 @@ fun WorkoutScreen(
 
     CompositionLocalProvider(LocalImageLoader provides gifImageLoader) {
 
-    if (showPlanBuilder) {
-        SequentialPlanBuilderDialog(
-            initialSchedule = schedule,
-            onDismiss = { showPlanBuilder = false },
-            onSave = {
-                viewModel.saveWorkoutSchedule(it)
-                showPlanBuilder = false
-            }
-        )
-    }
-
-    editingDay?.let { day ->
-        WorkoutDayEditorDialog(
-            day = day,
-            onDismiss = { editingDay = null },
-            onSave = { updatedDay ->
-                val currentSchedule = state.workoutSchedule ?: createDefaultWorkoutSchedule()
-                viewModel.saveWorkoutSchedule(
-                    currentSchedule.copy(
-                        days = currentSchedule.days.map {
-                            if (it.weekday == updatedDay.weekday) updatedDay else it
-                        }
-                    )
-                )
-                editingDay = null
-            }
-        )
-    }
-
-    MaterialTheme(
-        colorScheme = androidx.compose.material3.darkColorScheme(
-            background = FitMateBlack,
-            surface = FitMateDarkGrey,
-            primary = FitMateEmerald,
-            onPrimary = FitMateBlack,
-            onBackground = FitMateWhite,
-            onSurface = FitMateWhite
-        )
-    ) {
-        if (selectedInstructionExercise != null) {
-            WorkoutInstructionScreen(
-                detail = selectedInstructionExercise!!,
-                workoutLogs = state.workoutLogs,
-                viewModel = viewModel,
-                onBack = { selectedInstructionExercise = null }
+        if (showPlanBuilder) {
+            SequentialPlanBuilderDialog(
+                initialSchedule = schedule,
+                onDismiss = { showPlanBuilder = false },
+                onSave = {
+                    viewModel.saveWorkoutSchedule(it)
+                    showPlanBuilder = false
+                }
             )
-        } else {
-            Scaffold(
-                containerColor = FitMateBlack,
-                topBar = {
-                    TopAppBar(
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = FitMateBlack,
-                            titleContentColor = FitMateWhite
-                        ),
-                        title = {
-                            Column {
-                                Text(
-                                    text = "Workout Plan",
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "Make your split flexible, visual, and easy to update.",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = FitMateWhite.copy(alpha = 0.65f)
+        }
+
+        editingDay?.let { day ->
+            WorkoutDayEditorDialog(
+                day = day,
+                onDismiss = { editingDay = null },
+                onSave = { updatedDay ->
+                    val currentSchedule = state.workoutSchedule ?: createDefaultWorkoutSchedule()
+                    viewModel.saveWorkoutSchedule(
+                        currentSchedule.copy(
+                            days = currentSchedule.days.map {
+                                if (it.weekday == updatedDay.weekday) updatedDay else it
+                            }
+                        )
+                    )
+                    editingDay = null
+                }
+            )
+        }
+
+        MaterialTheme(
+            colorScheme = androidx.compose.material3.lightColorScheme(
+                background = FitMateWhiteBackground,
+                surface = FitMateSurface,
+                primary = FitMateGreen,
+                onPrimary = FitMateWhiteBackground,
+                onBackground = FitMateTextPrimary,
+                onSurface = FitMateTextPrimary
+            )
+        ) {
+            if (selectedInstructionExercise != null) {
+                WorkoutInstructionScreen(
+                    detail = selectedInstructionExercise!!,
+                    workoutLogs = state.workoutLogs,
+                    viewModel = viewModel,
+                    onBack = { selectedInstructionExercise = null }
+                )
+            } else {
+                Scaffold(
+                    containerColor = FitMateWhiteBackground,
+                    topBar = {
+                        TopAppBar(
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = FitMateWhiteBackground,
+                                titleContentColor = FitMateTextPrimary
+                            ),
+                            title = {
+                                Column {
+                                    Text(
+                                        text = "Workout Plan",
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "Make your split flexible, visual, and easy to update.",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = FitMateTextSecondary
+                                    )
+                                }
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    LazyColumn(
+                        state = workoutListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(FitMateWhiteBackground)
+                            .padding(paddingValues),
+                        contentPadding = PaddingValues(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(18.dp)
+                    ) {
+                        item {
+                            HeroGifCarousel()
+                        }
+
+                        item {
+                            WorkoutHeroCard(
+                                isCustom = schedule?.isCustom == true,
+                                onCustomize = { showPlanBuilder = true }
+                            )
+                        }
+
+                        schedule?.days?.let { days ->
+                            items(days, key = { it.weekday.name }) { day ->
+                                WorkoutDayCard(
+                                    day = day,
+                                    workoutLogs = state.workoutLogs,
+                                    onEdit = { editingDay = day },
+                                    onShowInstructions = { selectedInstructionExercise = it },
+                                    collapsed = collapsedDays[day.weekday.name] == true,
+                                    onToggleCollapse = {
+                                        val key = day.weekday.name
+                                        collapsedDays[key] = !(collapsedDays[key] == true)
+                                    }
                                 )
                             }
                         }
-                    )
-                }
-            ) { paddingValues ->
-                LazyColumn(
-                    state = workoutListState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(FitMateBlack)
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp)
-                ) {
-                    item {
-                        HeroGifCarousel()
-                    }
 
-                    item {
-                        WorkoutHeroCard(
-                            isCustom = schedule?.isCustom == true,
-                            onCustomize = { showPlanBuilder = true }
-                        )
-                    }
-
-                    schedule?.days?.let { days ->
-                        items(days, key = { it.weekday.name }) { day ->
-                            WorkoutDayCard(
-                                day = day,
-                                workoutLogs = state.workoutLogs,
-                                onEdit = { editingDay = day },
-                                onShowInstructions = { selectedInstructionExercise = it },
-                                collapsed = collapsedDays[day.weekday.name] == true,
-                                onToggleCollapse = {
-                                    val key = day.weekday.name
-                                    collapsedDays[key] = !(collapsedDays[key] == true)
-                                }
-                            )
+                        item {
+                            MotivationBanner()
                         }
-                    }
-
-                    item {
-                        MotivationBanner()
                     }
                 }
             }
         }
-    }
     } // CompositionLocalProvider
 }
 
@@ -291,21 +300,22 @@ private fun WorkoutHeroCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
-        border = BorderStroke(1.dp, FitMateGlassBorder),
-        shape = RoundedCornerShape(28.dp)
+        colors = CardDefaults.cardColors(containerColor = FitMateCard),
+        border = BorderStroke(1.dp, FitMateBorder),
+        shape = RoundedCornerShape(28.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
             Text(
                 text = if (isCustom) "Custom weekly split active" else "Build your weekly split",
                 style = MaterialTheme.typography.headlineSmall,
-                color = FitMateWhite,
+                color = FitMateTextPrimary,
                 fontWeight = FontWeight.ExtraBold
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "Choose what to train on each weekday, keep at least one rest day, and tune every exercise with slider-based set and rep controls.",
-                color = FitMateWhite.copy(alpha = 0.72f),
+                color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(18.dp))
@@ -314,8 +324,8 @@ private fun WorkoutHeroCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = FitMateEmerald,
-                    contentColor = FitMateBlack
+                    containerColor = FitMateGreen,
+                    contentColor = FitMateWhiteBackground
                 )
             ) {
                 Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
@@ -340,9 +350,10 @@ private fun WorkoutDayCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
-        border = BorderStroke(1.dp, if (isRestDay) RestAccent.copy(alpha = 0.6f) else FitMateGlassBorder),
-        shape = RoundedCornerShape(26.dp)
+        colors = CardDefaults.cardColors(containerColor = FitMateCard),
+        border = BorderStroke(1.dp, if (isRestDay) RestAccent.copy(alpha = 0.4f) else FitMateBorder),
+        shape = RoundedCornerShape(26.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
             Box(
@@ -363,7 +374,7 @@ private fun WorkoutDayCard(
                             .fillMaxSize()
                             .background(
                                 Brush.linearGradient(
-                                    listOf(FitMateDarkGrey, Color(0xFF101D17))
+                                    listOf(FitMateCard, Color(0xFFE0F2FE))
                                 )
                             )
                     )
@@ -374,7 +385,7 @@ private fun WorkoutDayCard(
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                listOf(Color.Transparent, FitMateBlack.copy(alpha = 0.25f), FitMateBlack.copy(alpha = 0.92f))
+                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.15f), Color.Black.copy(alpha = 0.65f))
                             )
                         )
                 )
@@ -386,13 +397,13 @@ private fun WorkoutDayCard(
                 ) {
                     Text(
                         text = day.weekday.label,
-                        color = if (isRestDay) RestAccent else FitMateBlue,
+                        color = if (isRestDay) RestAccent else FitMateGreenLight,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = day.focus.label,
-                        color = FitMateWhite,
+                        color = FitMateWhiteBackground,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -400,7 +411,7 @@ private fun WorkoutDayCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "${day.exercises.size} exercises",
-                            color = FitMateEmerald.copy(alpha = 0.85f),
+                            color = FitMateGreenLight,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -413,12 +424,12 @@ private fun WorkoutDayCard(
                         .align(Alignment.TopEnd)
                         .padding(10.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.Black.copy(alpha = 0.35f))
+                        .background(Color.White.copy(alpha = 0.85f))
                 ) {
                     Icon(
                         imageVector = if (collapsed) Icons.Outlined.ExpandMore else Icons.Outlined.ExpandLess,
                         contentDescription = if (collapsed) "Expand ${day.weekday.label}" else "Collapse ${day.weekday.label}",
-                        tint = FitMateWhite
+                        tint = FitMateTextPrimary
                     )
                 }
 
@@ -428,48 +439,48 @@ private fun WorkoutDayCard(
                         .align(Alignment.TopEnd)
                         .padding(top = 10.dp, end = 56.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.Black.copy(alpha = 0.35f))
+                        .background(Color.White.copy(alpha = 0.85f))
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = "Edit ${day.weekday.label}",
-                        tint = FitMateWhite
+                        tint = FitMateTextPrimary
                     )
                 }
             }
 
             if (!collapsed) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                if (isRestDay) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.EventBusy, contentDescription = null, tint = RestAccent)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Rest day selected by you. Recovery, mobility, and lighter movement live here.",
-                            color = FitMateWhite.copy(alpha = 0.72f)
-                        )
-                    }
-                } else {
-                    day.exercises.forEach { exercise ->
-                        val entry = LocalExerciseDatabase.exerciseByName(exercise.exerciseName) ?: return@forEach
-                        ExerciseCardRow(
-                            config = exercise,
-                            entry = entry,
-                            progress = todayProgressFor(day.weekday, exercise.exerciseName, workoutLogs),
-                            onShowInstructions = {
-                                onShowInstructions(
-                                    SelectedExerciseDetail(
-                                        exercise = entry,
-                                        config = exercise,
-                                        weekday = day.weekday,
-                                        focus = day.focus,
+                    if (isRestDay) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.EventBusy, contentDescription = null, tint = RestAccent)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Rest day selected by you. Recovery, mobility, and lighter movement live here.",
+                                color = FitMateTextSecondary
+                            )
+                        }
+                    } else {
+                        day.exercises.forEach { exercise ->
+                            val entry = LocalExerciseDatabase.exerciseByName(exercise.exerciseName) ?: return@forEach
+                            ExerciseCardRow(
+                                config = exercise,
+                                entry = entry,
+                                progress = todayProgressFor(day.weekday, exercise.exerciseName, workoutLogs),
+                                onShowInstructions = {
+                                    onShowInstructions(
+                                        SelectedExerciseDetail(
+                                            exercise = entry,
+                                            config = exercise,
+                                            weekday = day.weekday,
+                                            focus = day.focus,
+                                        )
                                     )
-                                )
-                            }
-                        )
+                                }
+                            )
+                        }
                     }
                 }
-            }
             }
         }
     }
@@ -488,8 +499,9 @@ private fun ExerciseCardRow(
 
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = FitMateGlass,
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        color = FitMateSurface,
+        border = BorderStroke(1.dp, FitMateBorder),
+        shadowElevation = 1.dp
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             DifficultyPill(band = band)
@@ -504,14 +516,14 @@ private fun ExerciseCardRow(
                     modifier = Modifier
                         .size(72.dp)
                         .clip(RoundedCornerShape(18.dp))
-                        .background(FitMateBlack),
+                        .background(FitMateCard),
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = entry.name,
-                        color = FitMateWhite,
+                        color = FitMateTextPrimary,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -524,17 +536,17 @@ private fun ExerciseCardRow(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = entry.instructions,
-                        color = FitMateWhite.copy(alpha = 0.68f),
+                        color = FitMateTextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedButton(
                         onClick = onShowInstructions,
-                        border = BorderStroke(1.dp, FitMateGlassBorder),
+                        border = BorderStroke(1.dp, FitMateBorder),
                         shape = RoundedCornerShape(18.dp),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                     ) {
-                        Text("Open", color = FitMateWhite)
+                        Text("Open", color = FitMateTextPrimary)
                     }
                     AnimatedVisibility(
                         visible = isCompleted,
@@ -548,20 +560,20 @@ private fun ExerciseCardRow(
                             Surface(
                                 modifier = Modifier.size(28.dp),
                                 shape = RoundedCornerShape(999.dp),
-                                color = FitMateEmerald
+                                color = FitMateGreen
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Outlined.Check,
                                         contentDescription = "Exercise completed",
-                                        tint = FitMateWhite,
+                                        tint = FitMateWhiteBackground,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
                             }
                             Text(
                                 text = "Completed",
-                                color = FitMateEmerald,
+                                color = FitMateGreen,
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold
                             )
@@ -617,19 +629,19 @@ private fun WorkoutInstructionScreen(
     }
 
     Scaffold(
-        containerColor = FitMateBlack,
+        containerColor = FitMateWhiteBackground,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = FitMateBlack,
-                    titleContentColor = FitMateWhite
+                    containerColor = FitMateWhiteBackground,
+                    titleContentColor = FitMateTextPrimary
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
-                            tint = FitMateWhite
+                            tint = FitMateTextPrimary
                         )
                     }
                 },
@@ -642,7 +654,7 @@ private fun WorkoutInstructionScreen(
                         Text(
                             text = "Exercise instructions",
                             style = MaterialTheme.typography.labelMedium,
-                            color = FitMateWhite.copy(alpha = 0.65f)
+                            color = FitMateTextSecondary
                         )
                     }
                 }
@@ -652,7 +664,7 @@ private fun WorkoutInstructionScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(FitMateBlack)
+                .background(FitMateWhiteBackground)
                 .padding(paddingValues),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
@@ -660,9 +672,10 @@ private fun WorkoutInstructionScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
-                    border = BorderStroke(1.dp, FitMateGlassBorder),
-                    shape = RoundedCornerShape(28.dp)
+                    colors = CardDefaults.cardColors(containerColor = FitMateCard),
+                    border = BorderStroke(1.dp, FitMateBorder),
+                    shape = RoundedCornerShape(28.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column {
                         AsyncImage(
@@ -671,7 +684,7 @@ private fun WorkoutInstructionScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(260.dp)
-                                .background(FitMateBlack),
+                                .background(FitMateCard),
                             contentScale = ContentScale.Fit
                         )
                         Column(
@@ -770,8 +783,9 @@ private fun WorkoutProgressCard(
 ) {
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = FitMateGlass,
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        color = FitMateCard,
+        border = BorderStroke(1.dp, FitMateBorder),
+        shadowElevation = 1.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -784,13 +798,13 @@ private fun WorkoutProgressCard(
             ) {
                 Text(
                     text = "Set progress",
-                    color = FitMateWhite,
+                    color = FitMateTextPrimary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "$completedSets / $totalSets sets",
-                    color = if (completedSets >= totalSets) FitMateEmerald else FitMateBlue,
+                    color = if (completedSets >= totalSets) FitMateGreen else FitMateBlue,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -801,16 +815,16 @@ private fun WorkoutProgressCard(
                     .fillMaxWidth()
                     .height(12.dp)
                     .clip(RoundedCornerShape(999.dp)),
-                color = if (completedSets >= totalSets) FitMateEmerald else FitMateBlue,
-                trackColor = FitMateWhite.copy(alpha = 0.1f)
+                color = if (completedSets >= totalSets) FitMateGreen else FitMateBlue,
+                trackColor = FitMateBorder
             )
             Text(
                 text = if (completedSets >= totalSets) {
-                    "You’ve completed every planned set for this exercise."
+                    "You've completed every planned set for this exercise."
                 } else {
                     "Complete a set, stop the timer, and log the outcome to move this bar forward."
                 },
-                color = FitMateWhite.copy(alpha = 0.68f),
+                color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -827,8 +841,9 @@ private fun WorkoutTimerCard(
 ) {
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = FitMateGlass,
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        color = FitMateCard,
+        border = BorderStroke(1.dp, FitMateBorder),
+        shadowElevation = 1.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -836,7 +851,7 @@ private fun WorkoutTimerCard(
         ) {
             Text(
                 text = "Workout timer",
-                color = FitMateWhite,
+                color = FitMateTextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -851,10 +866,10 @@ private fun WorkoutTimerCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = FitMateEmerald,
-                        contentColor = FitMateBlack,
-                        disabledContainerColor = FitMateEmerald.copy(alpha = 0.3f),
-                        disabledContentColor = FitMateBlack.copy(alpha = 0.55f)
+                        containerColor = FitMateGreen,
+                        contentColor = FitMateWhiteBackground,
+                        disabledContainerColor = FitMateGreen.copy(alpha = 0.3f),
+                        disabledContentColor = FitMateWhiteBackground.copy(alpha = 0.55f)
                     )
                 ) {
                     Text("Start Workout", fontWeight = FontWeight.Bold)
@@ -862,8 +877,8 @@ private fun WorkoutTimerCard(
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(18.dp),
-                    color = Color.Black.copy(alpha = 0.25f),
-                    border = BorderStroke(1.dp, FitMateGlassBorder)
+                    color = FitMateCard,
+                    border = BorderStroke(1.dp, FitMateBorder)
                 ) {
                     Box(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 14.dp),
@@ -871,7 +886,7 @@ private fun WorkoutTimerCard(
                     ) {
                         Text(
                             text = formatElapsedTime(elapsedSeconds),
-                            color = FitMateWhite,
+                            color = FitMateTextPrimary,
                             fontWeight = FontWeight.ExtraBold,
                             style = MaterialTheme.typography.titleMedium
                         )
@@ -898,7 +913,7 @@ private fun WorkoutTimerCard(
                     elapsedSeconds > 0 -> "Timer paused. Submit the reason below to log this round."
                     else -> "Start the timer when you begin your current set."
                 },
-                color = FitMateWhite.copy(alpha = 0.68f),
+                color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -915,8 +930,9 @@ private fun WorkoutStopQuestionnaire(
 ) {
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = FitMateGlass,
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        color = FitMateCard,
+        border = BorderStroke(1.dp, FitMateBorder),
+        shadowElevation = 1.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -924,7 +940,7 @@ private fun WorkoutStopQuestionnaire(
         ) {
             Text(
                 text = "Why did you stop the timer?",
-                color = FitMateWhite,
+                color = FitMateTextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -954,9 +970,9 @@ private fun WorkoutStopQuestionnaire(
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = FitMateBlue,
-                    contentColor = FitMateBlack,
+                    contentColor = FitMateWhiteBackground,
                     disabledContainerColor = FitMateBlue.copy(alpha = 0.32f),
-                    disabledContentColor = FitMateBlack.copy(alpha = 0.55f)
+                    disabledContentColor = FitMateWhiteBackground.copy(alpha = 0.55f)
                 )
             ) {
                 Text("Submit", fontWeight = FontWeight.Bold)
@@ -979,8 +995,8 @@ private fun StopReasonOption(
             .clip(RoundedCornerShape(18.dp))
             .clickable(enabled = enabled, onClick = onClick),
         shape = RoundedCornerShape(18.dp),
-        color = Color.Black.copy(alpha = 0.18f),
-        border = BorderStroke(1.dp, if (selected) FitMateEmerald.copy(alpha = alpha) else FitMateGlassBorder)
+        color = FitMateCard,
+        border = BorderStroke(1.dp, if (selected) FitMateGreen.copy(alpha = alpha) else FitMateBorder)
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -991,18 +1007,18 @@ private fun StopReasonOption(
                     .size(18.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(
-                        if (selected) FitMateEmerald.copy(alpha = alpha) else Color.Transparent
+                        if (selected) FitMateGreen.copy(alpha = alpha) else Color.Transparent
                     )
                     .border(
                         width = 1.dp,
-                        color = if (selected) FitMateEmerald.copy(alpha = alpha) else FitMateWhite.copy(alpha = 0.5f),
+                        color = if (selected) FitMateGreen.copy(alpha = alpha) else FitMateBorder,
                         shape = RoundedCornerShape(4.dp)
                     )
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = text,
-                color = FitMateWhite.copy(alpha = alpha),
+                color = FitMateTextPrimary.copy(alpha = alpha),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
             )
@@ -1019,8 +1035,9 @@ private fun InstructionsAccordion(
 ) {
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = FitMateGlass,
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        color = FitMateCard,
+        border = BorderStroke(1.dp, FitMateBorder),
+        shadowElevation = 1.dp
     ) {
         Column {
             Row(
@@ -1033,13 +1050,13 @@ private fun InstructionsAccordion(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Instructions",
-                        color = FitMateWhite,
+                        color = FitMateTextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (expanded) "Tap to collapse" else "Tap to view step-by-step instructions",
-                        color = FitMateWhite.copy(alpha = 0.65f),
+                        color = FitMateTextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -1057,8 +1074,8 @@ private fun InstructionsAccordion(
                     steps.forEachIndexed { index, step ->
                         Surface(
                             shape = RoundedCornerShape(18.dp),
-                            color = Color.Black.copy(alpha = 0.18f),
-                            border = BorderStroke(1.dp, FitMateGlassBorder)
+                            color = FitMateWhiteBackground,
+                            border = BorderStroke(1.dp, FitMateBorder)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -1070,19 +1087,19 @@ private fun InstructionsAccordion(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clip(RoundedCornerShape(14.dp))
-                                        .background(FitMateEmerald.copy(alpha = 0.16f)),
+                                        .background(FitMateGreen.copy(alpha = 0.12f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${index + 1}",
-                                        color = FitMateEmerald,
+                                        color = FitMateGreen,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
                                     text = step,
-                                    color = FitMateWhite.copy(alpha = 0.85f),
+                                    color = FitMateTextPrimary,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -1106,7 +1123,7 @@ private fun PlanChoiceDialog(
     ) {
         Text(
             text = "Start with the default weekly split or build your own schedule day by day.",
-            color = FitMateWhite.copy(alpha = 0.72f)
+            color = FitMateTextSecondary
         )
         Spacer(modifier = Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -1114,8 +1131,8 @@ private fun PlanChoiceDialog(
                 onClick = onChooseDefault,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = FitMateEmerald,
-                    contentColor = FitMateBlack
+                    containerColor = FitMateGreen,
+                    contentColor = FitMateWhiteBackground
                 )
             ) {
                 Text("Default plan")
@@ -1123,9 +1140,9 @@ private fun PlanChoiceDialog(
             OutlinedButton(
                 onClick = onChooseCustom,
                 modifier = Modifier.weight(1f),
-                border = BorderStroke(1.dp, FitMateGlassBorder)
+                border = BorderStroke(1.dp, FitMateBorder)
             ) {
-                Text("Custom plan", color = FitMateWhite)
+                Text("Custom plan", color = FitMateTextPrimary)
             }
         }
     }
@@ -1165,9 +1182,9 @@ private fun SequentialPlanBuilderDialog(
                         .clip(RoundedCornerShape(50))
                         .background(
                             when {
-                                index < stepIndex -> FitMateEmerald
+                                index < stepIndex -> FitMateGreen
                                 index == stepIndex -> FitMateBlue
-                                else -> FitMateGlassBorder
+                                else -> FitMateBorder
                             }
                         )
                 )
@@ -1182,14 +1199,14 @@ private fun SequentialPlanBuilderDialog(
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = day.weekday.label,
-            color = FitMateWhite,
+            color = FitMateTextPrimary,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.ExtraBold
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = "Pick what you want to train on ${day.weekday.label}. Workouts can repeat, and at least one day must stay as rest.",
-            color = FitMateWhite.copy(alpha = 0.72f)
+            color = FitMateTextSecondary
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -1198,7 +1215,7 @@ private fun SequentialPlanBuilderDialog(
                 .fillMaxWidth()
                 .height(180.dp)
                 .clip(RoundedCornerShape(24.dp))
-                .background(FitMateGlass)
+                .background(FitMateCard)
         ) {
             if (previewImage.isNotBlank()) {
                 AsyncImage(
@@ -1213,7 +1230,7 @@ private fun SequentialPlanBuilderDialog(
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color.Transparent, FitMateBlack.copy(alpha = 0.88f))
+                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.60f))
                         )
                     )
             )
@@ -1224,7 +1241,7 @@ private fun SequentialPlanBuilderDialog(
             ) {
                 Text(
                     text = day.focus.label,
-                    color = FitMateWhite,
+                    color = FitMateWhiteBackground,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -1232,7 +1249,7 @@ private fun SequentialPlanBuilderDialog(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = previewExercises.joinToString(" • ") { it.name },
-                        color = FitMateWhite.copy(alpha = 0.78f),
+                        color = FitMateWhiteBackground.copy(alpha = 0.78f),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -1272,8 +1289,6 @@ private fun SequentialPlanBuilderDialog(
             }
         }
 
-
-
         errorMessage?.let {
             Spacer(modifier = Modifier.height(14.dp))
             Text(
@@ -1291,9 +1306,9 @@ private fun SequentialPlanBuilderDialog(
                 },
                 modifier = Modifier.weight(1f),
                 enabled = stepIndex > 0,
-                border = BorderStroke(1.dp, FitMateGlassBorder)
+                border = BorderStroke(1.dp, FitMateBorder)
             ) {
-                Text("Back", color = FitMateWhite)
+                Text("Back", color = FitMateTextPrimary)
             }
 
             Button(
@@ -1314,8 +1329,8 @@ private fun SequentialPlanBuilderDialog(
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = FitMateEmerald,
-                    contentColor = FitMateBlack
+                    containerColor = FitMateGreen,
+                    contentColor = FitMateWhiteBackground
                 )
             ) {
                 Text(if (stepIndex == selections.lastIndex) "Save plan" else "Next")
@@ -1353,7 +1368,7 @@ private fun WorkoutDayEditorDialog(
     ) {
         Text(
             text = "Pick the day's focus, then tune each exercise with sliders. Difficulty updates live as you change the load.",
-            color = FitMateWhite.copy(alpha = 0.72f)
+            color = FitMateTextSecondary
         )
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -1398,8 +1413,8 @@ private fun WorkoutDayEditorDialog(
         if (workingFocus == WorkoutFocus.REST) {
             Surface(
                 shape = RoundedCornerShape(22.dp),
-                color = FitMateGlass,
-                border = BorderStroke(1.dp, RestAccent.copy(alpha = 0.6f))
+                color = FitMateCard,
+                border = BorderStroke(1.dp, RestAccent.copy(alpha = 0.4f))
             ) {
                 Row(
                     modifier = Modifier
@@ -1411,7 +1426,7 @@ private fun WorkoutDayEditorDialog(
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "This day will be saved as a rest day.",
-                        color = FitMateWhite
+                        color = FitMateTextPrimary
                     )
                 }
             }
@@ -1452,7 +1467,7 @@ private fun WorkoutDayEditorDialog(
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Cancel", color = FitMateWhite)
+                Text("Cancel", color = FitMateTextSecondary)
             }
             Button(
                 onClick = {
@@ -1490,8 +1505,8 @@ private fun WorkoutDayEditorDialog(
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = FitMateEmerald,
-                    contentColor = FitMateBlack
+                    containerColor = FitMateGreen,
+                    contentColor = FitMateWhiteBackground
                 )
             ) {
                 Text("Save edits")
@@ -1513,8 +1528,9 @@ private fun EditableExerciseCard(
 
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = if (state.selected) FitMateGlass else Color.White.copy(alpha = 0.03f),
-        border = BorderStroke(1.dp, if (state.selected) FitMateBlue.copy(alpha = 0.5f) else FitMateGlassBorder)
+        color = if (state.selected) FitMateCard else FitMateWhiteBackground,
+        border = BorderStroke(1.dp, if (state.selected) FitMateBlue.copy(alpha = 0.5f) else FitMateBorder),
+        shadowElevation = if (state.selected) 2.dp else 0.dp
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -1525,13 +1541,13 @@ private fun EditableExerciseCard(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (state.selected) FitMateEmerald else Color.Transparent)
-                        .border(1.dp, if (state.selected) FitMateEmerald else FitMateGlassBorder, RoundedCornerShape(10.dp))
+                        .background(if (state.selected) FitMateGreen else Color.Transparent)
+                        .border(1.dp, if (state.selected) FitMateGreen else FitMateBorder, RoundedCornerShape(10.dp))
                         .clickable { onToggle() },
                     contentAlignment = Alignment.Center
                 ) {
                     if (state.selected) {
-                        Text("✓", color = FitMateBlack, fontWeight = FontWeight.Bold)
+                        Text("✓", color = FitMateWhiteBackground, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -1550,21 +1566,21 @@ private fun EditableExerciseCard(
                     modifier = Modifier
                         .size(88.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(FitMateBlack),
+                        .background(FitMateCard),
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = entry.name,
-                        color = FitMateWhite,
+                        color = FitMateTextPrimary,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = entry.instructions,
-                        color = FitMateWhite.copy(alpha = 0.68f),
+                        color = FitMateTextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -1603,21 +1619,21 @@ private fun WorkoutAmountSlider(
     Column {
         Text(
             text = title,
-            color = FitMateWhite.copy(alpha = 0.7f),
+            color = FitMateTextSecondary,
             style = MaterialTheme.typography.labelMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
                 text = value.toString(),
-                color = FitMateWhite,
+                color = FitMateTextPrimary,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = unit,
-                color = FitMateWhite.copy(alpha = 0.55f),
+                color = FitMateTextSecondary,
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -1627,9 +1643,9 @@ private fun WorkoutAmountSlider(
             valueRange = range.first.toFloat()..range.last.toFloat(),
             steps = (range.last - range.first - 1).coerceAtLeast(0),
             colors = androidx.compose.material3.SliderDefaults.colors(
-                thumbColor = FitMateEmerald,
-                activeTrackColor = FitMateEmerald,
-                inactiveTrackColor = FitMateGlassBorder
+                thumbColor = FitMateGreen,
+                activeTrackColor = FitMateGreen,
+                inactiveTrackColor = FitMateBorder
             )
         )
     }
@@ -1646,8 +1662,8 @@ private fun DifficultyPill(
     }
     Surface(
         shape = RoundedCornerShape(50),
-        color = color.copy(alpha = 0.14f),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.45f))
+        color = color.copy(alpha = 0.10f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.35f))
     ) {
         Text(
             text = band.label,
@@ -1668,14 +1684,14 @@ private fun FocusChip(
 ) {
     Surface(
         shape = RoundedCornerShape(50),
-        color = if (selected) FitMateEmerald.copy(alpha = 0.15f) else FitMateGlass,
-        border = BorderStroke(1.dp, if (selected) FitMateEmerald else FitMateGlassBorder),
+        color = if (selected) FitMateGreen.copy(alpha = 0.10f) else FitMateWhiteBackground,
+        border = BorderStroke(1.dp, if (selected) FitMateGreen else FitMateBorder),
         modifier = modifier.clickable(onClick = onClick)
     ) {
         Text(
             text = label,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
-            color = if (selected) FitMateEmerald else FitMateWhite,
+            color = if (selected) FitMateGreen else FitMateTextPrimary,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             textAlign = TextAlign.Center
         )
@@ -1695,9 +1711,10 @@ private fun NeonDialogShell(
             modifier = Modifier
                 .fillMaxWidth(widthFraction)
                 .heightIn(max = 820.dp),
-            colors = CardDefaults.cardColors(containerColor = FitMateDarkGrey),
-            border = BorderStroke(1.dp, FitMateGlassBorder),
-            shape = RoundedCornerShape(30.dp)
+            colors = CardDefaults.cardColors(containerColor = FitMateSurface),
+            border = BorderStroke(1.dp, FitMateBorder),
+            shape = RoundedCornerShape(30.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             val bodyModifier = if (scrollable) {
                 Modifier.verticalScroll(rememberScrollState())
@@ -1712,7 +1729,7 @@ private fun NeonDialogShell(
             ) {
                 Text(
                     text = title,
-                    color = FitMateWhite,
+                    color = FitMateTextPrimary,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -1969,8 +1986,9 @@ private fun HeroGifCarousel() {
             .fillMaxWidth()
             .height(260.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = FitMateBlack),
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        colors = CardDefaults.cardColors(containerColor = FitMateCard),
+        border = BorderStroke(1.dp, FitMateBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             HorizontalPager(
@@ -1994,8 +2012,8 @@ private fun HeroGifCarousel() {
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                FitMateBlack.copy(alpha = 0.4f),
-                                FitMateBlack.copy(alpha = 0.95f)
+                                Color.Black.copy(alpha = 0.25f),
+                                Color.Black.copy(alpha = 0.70f)
                             ),
                             startY = 400f
                         )
@@ -2010,14 +2028,14 @@ private fun HeroGifCarousel() {
                 Text(
                     text = "Weekly Training",
                     style = MaterialTheme.typography.titleLarge,
-                    color = FitMateBlue,
+                    color = FitMateGreenLight,
                     fontWeight = FontWeight.ExtraBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Your personalized weekly workout split",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = FitMateWhite.copy(alpha = 0.7f)
+                    color = FitMateWhiteBackground.copy(alpha = 0.85f)
                 )
             }
         }
@@ -2031,8 +2049,9 @@ private fun MotivationBanner() {
             .fillMaxWidth()
             .height(200.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = FitMateGlass),
-        border = BorderStroke(1.dp, FitMateGlassBorder)
+        colors = CardDefaults.cardColors(containerColor = FitMateCard),
+        border = BorderStroke(1.dp, FitMateBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -2048,7 +2067,7 @@ private fun MotivationBanner() {
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, FitMateBlack.copy(alpha = 0.9f))
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
                         )
                     )
             )
@@ -2061,14 +2080,14 @@ private fun MotivationBanner() {
                 Text(
                     text = "DISCIPLINE BEATS MOTIVATION",
                     style = MaterialTheme.typography.titleLarge,
-                    color = FitMateWhite,
+                    color = FitMateWhiteBackground,
                     fontWeight = FontWeight.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Stay Consistent. Trust The Process.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = FitMateWhite.copy(alpha = 0.7f)
+                    color = FitMateWhiteBackground.copy(alpha = 0.7f)
                 )
             }
         }

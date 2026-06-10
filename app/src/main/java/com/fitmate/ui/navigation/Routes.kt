@@ -16,6 +16,18 @@ sealed class Routes(
         route = "signin"
     )
 
+    data object Welcome : Routes(
+        route = "welcome"
+    )
+
+    data object Questions : Routes(
+        route = "questions"
+    )
+
+    data object Personalizing : Routes(
+        route = "personalizing"
+    )
+
     data object Home : Routes(
         route = "home"
     )

@@ -52,6 +52,9 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.ThumbUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -69,6 +72,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -81,21 +85,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-val BackgroundColor = Color(0xFF0B0D12)
-val CardColor = Color(0xFF151922)
-val GlassColor = Color(0xFF1A1F2B).copy(alpha = 0.6f)
-val BorderColor = Color.White.copy(alpha = 0.08f)
-val PrimaryTextColor = Color(0xFFF5F7FA)
-val SecondaryTextColor = Color(0xFF8B95A5)
-val AccentGreen = Color(0xFF1DE9B6)
-val AccentBlue = Color(0xFF4FC3F7)
-val AccentOrange = Color(0xFFFFB74D)
-val AccentPurple = Color(0xFFB388FF)
-val AccentRed = Color(0xFFFF6B6B)
-val NeonCyan = Color(0xFF00E5FF)
-val DeepSpace = Color(0xFF05070A)
-val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.05f)
-val SurfaceBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
+private val FitGreen      = Color(0xFF16C47F)
+private val FitGreenLight = Color(0xFFE8FBF3)
+private val FitGreenDim   = Color(0xFF0FA363)
+private val CanvasWhite   = Color(0xFFF7F9FC)
+private val CardWhite     = Color(0xFFFFFFFF)
+private val PrimaryText   = Color(0xFF111827)
+private val SecondaryText = Color(0xFF6B7280)
+private val DividerColor  = Color(0xFFF0F2F5)
 
 enum class MessageRole { USER, AI }
 
@@ -126,7 +123,6 @@ fun CoachChatScreen() {
     var inputText by remember { mutableStateOf("") }
     var messages by remember { mutableStateOf<List<CoachMessage>>(emptyList()) }
     val listState = rememberLazyListState()
-
 
     val currentTime = remember {
         SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
@@ -176,7 +172,7 @@ fun CoachChatScreen() {
     }
 
     Scaffold(
-        containerColor = BackgroundColor,
+        containerColor = CanvasWhite,
         bottomBar = {
             MessageInputBar(
                 inputText = inputText,
@@ -222,7 +218,7 @@ fun CoachChatScreen() {
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
                             text = "Quick Actions",
-                            color = PrimaryTextColor,
+                            color = PrimaryText,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
@@ -237,7 +233,7 @@ fun CoachChatScreen() {
                         Spacer(modifier = Modifier.height(32.dp))
                         Text(
                             text = "AI Metrics Dashboard",
-                            color = PrimaryTextColor,
+                            color = PrimaryText,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
@@ -252,7 +248,7 @@ fun CoachChatScreen() {
                         Spacer(modifier = Modifier.height(32.dp))
                         Text(
                             text = "Suggested Prompts",
-                            color = PrimaryTextColor,
+                            color = PrimaryText,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
@@ -278,8 +274,6 @@ fun CoachChatScreen() {
             }
         }
     }
-
-
 }
 
 @Composable
@@ -301,8 +295,8 @@ fun PremiumHeroHeader() {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        DeepSpace,
-                        BackgroundColor
+                        CardWhite,
+                        CanvasWhite
                     )
                 )
             )
@@ -316,7 +310,7 @@ fun PremiumHeroHeader() {
                     .drawBehind {
                         drawCircle(
                             brush = Brush.sweepGradient(
-                                colors = listOf(AccentPurple, AccentBlue, AccentPurple)
+                                colors = listOf(FitGreenLight, FitGreen, FitGreenLight)
                             ),
                             radius = size.width / 1.5f,
                             alpha = 0.15f
@@ -330,18 +324,18 @@ fun PremiumHeroHeader() {
                         .rotate(rotation)
                         .background(
                             brush = Brush.sweepGradient(
-                                colors = listOf(AccentPurple, NeonCyan, AccentGreen, AccentPurple)
+                                colors = listOf(FitGreen, FitGreenLight, FitGreenDim, FitGreen)
                             ),
                             shape = CircleShape
                         )
                         .padding(2.dp)
-                        .background(CardColor, CircleShape),
+                        .background(CardWhite, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Star,
+                        imageVector = Icons.Rounded.Person,
                         contentDescription = "AI Coach",
-                        tint = AccentBlue,
+                        tint = FitGreen,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -351,9 +345,9 @@ fun PremiumHeroHeader() {
                         .align(Alignment.BottomEnd)
                         .padding(bottom = 6.dp, end = 6.dp)
                         .size(14.dp)
-                        .background(CardColor, CircleShape)
+                        .background(CardWhite, CircleShape)
                         .padding(2.dp)
-                        .background(AccentGreen, CircleShape)
+                        .background(FitGreen, CircleShape)
                 )
             }
 
@@ -361,7 +355,7 @@ fun PremiumHeroHeader() {
 
             Text(
                 text = "FitMate Coach",
-                color = PrimaryTextColor,
+                color = PrimaryText,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -369,15 +363,13 @@ fun PremiumHeroHeader() {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Your personal fitness intelligence",
-                color = AccentPurple.copy(alpha = 0.8f),
+                text = "Your personal fitness assistant",
+                color = FitGreenDim.copy(alpha = 0.8f),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
         }
     }
-
-
 }
 
 @Composable
@@ -385,22 +377,23 @@ fun DailyBriefingCard() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(24.dp), spotColor = Color(0x1A000000))
             .clip(RoundedCornerShape(24.dp))
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        CardColor,
-                        GlassColor
+                        CardWhite,
+                        CardWhite
                     )
                 )
             )
-            .border(1.dp, SurfaceBorder, RoundedCornerShape(24.dp))
+            .border(1.dp, DividerColor, RoundedCornerShape(24.dp))
             .padding(24.dp)
     ) {
         Column {
             Text(
                 text = "Good Evening Anurag",
-                color = PrimaryTextColor,
+                color = PrimaryText,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -409,7 +402,7 @@ fun DailyBriefingCard() {
 
             Text(
                 text = "Today's Summary",
-                color = SecondaryTextColor,
+                color = SecondaryText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -420,9 +413,9 @@ fun DailyBriefingCard() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                BriefingStat(value = "18", label = "Day Streak", color = AccentOrange)
-                BriefingStat(value = "84%", label = "Consistency", color = AccentBlue)
-                BriefingStat(value = "5", label = "Workouts", color = AccentGreen)
+                BriefingStat(value = "18", label = "Day Streak", color = FitGreen)
+                BriefingStat(value = "84%", label = "Consistency", color = FitGreen)
+                BriefingStat(value = "5", label = "Workouts", color = FitGreen)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -430,30 +423,30 @@ fun DailyBriefingCard() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(GlassWhite)
-                    .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(FitGreenLight)
+                    .border(1.dp, DividerColor, RoundedCornerShape(24.dp))
                     .padding(16.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Rounded.Star,
                         contentDescription = "Insight",
-                        tint = AccentOrange,
+                        tint = FitGreen,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
                             text = "AI Insight",
-                            color = AccentOrange,
+                            color = FitGreenDim,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "You are ahead of last week's pace. Focus on recovery tonight.",
-                            color = PrimaryTextColor,
+                            color = PrimaryText,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             lineHeight = 20.sp
@@ -463,8 +456,6 @@ fun DailyBriefingCard() {
             }
         }
     }
-
-
 }
 
 @Composable
@@ -479,7 +470,7 @@ fun BriefingStat(value: String, label: String, color: Color) {
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            color = SecondaryTextColor,
+            color = SecondaryText,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium
         )
@@ -495,7 +486,6 @@ fun QuickActionsRow() {
         "Nutrition Tips" to Icons.Rounded.List
     )
 
-
     LazyRow(
         contentPadding = PaddingValues(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -504,9 +494,6 @@ fun QuickActionsRow() {
             PremiumActionChip(text = text, icon = icon)
         }
     }
-
-
-
 }
 
 @Composable
@@ -514,16 +501,16 @@ fun PremiumActionChip(text: String, icon: ImageVector) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "chip_scale")
-    val bgColor by animateColorAsState(targetValue = if (isPressed) CardColor else GlassColor, label = "chip_color")
+    val bgColor by animateColorAsState(targetValue = if (isPressed) FitGreenLight else CardWhite, label = "chip_color")
 
     Row(
         modifier = Modifier
             .scale(scale)
-            .clip(RoundedCornerShape(20.dp))
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(24.dp), spotColor = Color(0x0D000000))
+            .clip(RoundedCornerShape(24.dp))
             .background(bgColor)
-            .border(1.dp, SurfaceBorder, RoundedCornerShape(20.dp))
+            .border(1.dp, DividerColor, RoundedCornerShape(24.dp))
             .clickable(interactionSource = interactionSource, indication = null) {}
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -531,30 +518,27 @@ fun PremiumActionChip(text: String, icon: ImageVector) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = PrimaryTextColor,
+            tint = PrimaryText,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
-            color = PrimaryTextColor,
+            color = PrimaryText,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
     }
-
-
 }
 
 @Composable
 fun MetricsDashboard() {
     val metrics = listOf(
-        Metric("Streak", "18 Days", Icons.Rounded.PlayArrow, AccentOrange),
-        Metric("Fitness Score", "92", Icons.Rounded.Star, AccentPurple),
-        Metric("Consistency", "84%", Icons.Rounded.ThumbUp, NeonCyan),
-        Metric("Recovery", "Optimal", Icons.Rounded.Favorite, AccentGreen)
+        Metric("Streak", "18 Days", Icons.Rounded.PlayArrow, FitGreen),
+        Metric("Fitness Score", "92", Icons.Rounded.Star, FitGreen),
+        Metric("Consistency", "84%", Icons.Rounded.ThumbUp, FitGreen),
+        Metric("Recovery", "Optimal", Icons.Rounded.Favorite, FitGreen)
     )
-
 
     LazyRow(
         contentPadding = PaddingValues(horizontal = 20.dp),
@@ -564,9 +548,10 @@ fun MetricsDashboard() {
             Box(
                 modifier = Modifier
                     .width(140.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(CardColor)
-                    .border(1.dp, BorderColor, RoundedCornerShape(20.dp))
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp), spotColor = Color(0x0D000000))
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(CardWhite)
+                    .border(1.dp, DividerColor, RoundedCornerShape(24.dp))
                     .padding(16.dp)
             ) {
                 Column {
@@ -586,14 +571,14 @@ fun MetricsDashboard() {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = metric.value,
-                        color = PrimaryTextColor,
+                        color = PrimaryText,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = metric.label,
-                        color = SecondaryTextColor,
+                        color = SecondaryText,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -601,20 +586,16 @@ fun MetricsDashboard() {
             }
         }
     }
-
-
-
 }
 
 @Composable
 fun SuggestedPromptsSection(onPromptSelected: (String) -> Unit) {
     val prompts = listOf(
-        SuggestedPrompt("1", "How am I progressing this month?", Icons.Rounded.ThumbUp, NeonCyan),
-        SuggestedPrompt("2", "What should I improve in my routine?", Icons.Rounded.Star, AccentPurple),
-        SuggestedPrompt("3", "Build next week's workout plan", Icons.Rounded.DateRange, AccentGreen),
-        SuggestedPrompt("4", "Analyze my consistency trends", Icons.Rounded.List, AccentOrange)
+        SuggestedPrompt("1", "How am I progressing this month?", Icons.Rounded.ThumbUp, FitGreen),
+        SuggestedPrompt("2", "What should I improve in my routine?", Icons.Rounded.Star, FitGreen),
+        SuggestedPrompt("3", "Build next week's workout plan", Icons.Rounded.DateRange, FitGreen),
+        SuggestedPrompt("4", "Analyze my consistency trends", Icons.Rounded.List, FitGreen)
     )
-
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         prompts.forEach { prompt ->
@@ -626,9 +607,10 @@ fun SuggestedPromptsSection(onPromptSelected: (String) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .scale(scale)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(CardColor)
-                    .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(24.dp), spotColor = Color(0x0D000000))
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(CardWhite)
+                    .border(1.dp, DividerColor, RoundedCornerShape(24.dp))
                     .clickable(interactionSource = interactionSource, indication = null) {
                         onPromptSelected(prompt.text)
                     }
@@ -651,21 +633,18 @@ fun SuggestedPromptsSection(onPromptSelected: (String) -> Unit) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = prompt.text,
-                    color = PrimaryTextColor,
+                    color = PrimaryText,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
         }
     }
-
-
 }
 
 @Composable
 fun ChatBubble(message: CoachMessage) {
     val isUser = message.role == MessageRole.USER
-
 
     Row(
         modifier = Modifier
@@ -680,16 +659,16 @@ fun ChatBubble(message: CoachMessage) {
                     .size(28.dp)
                     .background(
                         brush = Brush.sweepGradient(
-                            colors = listOf(AccentPurple, NeonCyan, AccentGreen, AccentPurple)
+                            colors = listOf(FitGreen, FitGreenLight, FitGreenDim, FitGreen)
                         ),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Star,
+                    imageVector = Icons.Rounded.Person,
                     contentDescription = null,
-                    tint = BackgroundColor,
+                    tint = CardWhite,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -702,6 +681,16 @@ fun ChatBubble(message: CoachMessage) {
             Box(
                 modifier = Modifier
                     .widthIn(max = 280.dp)
+                    .shadow(
+                        elevation = if (isUser) 0.dp else 2.dp,
+                        shape = RoundedCornerShape(
+                            topStart = 24.dp,
+                            topEnd = 24.dp,
+                            bottomStart = if (isUser) 24.dp else 4.dp,
+                            bottomEnd = if (isUser) 4.dp else 24.dp
+                        ),
+                        spotColor = Color(0x0D000000)
+                    )
                     .clip(
                         RoundedCornerShape(
                             topStart = 24.dp,
@@ -711,13 +700,13 @@ fun ChatBubble(message: CoachMessage) {
                         )
                     )
                     .background(
-                        if (isUser) Brush.linearGradient(listOf(Color(0xFF6C63FF), AccentPurple))
-                        else SolidColor(GlassColor)
+                        if (isUser) Brush.linearGradient(listOf(FitGreenDim, FitGreen))
+                        else SolidColor(CardWhite)
                     )
                     .then(
                         if (!isUser) Modifier.border(
                             1.dp,
-                            SurfaceBorder,
+                            DividerColor,
                             RoundedCornerShape(
                                 topStart = 24.dp,
                                 topEnd = 24.dp,
@@ -730,7 +719,7 @@ fun ChatBubble(message: CoachMessage) {
             ) {
                 Text(
                     text = message.text,
-                    color = PrimaryTextColor,
+                    color = if (isUser) CardWhite else PrimaryText,
                     fontSize = 15.sp,
                     lineHeight = 22.sp
                 )
@@ -740,15 +729,12 @@ fun ChatBubble(message: CoachMessage) {
 
             Text(
                 text = message.timestamp,
-                color = SecondaryTextColor,
+                color = SecondaryText,
                 fontSize = 11.sp,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
         }
     }
-
-
-
 }
 
 @Composable
@@ -757,25 +743,63 @@ fun MessageInputBar(
     onValueChange: (String) -> Unit,
     onSend: () -> Unit
 ) {
+    var showFeatureDialog by remember { mutableStateOf(false) }
+
+    if (showFeatureDialog) {
+        AlertDialog(
+            onDismissRequest = { showFeatureDialog = false },
+            title = {
+                Text(
+                    text = "🚀 Feature Coming Soon",
+                    color = PrimaryText, // ProfileScreen dark text
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "Attachments, workout images, meal photos and voice messages will be available in a future update.",
+                    color = SecondaryText, // ProfileScreen secondary text
+                    fontSize = 15.sp,
+                    lineHeight = 22.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showFeatureDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = FitGreen // ProfileScreen FitGreen accent
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Got it", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = CardWhite,
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
+
     Surface(
-        color = BackgroundColor.copy(alpha = 0.8f),
+        color = CanvasWhite,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .fillMaxWidth()
+                .shadow(elevation = 4.dp, shape = RoundedCornerShape(28.dp), spotColor = Color(0x0D000000))
                 .clip(RoundedCornerShape(28.dp))
-                .background(GlassColor)
-                .border(1.dp, SurfaceBorder, RoundedCornerShape(28.dp))
+                .background(CardWhite)
+                .border(1.dp, DividerColor, RoundedCornerShape(28.dp))
                 .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { }) {
+            IconButton(onClick = { showFeatureDialog = true }) {
                 Icon(
                     imageVector = Icons.Rounded.Add,
                     contentDescription = "Attach",
-                    tint = SecondaryTextColor
+                    tint = SecondaryText
                 )
             }
 
@@ -786,14 +810,14 @@ fun MessageInputBar(
                     .weight(1f)
                     .padding(horizontal = 8.dp),
                 textStyle = TextStyle(
-                    color = PrimaryTextColor,
+                    color = PrimaryText,
                     fontSize = 15.sp
                 ),
                 decorationBox = { innerTextField ->
                     if (inputText.isEmpty()) {
                         Text(
                             text = "Ask FitMate Coach...",
-                            color = SecondaryTextColor,
+                            color = SecondaryText,
                             fontSize = 15.sp
                         )
                     }
@@ -810,14 +834,14 @@ fun MessageInputBar(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(AccentPurple)
+                        .background(FitGreen)
                         .clickable { onSend() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Send,
                         contentDescription = "Send",
-                        tint = PrimaryTextColor,
+                        tint = CardWhite,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -832,13 +856,10 @@ fun MessageInputBar(
                     Icon(
                         imageVector = Icons.Rounded.Star,
                         contentDescription = "AI Features",
-                        tint = NeonCyan
+                        tint = FitGreenDim
                     )
                 }
             }
         }
     }
-
-
-
 }

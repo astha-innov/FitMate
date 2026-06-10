@@ -24,12 +24,12 @@ import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutPlan
 import com.fitmate.domain.repository.CampusFitRepository
-import com.fitmate.domain.usecase.AnalyzeMealUseCase
+
 import com.fitmate.domain.usecase.BuildProfileSnapshotUseCase
 import com.fitmate.domain.usecase.BuildMealsSnapshotUseCase
 import com.fitmate.domain.usecase.CalculateGoalMetricsUseCase
 import com.fitmate.domain.usecase.CreateDietRecommendationUseCase
-import com.fitmate.domain.usecase.CreateInitialPersonalizedPlanUseCase
+
 import com.fitmate.domain.usecase.CreateWorkoutPlanUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,9 +67,7 @@ class CampusFitViewModel(
     private val buildProfileSnapshot: BuildProfileSnapshotUseCase = BuildProfileSnapshotUseCase(),
     private val buildMealsSnapshot: BuildMealsSnapshotUseCase = BuildMealsSnapshotUseCase(),
     private val calculateGoalMetrics: CalculateGoalMetricsUseCase = CalculateGoalMetricsUseCase(),
-    private val analyzeMealUseCase: AnalyzeMealUseCase = AnalyzeMealUseCase(),
-    private val createInitialPersonalizedPlan: CreateInitialPersonalizedPlanUseCase =
-        CreateInitialPersonalizedPlanUseCase(),
+
     private val createDietRecommendation: CreateDietRecommendationUseCase =
         CreateDietRecommendationUseCase(),
     private val createWorkoutPlan: CreateWorkoutPlanUseCase =
@@ -251,39 +249,27 @@ class CampusFitViewModel(
 
                 delay(250)
 
-                val plan = runCatching {
+                val plan = PersonalizedPlan(
+                    metrics = calculateGoalMetrics(profile),
 
-                    createInitialPersonalizedPlan(
-                        profile,
-                        config
-                    )
+                    reasoning = GoalReasoning(
+                        summary = "Starter fitness plan generated locally.",
+                        calorieReasoning = "Calories adjusted for your goal.",
+                        proteinReasoning = "Protein optimized for recovery.",
+                        waterReasoning = "Hydration adjusted for your body.",
+                        coachingNotes = listOf(
+                            "Stay consistent daily.",
+                            "Track meals regularly."
+                        )
+                    ),
 
-                }.getOrElse {
+                    dietRecommendation = createDietRecommendation(profile),
 
-                    PersonalizedPlan(
-                        metrics = calculateGoalMetrics(profile),
+                    workoutPlan = createWorkoutPlan(profile),
 
-                        reasoning = GoalReasoning(
-                            summary = "Starter fitness plan generated locally.",
-                            calorieReasoning = "Calories adjusted for your goal.",
-                            proteinReasoning = "Protein optimized for recovery.",
-                            waterReasoning = "Hydration adjusted for your body.",
-                            coachingNotes = listOf(
-                                "Stay consistent daily.",
-                                "Track meals regularly.",
-                            )
-                        ),
+                    aiSummary = "Local FitMate starter profile"
+                )
 
-                        dietRecommendation =
-                            createDietRecommendation(profile),
-
-                        workoutPlan =
-                            createWorkoutPlan(profile),
-
-                        aiSummary =
-                            "Local FitMate starter profile"
-                    )
-                }
 
                 _personalizationState.value =
                     PersonalizationState(
@@ -341,15 +327,7 @@ class CampusFitViewModel(
                     uiState.value.personalizedPlan?.metrics
                         ?: calculateGoalMetrics(profile)
 
-                repository.saveMealAnalysis(
-                    analyzeMealUseCase(
-                        config,
-                        profile,
-                        slot,
-                        description,
-                        metrics
-                    )
-                )
+
 
             } catch (_: Throwable) {
             }
@@ -396,4 +374,3 @@ class CampusFitViewModel(
             }
     }
 }
-

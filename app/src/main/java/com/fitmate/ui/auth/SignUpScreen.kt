@@ -92,9 +92,7 @@ fun SignUpScreen(
     LaunchedEffect(authState) {
 
         if (authState is AuthState.Success) {
-
-            navController.navigate(Routes.Home.route) {
-
+            navController.navigate(Routes.SignIn.route) {
                 popUpTo(Routes.SignUp.route) {
                     inclusive = true
                 }

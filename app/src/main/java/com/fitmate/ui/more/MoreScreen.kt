@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.util.Patterns
+import androidx.compose.ui.unit.sp
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -90,16 +91,34 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-private val MoreBg = Color(0xFF05070A)
-private val MoreGlass = Color.White.copy(alpha = 0.05f)
-private val MoreBorder = Color.White.copy(alpha = 0.11f)
-private val MoreCard = Color(0xFF10151D)
-private val MoreText = Color(0xFFF4F7FA)
-private val MoreMuted = Color.White.copy(alpha = 0.64f)
-private val MoreCyan = Color(0xFF00E5FF)
-private val MoreGreen = Color(0xFF00E676)
-private val MoreGold = Color(0xFFFFC857)
-private val MoreRed = Color(0xFFFF5A5F)
+// ── Shared Profile Palette Mapping ───────────────────────────────────────────
+private val FitGreen      = Color(0xFF16C47F)   // primary accent — energetic, motivating
+private val FitGreenLight = Color(0xFFE8FBF3)   // soft green tint for backgrounds
+private val FitGreenDim   = Color(0xFF0FA363)   // slightly deeper for pressed/secondary
+private val CanvasWhite   = Color(0xFFF7F9FC)   // page background
+private val CardWhite     = Color(0xFFFFFFFF)   // card surfaces
+private val TextDark      = Color(0xFF111827)   // primary text
+private val TextSecondary = Color(0xFF6B7280)   // secondary / muted text
+private val TextHint      = Color(0xFF9CA3AF)   // placeholder / label
+private val DividerColor  = Color(0xFFF0F2F5)   // subtle divider
+private val WarningRed    = Color(0xFFEF4444)   // delete alert color
+private val WarningRedBg  = Color(0xFFFEE2E2)   // soft background for dangerous actions
+
+// ── Remapped Legacy Color Names (Ensures Complete Compilation Integrity) ──────
+private val MoreBg = CanvasWhite
+private val MoreGlass = FitGreenLight
+private val MoreBorder = DividerColor
+private val MoreCard = CardWhite
+private val MoreText = TextDark
+private val MoreMuted = TextSecondary
+private val MoreCyan = FitGreen
+private val MoreGreen = FitGreenDim
+private val MoreGold = Color(0xFFF59E0B) // Amber/Gold warning tone tailored for light UI panels
+private val MoreRed = WarningRed
+
+private enum class MoreDialog {
+    EDIT_PROFILE, ACCOUNT_SECURITY, DATA_PRIVACY, FEEDBACK, LEGAL
+}
 
 @Composable
 fun MoreScreen(
@@ -130,7 +149,7 @@ fun MoreScreen(
                 .height(220.dp)
                 .background(
                     Brush.verticalGradient(
-                        listOf(MoreCyan.copy(alpha = 0.16f), Color.Transparent)
+                        listOf(MoreCyan.copy(alpha = 0.12f), Color.Transparent)
                     )
                 )
         )
@@ -208,8 +227,7 @@ fun MoreScreen(
                 scope.launch {
                     privacyStatus = runCatching {
                         backendService.clearUserDocument()
-                        AppStorage.clearUserScopedData()
-                        AppStorage.saveLastUserId(auth.currentUser?.uid)
+                        AppStorage.saveSetupCompleted(false)
                         restartApp(context)
                         "Your saved FitMate data has been cleared."
                     }.getOrElse { it.message ?: "Could not clear your data right now." }
@@ -240,8 +258,7 @@ fun MoreScreen(
                                 backendService.clearUserDocument()
                                 currentUser.delete().await()
                                 auth.signOut()
-                                AppStorage.clearUserScopedData()
-                                AppStorage.saveLastUserId(null)
+                                AppStorage.saveSetupCompleted(false)
                                 restartApp(context)
                                 "Your account has been deleted."
                             }.getOrElse {
@@ -277,7 +294,7 @@ private fun MoreHeader() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(26.dp),
-        colors = CardDefaults.cardColors(containerColor = MoreGlass),
+        colors = CardDefaults.cardColors(containerColor = MoreCard),
         border = BorderStroke(1.dp, MoreBorder)
     ) {
         Column(
@@ -285,7 +302,7 @@ private fun MoreHeader() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "More",
+                text = "More Options",
                 color = MoreText,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold
@@ -311,7 +328,7 @@ private fun SettingsActionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MoreCard),
         border = BorderStroke(1.dp, MoreBorder)
     ) {
@@ -324,12 +341,12 @@ private fun SettingsActionCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(44.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(accent.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = accent)
+                Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(22.dp))
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
@@ -347,7 +364,7 @@ private fun SettingsActionCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MoreMuted
+                tint = TextHint
             )
         }
     }
@@ -421,6 +438,8 @@ private fun EditProfileDialog(
             onSelect = { experienceLevel = it }
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         Button(
             onClick = {
                 viewModel.updateProfile(
@@ -448,10 +467,10 @@ private fun EditProfileDialog(
                 saveMessage = "Profile updated successfully."
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(99.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MoreCyan,
-                contentColor = Color.Black
+                contentColor = Color.White
             )
         ) {
             Text("Save Changes", fontWeight = FontWeight.Bold)
@@ -461,7 +480,8 @@ private fun EditProfileDialog(
             Text(
                 text = it,
                 color = MoreGreen,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }
@@ -500,6 +520,8 @@ private fun AccountSecurityDialog(
         StaticInfoRow("Sign-in method", providerIds.joinToString(", ").ifBlank { "Unknown" })
         StaticInfoRow("Password", "********")
 
+        Spacer(modifier = Modifier.height(4.dp))
+
         MoreTextField("New email", newEmail, { newEmail = it }, KeyboardType.Email)
         MoreTextField("Current password", currentPassword, { currentPassword = it }, KeyboardType.Password, true)
         MoreTextField("New password", newPassword, { newPassword = it }, KeyboardType.Password, true)
@@ -526,10 +548,10 @@ private fun AccountSecurityDialog(
                 },
                 enabled = hasPasswordProvider,
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MoreCyan, contentColor = Color.Black)
+                shape = RoundedCornerShape(99.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MoreCyan, contentColor = Color.White)
             ) {
-                Text("Update Email", fontWeight = FontWeight.Bold)
+                Text("Update Email", fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
             Button(
                 onClick = {
@@ -555,10 +577,10 @@ private fun AccountSecurityDialog(
                 },
                 enabled = hasPasswordProvider,
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MoreGreen, contentColor = Color.Black)
+                shape = RoundedCornerShape(99.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MoreGreen, contentColor = Color.White)
             ) {
-                Text("Update Password", fontWeight = FontWeight.Bold)
+                Text("Update Password", fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
 
@@ -635,7 +657,7 @@ private fun FeedbackDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp),
-            placeholder = { Text("Write your feedback here...", color = MoreMuted) },
+            placeholder = { Text("Write your feedback here...", color = TextHint) },
             colors = moreFieldColors(),
             shape = RoundedCornerShape(18.dp)
         )
@@ -666,8 +688,8 @@ private fun FeedbackDialog(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MoreCyan, contentColor = Color.Black)
+            shape = RoundedCornerShape(99.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MoreCyan, contentColor = Color.White)
         ) {
             Text("Submit", fontWeight = FontWeight.Bold)
         }
@@ -750,6 +772,7 @@ private fun MoreDialogShell(
         confirmButton = {},
         dismissButton = {},
         containerColor = MoreCard,
+        shape = RoundedCornerShape(24.dp),
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
@@ -770,14 +793,14 @@ private fun MoreDialogShell(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 content()
                 TextButton(
                     onClick = onDismiss,
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text("Close", color = MoreMuted)
+                    Text("Close", color = MoreGreen, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -810,75 +833,52 @@ private fun moreFieldColors() = OutlinedTextFieldDefaults.colors(
     unfocusedBorderColor = MoreBorder,
     focusedTextColor = MoreText,
     unfocusedTextColor = MoreText,
-    focusedContainerColor = MoreGlass,
-    unfocusedContainerColor = MoreGlass,
-    focusedLabelColor = MoreCyan,
-    unfocusedLabelColor = MoreMuted,
+    focusedContainerColor = CanvasWhite,
+    unfocusedContainerColor = CanvasWhite,
+    focusedLabelColor = MoreGreen,
+    unfocusedLabelColor = TextHint,
     cursorColor = MoreCyan
 )
 
 @Composable
-private fun <T> EnumSelector(
-    title: String,
-    items: List<T>,
-    selected: T,
-    labelFor: (T) -> String,
-    onSelect: (T) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = title,
-            color = MoreMuted,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items.forEach { item ->
-                val active = item == selected
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onSelect(item) },
-                    shape = RoundedCornerShape(14.dp),
-                    color = if (active) MoreCyan.copy(alpha = 0.12f) else MoreGlass,
-                    border = BorderStroke(1.dp, if (active) MoreCyan.copy(alpha = 0.4f) else MoreBorder)
-                ) {
-                    Text(
-                        text = labelFor(item),
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                        color = if (active) MoreText else MoreMuted,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
-                    )
-                }
-            }
-        }
+private fun StaticInfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(CanvasWhite)
+            .border(1.dp, DividerColor, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = label, color = MoreMuted, style = MaterialTheme.typography.bodyMedium)
+        Text(text = value, color = MoreText, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
 @Composable
-private fun StaticInfoRow(
-    label: String,
-    value: String
-) {
+private fun LegalBlock(icon: ImageVector, title: String, body: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(MoreGlass)
-            .border(1.dp, MoreBorder, RoundedCornerShape(14.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
     ) {
-        Text(label, color = MoreMuted, style = MaterialTheme.typography.labelMedium)
-        Text(
-            text = value,
-            color = MoreText,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.End
-        )
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MoreGlass),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = MoreCyan, modifier = Modifier.size(18.dp))
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text = title, color = MoreText, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+            Text(text = body, color = MoreMuted, style = MaterialTheme.typography.bodySmall, lineHeight = 16.sp)
+        }
     }
 }
 
@@ -890,83 +890,97 @@ private fun MoreWarningCard(
     buttonLabel: String,
     onClick: () -> Unit
 ) {
+    val isRedAction = accent == MoreRed
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = accent.copy(alpha = 0.08f)),
-        border = BorderStroke(1.dp, accent.copy(alpha = 0.24f))
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = if (isRedAction) WarningRedBg else Color(0xFFFEF3C7)),
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(text = title, color = MoreText, fontWeight = FontWeight.Bold)
-            Text(text = body, color = MoreMuted, style = MaterialTheme.typography.bodySmall)
+            Text(text = title, color = MoreText, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            Text(text = body, color = MoreMuted, style = MaterialTheme.typography.bodySmall, lineHeight = 16.sp)
             Button(
                 onClick = onClick,
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = accent, contentColor = Color.Black)
+                colors = ButtonDefaults.buttonColors(containerColor = accent, contentColor = Color.White),
+                shape = RoundedCornerShape(99.dp),
+                modifier = Modifier.align(Alignment.End)
             ) {
-                Text(buttonLabel, fontWeight = FontWeight.Bold)
+                Text(text = buttonLabel, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
 }
 
 @Composable
-private fun LegalBlock(
-    icon: ImageVector,
+private fun <T> EnumSelector(
     title: String,
-    body: String
+    items: List<T>,
+    selected: T,
+    labelFor: (T) -> String,
+    onSelect: (T) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MoreGlass)
-            .border(1.dp, MoreBorder, RoundedCornerShape(16.dp))
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .size(34.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MoreCyan.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = MoreCyan, modifier = Modifier.size(20.dp))
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(text = title, color = MoreText, fontWeight = FontWeight.Bold)
-            Text(text = body, color = MoreMuted, style = MaterialTheme.typography.bodySmall)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            color = MoreText,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            items.forEach { item ->
+                val isSelected = item == selected
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (isSelected) MoreGlass else CanvasWhite)
+                        .border(
+                            1.dp,
+                            if (isSelected) MoreCyan else DividerColor,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .clickable { onSelect(item) }
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = labelFor(item),
+                        color = if (isSelected) MoreGreen else MoreMuted,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(MoreCyan)
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 private fun restartApp(context: Context) {
+    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
     val activity = context.findActivity()
-    val intent = Intent(activity, MainActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+    activity?.finish()
+}
+
+private fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
     }
-    activity.startActivity(intent)
-    activity.finish()
+    return null
 }
-
-private tailrec fun Context.findActivity(): Activity {
-    return when (this) {
-        is Activity -> this
-        is ContextWrapper -> baseContext.findActivity()
-        else -> error("No Activity found")
-    }
-}
-
-private enum class MoreDialog {
-    EDIT_PROFILE,
-    ACCOUNT_SECURITY,
-    DATA_PRIVACY,
-    FEEDBACK,
-    LEGAL,
-}
-

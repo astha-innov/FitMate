@@ -1,4 +1,4 @@
-﻿package com.fitmate.ui.coach.repository
+package com.fitmate.ui.coach.repository
 
 import com.fitmate.ui.coach.network.Content
 import com.fitmate.ui.coach.network.GeminiClient

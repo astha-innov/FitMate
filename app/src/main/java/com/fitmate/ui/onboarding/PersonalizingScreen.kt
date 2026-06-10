@@ -61,11 +61,11 @@ import kotlinx.coroutines.delay
 
 // ── All colors are private to this file to avoid conflicts with any
 //    NeonCyan / DeepSpace / etc. already declared in your theme/Colors.kt ──────
-private val _NeonCyan      = Color(0xFF00E5FF)
-private val _DeepSpace     = Color(0xFF05070A)
-private val _GlassWhite    = Color(0x0DFFFFFF)
-private val _SurfaceBorder = Color(0x1FFFFFFF)
-private val _ErrorRed      = Color(0xFFFF6B6B)
+private val _NeonCyan      = Color(0xFF10B981)
+private val _DeepSpace     = Color(0xFFFFFFFF)
+private val _GlassWhite    = Color(0xFFF8FAFC)
+private val _SurfaceBorder = Color(0xFFE5E7EB)
+private val _ErrorRed      = Color(0xFFEF4444)
 
 // ── Safe alpha helper — avoids any AnimationVector .copy() internal issue ─────
 private fun Color.a(alpha: Float): Color =
@@ -145,7 +145,7 @@ fun PersonalizingScreen(
                             "Building your AI-first goals, meals, diet, and workout memory."
                         },
                         fontSize = 13.sp,
-                        color = Color.White.a(0.55f),
+                        color = Color(0xFF6B7280),
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp,
                         modifier = Modifier.widthIn(max = 260.dp)
@@ -239,7 +239,7 @@ private fun ShimmerTitle() {
         fontSize = 26.sp,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = 3.sp,
-        color = Color.White.a(alphaAnim)
+        color = Color(0xFF111827).a(alphaAnim)
     )
 }
 
@@ -286,7 +286,7 @@ private fun NeonProgressBar(progress: Float) {
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(99.dp))
-                    .background(Color.White.a(0.07f))
+                    .background(Color(0xFFE5E7EB))
                     .border(1.dp, _NeonCyan.a(0.1f), RoundedCornerShape(99.dp))
             )
             Box(
@@ -296,7 +296,7 @@ private fun NeonProgressBar(progress: Float) {
                     .clip(RoundedCornerShape(99.dp))
                     .background(
                         Brush.horizontalGradient(
-                            colors = listOf(Color(0xFF00B4D8), _NeonCyan, Color(0xFF7DF9FF))
+                            colors = listOf(Color(0xFF10B981), _NeonCyan, Color(0xFF34D399))
                         )
                     )
             )
@@ -341,7 +341,7 @@ private fun StepRow(step: OnboardingStep, animDelay: Int) {
         targetValue = when (step.status) {
             StepStatus.DONE    -> _NeonCyan.a(0.18f)
             StepStatus.ACTIVE  -> _NeonCyan.a(0.35f)
-            StepStatus.PENDING -> Color.White.a(0.05f)
+            StepStatus.PENDING -> Color(0xFFE5E7EB)
         },
         label = "step_border"
     )
@@ -349,7 +349,7 @@ private fun StepRow(step: OnboardingStep, animDelay: Int) {
         targetValue = when (step.status) {
             StepStatus.DONE    -> _NeonCyan.a(0.75f)
             StepStatus.ACTIVE  -> _NeonCyan
-            StepStatus.PENDING -> Color.White.a(0.3f)
+            StepStatus.PENDING -> Color(0xFF6B7280)
         },
         label = "step_text"
     )
@@ -395,12 +395,12 @@ private fun StepIcon(status: StepStatus) {
 
     val bgColor = when (status) {
         StepStatus.DONE, StepStatus.ACTIVE -> _NeonCyan.a(0.12f)
-        StepStatus.PENDING                 -> Color.White.a(0.04f)
+        StepStatus.PENDING                 -> Color(0xFFE5E7EB)
     }
     val borderColor = when (status) {
         StepStatus.DONE    -> _NeonCyan.a(0.4f)
         StepStatus.ACTIVE  -> _NeonCyan
-        StepStatus.PENDING -> Color.White.a(0.1f)
+        StepStatus.PENDING -> Color(0xFFD1D5DB)
     }
     val iconText = when (status) {
         StepStatus.DONE    -> "✓"
@@ -409,7 +409,7 @@ private fun StepIcon(status: StepStatus) {
     }
     val iconColor = when (status) {
         StepStatus.DONE, StepStatus.ACTIVE -> _NeonCyan
-        StepStatus.PENDING                 -> Color.White.a(0.25f)
+        StepStatus.PENDING                 -> Color(0xFF9CA3AF)
     }
 
     val glowModifier = if (status == StepStatus.ACTIVE) {
