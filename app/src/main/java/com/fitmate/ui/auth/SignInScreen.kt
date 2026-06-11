@@ -1,5 +1,11 @@
 package com.fitmate.ui.auth
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,46 +20,44 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.fitmate.R
 import com.fitmate.ui.navigation.Routes
+import com.fitmate.ui.theme.FitMateTheme
 import com.fitmate.ui.viewmodel.AuthState
 import com.fitmate.ui.viewmodel.AuthViewModel
-import com.fitmate.ui.viewmodel.PhoneAuthUiState
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
 import com.fitmate.ui.viewmodel.FakeAuthViewModel
-import com.fitmate.ui.theme.FitMateTheme
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import com.fitmate.ui.viewmodel.PhoneAuthUiState
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
 
-
 // --- PREMIUM DESIGN CONSTANTS ---
-val NeonCyan = Color(0xFF00E5FF)
-val DeepSpace = Color(0xFF05070A)
-val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.05f)
-val SurfaceBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
+val PrimaryGreen = Color(0xFF10B981)
+val SecondaryGreen = Color(0xFF34D399)
+val PrimaryText = Color(0xFF111827)
+val SecondaryText = Color(0xFF6B7280)
+val CardBorder = Color(0xFFE5E7EB)
+val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.82f)
 
 fun Context.findActivity(): Activity {
     return when (this) {
@@ -69,7 +73,6 @@ fun SignInScreen(
     navController: NavController,
     viewModel: AuthViewModel
 ) {
-
     val context = LocalContext.current
     val activity = context.findActivity()
 
@@ -83,22 +86,16 @@ fun SignInScreen(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult()
         ) { result ->
-
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-
             try {
-
                 val account = task.getResult(ApiException::class.java)
-
                 val idToken = account.idToken
                 if (idToken.isNullOrBlank()) {
                     viewModel.showError("Google Sign-In did not return an ID token. Check Firebase SHA and OAuth client configuration.")
                     return@rememberLauncherForActivityResult
                 }
-
                 val credential = GoogleAuthProvider.getCredential(idToken, null)
                 viewModel.signInWithCredential(credential, "Google Sign-In failed")
-
             } catch (e: ApiException) {
                 viewModel.showError("Google Sign-In failed: ${e.statusCode}. Check SHA fingerprints and google-services.json.")
             } catch (e: Exception) {
@@ -113,6 +110,31 @@ fun SignInScreen(
     val authState by viewModel.authState.collectAsState()
     val phoneAuthState by viewModel.phoneAuthState.collectAsState()
     val loading by viewModel.isLoading.collectAsState()
+
+    // --- ENTRANCE ANIMATION STATES ---
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { isVisible = true }
+
+    val logoScale by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0.8f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "logoScale"
+    )
+    val logoAlpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(800),
+        label = "logoAlpha"
+    )
+    val cardOffsetY by animateDpAsState(
+        targetValue = if (isVisible) 0.dp else 60.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
+        label = "cardOffset"
+    )
+    val cardAlpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(1000, delayMillis = 200),
+        label = "cardAlpha"
+    )
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -129,9 +151,39 @@ fun SignInScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeepSpace)) {
-        // 1. CINEMATIC ANIMATED BACKGROUND
-        AnimatedAmbientBackground()
+    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+
+        // 1. BACKGROUND IMAGE WITH ZOOM ANIMATION
+        val infiniteTransition = rememberInfiniteTransition(label = "bg_zoom")
+        val bgScale by infiniteTransition.animateFloat(
+            initialValue = 1.0f, targetValue = 1.08f,
+            animationSpec = infiniteRepeatable(tween(20000, easing = LinearEasing), RepeatMode.Reverse),
+            label = "bgScale"
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.body_transformation),
+            contentDescription = "Fitness Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .scale(bgScale)
+        )
+
+        // 2. FROSTED OVERLAY — stronger at bottom so UI is always readable
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.0f to Color.White.copy(alpha = 0.55f),
+                            0.35f to Color.White.copy(alpha = 0.80f),
+                            1.0f to Color.White.copy(alpha = 0.97f)
+                        )
+                    )
+                )
+        )
 
         Column(
             modifier = Modifier
@@ -143,42 +195,62 @@ fun SignInScreen(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            // 2. BRANDING SECTION
-            Text(
-                text = "FITMATE",
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 8.sp,
-                    color = NeonCyan.copy(alpha = 0.8f)
+            // 3. BRANDING SECTION
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.graphicsLayer {
+                    scaleX = logoScale
+                    scaleY = logoScale
+                    alpha = logoAlpha
+                }
+            ) {
+                Text(
+                    text = "FITMATE",
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 8.sp,
+                        color = PrimaryGreen
+                    )
                 )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Welcome Back",
-                color = Color.White,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-1).sp
-            )
-
-            Text(
-                text = "Enter your credentials to access your lab.",
-                color = Color.White.copy(alpha = 0.5f),
-                fontSize = 16.sp
-            )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Welcome Back",
+                    color = PrimaryText,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-1).sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Continue your fitness transformation\njourney with FitMate.",
+                    color = SecondaryText,
+                    fontSize = 15.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    lineHeight = 22.sp
+                )
+            }
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 3. GLASSMORPHISM AUTH CARD
+            // 4. AUTH CARD — NO .blur() on the card itself; blur only lives in the overlay above
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .graphicsLayer {
+                        translationY = cardOffsetY.toPx()
+                        alpha = cardAlpha
+                    }
+                    .shadow(
+                        elevation = 24.dp,
+                        shape = RoundedCornerShape(32.dp),
+                        spotColor = Color.Black.copy(alpha = 0.06f),
+                        ambientColor = Color.Transparent
+                    )
                     .clip(RoundedCornerShape(32.dp))
                     .background(GlassWhite)
-                    .border(1.dp, SurfaceBorder, RoundedCornerShape(32.dp))
+                    // *** REMOVED .blur(16.dp) — that was blurring card contents ***
+                    .border(1.dp, CardBorder, RoundedCornerShape(32.dp))
                     .padding(24.dp)
             ) {
                 Column {
@@ -188,9 +260,7 @@ fun SignInScreen(
                         label = "Email",
                         icon = Icons.Default.Email
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     PremiumTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -198,16 +268,13 @@ fun SignInScreen(
                         icon = Icons.Default.Lock,
                         isPassword = true
                     )
-
                     TextButton(
                         onClick = { navController.navigate(Routes.ForgotPassword.route) },
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("Forgot Password?", color = NeonCyan, fontSize = 12.sp)
+                        Text("Forgot Password?", color = PrimaryGreen, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
-
                     PremiumButton(
                         text = "Sign In",
                         loading = loading,
@@ -218,95 +285,68 @@ fun SignInScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 4. SOCIAL & ALTERNATIVE AUTH
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = SurfaceBorder)
-                Text("  OR  ", color = Color.Gray, fontSize = 12.sp)
-                HorizontalDivider(modifier = Modifier.weight(1f), color = SurfaceBorder)
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            PremiumSecondaryButton(
-                text = "Continue with Google",
-                onClick = { launcher.launch(googleSignInClient.signInIntent) }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PremiumTextField(
-                value = phoneNumber,
-                onValueChange = { phoneNumber = it },
-                label = "Phone Number",
-                icon = Icons.Default.Phone
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            PremiumButton(
-                text = "Send OTP",
-                isSecondary = true,
-                loading = phoneAuthState is PhoneAuthUiState.Sending,
-                onClick = { viewModel.sendOtp(activity, phoneNumber) }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            TextButton(
-                onClick = { navController.navigate(Routes.SignUp.route) },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+            // 5. SOCIAL & ALTERNATIVE AUTH
+            Column(
+                modifier = Modifier.graphicsLayer {
+                    translationY = cardOffsetY.toPx() * 0.5f
+                    alpha = cardAlpha
+                }
             ) {
-                Text(
-                    text = "Don't have an account? Sign Up",
-                    color = Color.White.copy(alpha = 0.7f)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = CardBorder)
+                    Text("  OR  ", color = SecondaryText, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = CardBorder)
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+                PremiumSecondaryButton(
+                    text = "Continue with Google",
+                    onClick = { launcher.launch(googleSignInClient.signInIntent) }
                 )
-            }
-
-            // Error Messaging
-            if (authState is AuthState.Error) {
-                Text(
-                    text = (authState as AuthState.Error).message,
-                    color = Color(0xFFFF4B4B),
-                    modifier = Modifier.padding(top = 8.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+                PremiumTextField(
+                    value = phoneNumber,
+                    onValueChange = { phoneNumber = it },
+                    label = "Phone Number",
+                    icon = Icons.Default.Phone
                 )
-            }
-
-            if (phoneAuthState is PhoneAuthUiState.Error) {
-                Text(
-                    text = (phoneAuthState as PhoneAuthUiState.Error).message,
-                    color = Color(0xFFFF4B4B),
-                    modifier = Modifier.padding(top = 8.dp)
+                Spacer(modifier = Modifier.height(12.dp))
+                PremiumSecondaryButton(
+                    text = "Send OTP",
+                    loading = phoneAuthState is PhoneAuthUiState.Sending,
+                    onClick = { viewModel.sendOtp(activity, phoneNumber) }
                 )
-            }
+                Spacer(modifier = Modifier.height(32.dp))
+                TextButton(
+                    onClick = { navController.navigate(Routes.SignUp.route) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = "Don't have an account? ", color = SecondaryText, fontSize = 14.sp)
+                    Text(text = "Sign Up", color = PrimaryGreen, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
 
-            Spacer(modifier = Modifier.height(40.dp))
+                if (authState is AuthState.Error) {
+                    Text(
+                        text = (authState as AuthState.Error).message,
+                        color = Color(0xFFEF4444),
+                        modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
+                        fontSize = 13.sp
+                    )
+                }
+                if (phoneAuthState is PhoneAuthUiState.Error) {
+                    Text(
+                        text = (phoneAuthState as PhoneAuthUiState.Error).message,
+                        color = Color(0xFFEF4444),
+                        modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
+                        fontSize = 13.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(40.dp))
+            }
         }
     }
 }
 
 // --- REUSABLE PREMIUM COMPONENTS ---
-
-@Composable
-fun AnimatedAmbientBackground() {
-    val infiniteTransition = rememberInfiniteTransition(label = "ambient")
-    val xOffset by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 400f,
-        animationSpec = infiniteRepeatable(tween(20000, easing = LinearEasing), RepeatMode.Reverse), label = ""
-    )
-
-    Canvas(modifier = Modifier.fillMaxSize().blur(80.dp)) {
-        drawCircle(
-            brush = Brush.radialGradient(listOf(NeonCyan.copy(alpha = 0.15f), Color.Transparent)),
-            radius = 600f,
-            center = center.copy(x = xOffset, y = 200f)
-        )
-        drawCircle(
-            brush = Brush.radialGradient(listOf(Color(0xFF7000FF).copy(alpha = 0.12f), Color.Transparent)),
-            radius = 500f,
-            center = center.copy(x = size.width - xOffset, y = size.height - 200f)
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -317,21 +357,41 @@ fun PremiumTextField(
     icon: ImageVector,
     isPassword: Boolean = false
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+    val borderColor by animateColorAsState(
+        targetValue = if (isFocused) PrimaryGreen else Color.Transparent,
+        label = "borderColor"
+    )
+
     TextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
-        label = { Text(label, color = Color.Gray) },
-        leadingIcon = { Icon(icon, contentDescription = null, tint = NeonCyan, modifier = Modifier.size(20.dp)) },
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            .onFocusChanged { isFocused = it.isFocused },
+        label = { Text(label, color = SecondaryText) },
+        leadingIcon = {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (isFocused) PrimaryGreen else SecondaryText,
+                modifier = Modifier.size(20.dp)
+            )
+        },
+        visualTransformation = if (isPassword) PasswordVisualTransformation()
+        else androidx.compose.ui.text.input.VisualTransformation.None,
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White.copy(alpha = 0.05f),
-            unfocusedContainerColor = Color.White.copy(alpha = 0.02f),
-            focusedIndicatorColor = NeonCyan,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+            focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White
-        )
+            focusedTextColor = PrimaryText,
+            unfocusedTextColor = PrimaryText,
+            cursorColor = PrimaryGreen
+        ),
+        singleLine = true
     )
 }
 
@@ -339,12 +399,15 @@ fun PremiumTextField(
 fun PremiumButton(
     text: String,
     loading: Boolean = false,
-    isSecondary: Boolean = false,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (isPressed) 0.96f else 1f, label = "scale")
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "buttonScale"
+    )
 
     Button(
         onClick = onClick,
@@ -352,36 +415,62 @@ fun PremiumButton(
             .fillMaxWidth()
             .height(58.dp)
             .scale(scale)
-            .graphicsLayer {
-                if (!isSecondary) {
-                    shadowElevation = 20f
-                    spotShadowColor = NeonCyan
-                }
-            },
-        shape = RoundedCornerShape(18.dp),
+            .shadow(
+                elevation = if (isPressed) 4.dp else 12.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = PrimaryGreen.copy(alpha = 0.5f)
+            ),
+        shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSecondary) Color.White.copy(alpha = 0.1f) else Color.White,
-            contentColor = if (isSecondary) Color.White else Color.Black
+            containerColor = PrimaryGreen,
+            contentColor = Color.White
         ),
         interactionSource = interactionSource
     ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black, strokeWidth = 2.dp)
+            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
         } else {
-            Text(text.uppercase(), style = TextStyle(fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp))
+            Text(
+                text = text,
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, letterSpacing = 0.5.sp)
+            )
         }
     }
 }
 
 @Composable
-fun PremiumSecondaryButton(text: String, onClick: () -> Unit) {
+fun PremiumSecondaryButton(
+    text: String,
+    loading: Boolean = false,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "secondaryButtonScale"
+    )
+
     OutlinedButton(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(58.dp),
-        shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(1.dp, SurfaceBorder)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .scale(scale),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, CardBorder),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.White,
+            contentColor = PrimaryText
+        ),
+        interactionSource = interactionSource
     ) {
-        Text(text, color = Color.White, fontWeight = FontWeight.SemiBold)
+        if (loading) {
+            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = PrimaryText, strokeWidth = 2.dp)
+        } else {
+            Text(text = text, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+        }
     }
 }
 

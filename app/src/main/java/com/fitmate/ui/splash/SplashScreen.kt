@@ -26,25 +26,28 @@ import kotlin.math.pow
 import kotlin.random.Random
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  DESIGN TOKENS — Deep Space · Neon Cyan · Chrome White
+//  DESIGN TOKENS — Premium White · Soft Glass · Emerald Green
 // ═════════════════════════════════════════════════════════════════════════════
 
-private val BgVoid       = Color(0xFF05070A)          // DeepSpace background
-private val NeonCyan     = Color(0xFF00E5FF)           // primary accent
-private val SoftCyan     = Color(0xFF55F0FF)           // lighter cyan
-private val Chrome       = Color(0xFFFFFFFF)           // full white
-private val ChromeDim    = Color(0x66FFFFFF)           // 40% white
-private val GlassWhite   = Color(0xFFFFFFFF).copy(alpha = 0.05f)  // glass fill
-private val SurfaceBorder= Color(0xFFFFFFFF).copy(alpha = 0.12f)  // border
-private val ChromeGhost  = Color(0x08FFFFFF)           // 5% white
-private val CyanGlow     = Color(0x4400E5FF)           // cyan glow
-private val CyanFaint    = Color(0x1800E5FF)           // very faint cyan
+private val BgVoid        = Color(0xFFF8FAFC)           // SoftWhite background
+private val BgPure        = Color(0xFFFFFFFF)           // Pure white
+private val PrimaryGreen  = Color(0xFF10B981)           // Emerald primary accent
+private val SoftGreen     = Color(0xFF34D399)           // Lighter emerald
+private val FaintGreen    = Color(0xFFD1FAE5)           // Very faint green tint
+private val DarkText      = Color(0xFF111827)           // Primary text
+private val SecondaryText = Color(0xFF6B7280)           // Secondary text
+private val LightGray     = Color(0xFFE5E7EB)           // Borders / dividers
+private val GlassWhite    = Color(0xFFFFFFFF).copy(alpha = 0.72f)  // Glass fill
+private val SurfaceBorder = Color(0xFFE5E7EB).copy(alpha = 0.80f)  // Glass border
+private val ShadowGreen   = Color(0x2010B981)           // Green shadow / glow
+private val FaintShadow   = Color(0x0A111827)           // Subtle dark shadow
+private val ChromeDim     = Color(0xFF6B7280)           // Muted label text
 
 private val Orbitron  = FontFamily.Monospace
 private val Rajdhani  = FontFamily.SansSerif
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  PARTICLE DATA MODEL
+//  PARTICLE DATA MODEL  (unchanged logic — visual colours swapped)
 // ═════════════════════════════════════════════════════════════════════════════
 
 private data class Particle(
@@ -63,7 +66,7 @@ private fun spawnParticle(w: Float, h: Float, randomY: Boolean) = Particle(
     vx        = (Random.nextFloat() - 0.5f) * 0.4f,
     vy        = -(0.4f + Random.nextFloat() * 0.9f),
     radius    = Random.nextFloat() * 1.6f + 0.3f,
-    baseAlpha = Random.nextFloat() * 0.5f + 0.1f,
+    baseAlpha = Random.nextFloat() * 0.32f + 0.06f,
     life      = 1f,
     decay     = 0.002f + Random.nextFloat() * 0.003f,
     isWhite   = Random.nextFloat() < 0.55f
@@ -78,11 +81,11 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
     val statuses = remember {
         listOf(
-            "INITIALIZING CORE...",
+            "PREPARING YOUR PLAN...",
             "LOADING BIOMETRICS...",
             "SYNCING AI ENGINE...",
-            "CALIBRATING NEURAL LINK...",
-            "SYSTEM READY."
+            "PERSONALIZING EXPERIENCE...",
+            "READY."
         )
     }
     var statusText by remember { mutableStateOf(statuses[0]) }
@@ -91,8 +94,8 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
     LaunchedEffect(Unit) {
         launch {
             progress.animateTo(
-                targetValue    = 1f,
-                animationSpec  = tween(durationMillis = 5200, easing = LinearEasing)
+                targetValue   = 1f,
+                animationSpec = tween(durationMillis = 5200, easing = LinearEasing)
             )
         }
         statuses.forEachIndexed { i, label ->
@@ -118,11 +121,11 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
         FloatingHoloStats()
 
         Column(
-            modifier                = Modifier
+            modifier            = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 28.dp),
-            horizontalAlignment     = Alignment.CenterHorizontally,
-            verticalArrangement     = Arrangement.SpaceBetween
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Spacer(Modifier.height(54.dp))
             TopHudBar()
@@ -143,16 +146,16 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 private fun PerspectiveGrid() {
     val inf = rememberInfiniteTransition(label = "grid")
     val offset by inf.animateFloat(
-        initialValue   = 0f,
-        targetValue    = 80f,
-        animationSpec  = infiniteRepeatable(tween(1200, easing = LinearEasing)),
-        label          = "gridScroll"
+        initialValue  = 0f,
+        targetValue   = 80f,
+        animationSpec = infiniteRepeatable(tween(1200, easing = LinearEasing)),
+        label         = "gridScroll"
     )
 
     Canvas(Modifier.fillMaxSize()) {
         val cx      = size.width / 2f
         val horizon = size.height * 0.28f
-        val gridCol = NeonCyan.copy(alpha = 0.06f)
+        val gridCol = PrimaryGreen.copy(alpha = 0.04f)
 
         for (i in -8..12) {
             drawLine(
@@ -170,7 +173,7 @@ private fun PerspectiveGrid() {
                     offset * t.pow(1.8f)
             if (yPos > size.height) continue
             drawLine(
-                color       = NeonCyan.copy(alpha = t.pow(1.2f) * 0.07f),
+                color       = PrimaryGreen.copy(alpha = t.pow(1.2f) * 0.045f),
                 start       = Offset(0f, yPos),
                 end         = Offset(size.width, yPos),
                 strokeWidth = 1f
@@ -212,7 +215,9 @@ private fun ParticleField() {
         if (size != canvasSize) canvasSize = size
         particles.forEach { p ->
             val a     = p.baseAlpha * p.life
-            val color = if (p.isWhite) Chrome.copy(alpha = a) else NeonCyan.copy(alpha = a * 0.8f)
+            // Soft green or light-gray particles on white background
+            val color = if (p.isWhite) LightGray.copy(alpha = a * 0.9f)
+            else           PrimaryGreen.copy(alpha = a * 0.45f)
             drawCircle(color, p.radius, Offset(p.x, p.y))
         }
     }
@@ -227,36 +232,36 @@ private fun BackgroundGlows() {
     Canvas(Modifier.fillMaxSize()) {
         val ctr = Offset(size.width / 2f, size.height * 0.45f)
 
-        // Central cyan nebula
+        // Central soft green bloom
         drawCircle(
             brush  = Brush.radialGradient(
-                colors   = listOf(NeonCyan.copy(alpha = 0.12f), Color.Transparent),
-                center   = ctr,
-                radius   = size.width * 0.85f
+                colors = listOf(FaintGreen.copy(alpha = 0.55f), Color.Transparent),
+                center = ctr,
+                radius = size.width * 0.85f
             ),
             radius = size.width * 0.85f,
             center = ctr
         )
 
-        // Top-left chrome glint
+        // Top-left white glint
         val topL = Offset(size.width * 0.18f, size.height * 0.12f)
         drawCircle(
             brush  = Brush.radialGradient(
-                colors   = listOf(Chrome.copy(alpha = 0.05f), Color.Transparent),
-                center   = topL,
-                radius   = 280f
+                colors = listOf(BgPure.copy(alpha = 0.85f), Color.Transparent),
+                center = topL,
+                radius = 280f
             ),
             radius = 280f,
             center = topL
         )
 
-        // Bottom-right cyan glint
+        // Bottom-right green glint
         val botR = Offset(size.width * 0.85f, size.height * 0.82f)
         drawCircle(
             brush  = Brush.radialGradient(
-                colors   = listOf(SoftCyan.copy(alpha = 0.1f), Color.Transparent),
-                center   = botR,
-                radius   = 220f
+                colors = listOf(SoftGreen.copy(alpha = 0.12f), Color.Transparent),
+                center = botR,
+                radius = 220f
             ),
             radius = 220f,
             center = botR
@@ -294,12 +299,12 @@ private fun HeartbeatLine() {
             }
         }
 
-        // Outer cyan glow
-        drawPath(ecgPath, NeonCyan.copy(alpha = 0.08f),  style = Stroke(width = 6f,   cap = StrokeCap.Round))
-        // Mid glow
-        drawPath(ecgPath, NeonCyan.copy(alpha = 0.35f),  style = Stroke(width = 2f,   cap = StrokeCap.Round))
-        // White highlight
-        drawPath(ecgPath, Chrome.copy(alpha = 0.25f),    style = Stroke(width = 0.8f, cap = StrokeCap.Round))
+        // Outer soft green glow
+        drawPath(ecgPath, PrimaryGreen.copy(alpha = 0.06f), style = Stroke(width = 8f,   cap = StrokeCap.Round))
+        // Mid green line
+        drawPath(ecgPath, PrimaryGreen.copy(alpha = 0.40f), style = Stroke(width = 2f,   cap = StrokeCap.Round))
+        // Bright white highlight on top
+        drawPath(ecgPath, BgPure.copy(alpha = 0.80f),       style = Stroke(width = 0.8f, cap = StrokeCap.Round))
     }
 }
 
@@ -320,17 +325,17 @@ private fun ScanSweep() {
     Canvas(Modifier.fillMaxSize()) {
         val y = scanFrac * size.height
         drawRect(
-            brush     = Brush.horizontalGradient(
+            brush   = Brush.horizontalGradient(
                 listOf(
                     Color.Transparent,
-                    NeonCyan.copy(alpha = 0.06f),
-                    NeonCyan.copy(alpha = 0.14f),
-                    NeonCyan.copy(alpha = 0.06f),
+                    PrimaryGreen.copy(alpha = 0.04f),
+                    PrimaryGreen.copy(alpha = 0.10f),
+                    PrimaryGreen.copy(alpha = 0.04f),
                     Color.Transparent
                 )
             ),
-            topLeft   = Offset(0f, y - 1f),
-            size      = Size(size.width, 2f)
+            topLeft = Offset(0f, y - 1f),
+            size    = Size(size.width, 2f)
         )
     }
 }
@@ -343,7 +348,7 @@ private fun ScanSweep() {
 private fun CornerDecorations() {
     Canvas(Modifier.fillMaxSize()) {
         val arm = 30f; val thick = 1.5f
-        val col = NeonCyan.copy(alpha = 0.50f)
+        val col = PrimaryGreen.copy(alpha = 0.35f)
         val m   = 22f
 
         fun corner(x: Float, y: Float, dx: Float, dy: Float) {
@@ -377,9 +382,9 @@ private fun FloatingHoloStats() {
     }
 
     Box(Modifier.fillMaxSize()) {
-        HoloStatCard("98.2",  "VO₂ MAX",     Modifier.padding(start = 18.dp, top = 178.dp).offset(y = floatY(3800, false)))
-        HoloStatCard("72 BPM","HEART RATE",  Modifier.align(Alignment.TopEnd).padding(top = 236.dp, end = 18.dp).offset(y = floatY(4600, true)))
-        HoloStatCard("2,840", "KCAL",        Modifier.padding(start = 22.dp, top = 328.dp).offset(y = floatY(3200, false)))
+        HoloStatCard("98.2",  "VO₂ MAX",    Modifier.padding(start = 18.dp, top = 178.dp).offset(y = floatY(3800, false)))
+        HoloStatCard("72 BPM","HEART RATE", Modifier.align(Alignment.TopEnd).padding(top = 236.dp, end = 18.dp).offset(y = floatY(4600, true)))
+        HoloStatCard("2,840", "KCAL",       Modifier.padding(start = 22.dp, top = 328.dp).offset(y = floatY(3200, false)))
     }
 }
 
@@ -394,22 +399,28 @@ private fun HoloStatCard(value: String, label: String, modifier: Modifier = Modi
     Column(
         modifier = modifier
             .graphicsLayer { this.alpha = alpha.value }
-            .background(GlassWhite, RoundedCornerShape(8.dp))
-            .border(
-                width = 0.5.dp,
+            .background(
                 brush = Brush.verticalGradient(
-                    listOf(NeonCyan.copy(alpha = 0.45f), NeonCyan.copy(alpha = 0.10f))
+                    listOf(BgPure.copy(alpha = 0.92f), BgPure.copy(alpha = 0.78f))
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp)
             )
-            .padding(horizontal = 12.dp, vertical = 9.dp),
+            .border(
+                width = 0.8.dp,
+                brush = Brush.verticalGradient(
+                    listOf(LightGray, PrimaryGreen.copy(alpha = 0.20f))
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+            // Soft shadow via outer glow layer is handled by elevation; simulate with border
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        // Active indicator dot
+        // Active green indicator dot
         Box(
             Modifier
-                .size(4.dp)
-                .background(NeonCyan, CircleShape)
+                .size(5.dp)
+                .background(PrimaryGreen, CircleShape)
         )
         Text(
             text  = value,
@@ -417,7 +428,7 @@ private fun HoloStatCard(value: String, label: String, modifier: Modifier = Modi
                 fontFamily = Orbitron,
                 fontSize   = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color      = Chrome
+                color      = DarkText
             )
         )
         Text(
@@ -426,7 +437,7 @@ private fun HoloStatCard(value: String, label: String, modifier: Modifier = Modi
                 fontFamily    = Rajdhani,
                 fontSize      = 8.sp,
                 letterSpacing = 2.sp,
-                color         = ChromeDim
+                color         = SecondaryText
             )
         )
     }
@@ -445,14 +456,19 @@ private fun TopHudBar() {
     }
 
     Row(
-        modifier            = Modifier
+        modifier          = Modifier
             .fillMaxWidth()
             .graphicsLayer { this.alpha = alpha.value },
-        verticalAlignment   = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             "v2.4",
-            style = TextStyle(fontFamily = Orbitron, fontSize = 9.sp, letterSpacing = 3.sp, color = ChromeDim)
+            style = TextStyle(
+                fontFamily    = Orbitron,
+                fontSize      = 9.sp,
+                letterSpacing = 3.sp,
+                color         = SecondaryText.copy(alpha = 0.60f)
+            )
         )
         Box(
             Modifier
@@ -461,13 +477,18 @@ private fun TopHudBar() {
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Transparent, NeonCyan.copy(alpha = 0.30f), Color.Transparent)
+                        listOf(Color.Transparent, PrimaryGreen.copy(alpha = 0.25f), Color.Transparent)
                     )
                 )
         )
         Text(
             "AI ENGINE",
-            style = TextStyle(fontFamily = Orbitron, fontSize = 9.sp, letterSpacing = 3.sp, color = ChromeDim)
+            style = TextStyle(
+                fontFamily    = Orbitron,
+                fontSize      = 9.sp,
+                letterSpacing = 3.sp,
+                color         = SecondaryText.copy(alpha = 0.60f)
+            )
         )
     }
 }
@@ -518,16 +539,18 @@ private fun OrbitalLogoRing() {
     }
 
     Box(
-        modifier        = Modifier
+        modifier         = Modifier
             .size(180.dp)
-            .graphicsLayer { scaleX = logoEnter.value; scaleY = logoEnter.value; alpha = logoEnter.value },
+            .graphicsLayer {
+                scaleX = logoEnter.value; scaleY = logoEnter.value; alpha = logoEnter.value
+            },
         contentAlignment = Alignment.Center
     ) {
-        // Outermost ambient glow
+        // Outermost soft green ambient bloom
         Canvas(Modifier.size(200.dp)) {
             drawCircle(
                 Brush.radialGradient(
-                    colors = listOf(NeonCyan.copy(alpha = 0.15f * pulse), Color.Transparent)
+                    colors = listOf(PrimaryGreen.copy(alpha = 0.08f * pulse), Color.Transparent)
                 )
             )
         }
@@ -536,61 +559,61 @@ private fun OrbitalLogoRing() {
         Canvas(Modifier.size(180.dp)) {
             val cx = center
 
-            // Ring 1 — chrome white
+            // Ring 1 — light gray glass ring with green arc
             rotate(ring1Rot, cx) {
                 drawCircle(
-                    color  = Chrome.copy(alpha = 0.70f),
+                    color  = LightGray.copy(alpha = 0.80f),
                     radius = size.minDimension * 0.46f,
                     center = cx,
                     style  = Stroke(width = 1.8f)
                 )
                 drawArc(
-                    color       = Chrome,
-                    startAngle  = -30f,
-                    sweepAngle  = 60f,
-                    useCenter   = false,
-                    topLeft     = Offset(cx.x - size.minDimension * 0.46f, cx.y - size.minDimension * 0.46f),
-                    size        = Size(size.minDimension * 0.92f, size.minDimension * 0.92f),
-                    style       = Stroke(width = 2.5f, cap = StrokeCap.Round)
+                    color      = PrimaryGreen.copy(alpha = 0.90f),
+                    startAngle = -30f,
+                    sweepAngle = 60f,
+                    useCenter  = false,
+                    topLeft    = Offset(cx.x - size.minDimension * 0.46f, cx.y - size.minDimension * 0.46f),
+                    size       = Size(size.minDimension * 0.92f, size.minDimension * 0.92f),
+                    style      = Stroke(width = 2.5f, cap = StrokeCap.Round)
                 )
             }
 
-            // Ring 2 — neon cyan
+            // Ring 2 — soft green glass ring
             rotate(ring2Rot, cx) {
                 drawCircle(
-                    color  = NeonCyan.copy(alpha = 0.65f),
+                    color  = PrimaryGreen.copy(alpha = 0.22f),
                     radius = size.minDimension * 0.37f,
                     center = cx,
                     style  = Stroke(width = 1.4f)
                 )
                 drawArc(
-                    color       = SoftCyan,
-                    startAngle  = 120f,
-                    sweepAngle  = 50f,
-                    useCenter   = false,
-                    topLeft     = Offset(cx.x - size.minDimension * 0.37f, cx.y - size.minDimension * 0.37f),
-                    size        = Size(size.minDimension * 0.74f, size.minDimension * 0.74f),
-                    style       = Stroke(width = 2f, cap = StrokeCap.Round)
+                    color      = SoftGreen.copy(alpha = 0.85f),
+                    startAngle = 120f,
+                    sweepAngle = 50f,
+                    useCenter  = false,
+                    topLeft    = Offset(cx.x - size.minDimension * 0.37f, cx.y - size.minDimension * 0.37f),
+                    size       = Size(size.minDimension * 0.74f, size.minDimension * 0.74f),
+                    style      = Stroke(width = 2f, cap = StrokeCap.Round)
                 )
             }
 
-            // Ring 3 — faint cyan
+            // Ring 3 — ultra-faint green
             rotate(ring3Rot, cx) {
                 drawCircle(
-                    color  = NeonCyan.copy(alpha = 0.20f),
+                    color  = PrimaryGreen.copy(alpha = 0.12f),
                     radius = size.minDimension * 0.28f,
                     center = cx,
                     style  = Stroke(width = 1f)
                 )
             }
 
-            // Pulse rings
+            // Pulse rings — soft green ripples
             for (i in 0..2) {
-                val delay   = i / 3f
-                val scale   = 1f + (pulseAlpha + delay).coerceIn(0f, 1f) * 0.8f
-                val a       = ((1f - pulseAlpha) * (1f - delay / 1.5f)).coerceIn(0f, 1f)
+                val delay = i / 3f
+                val scale = 1f + (pulseAlpha + delay).coerceIn(0f, 1f) * 0.8f
+                val a     = ((1f - pulseAlpha) * (1f - delay / 1.5f)).coerceIn(0f, 1f)
                 drawCircle(
-                    color  = NeonCyan.copy(alpha = a * 0.35f),
+                    color  = PrimaryGreen.copy(alpha = a * 0.18f),
                     radius = size.minDimension * 0.23f * scale,
                     center = cx,
                     style  = Stroke(width = 1f)
@@ -598,20 +621,20 @@ private fun OrbitalLogoRing() {
             }
         }
 
-        // Core circle
+        // Core circle — white glass with green border
         Box(
-            modifier        = Modifier
+            modifier         = Modifier
                 .size(82.dp)
                 .background(
                     Brush.radialGradient(
-                        listOf(Color(0xFF040810), Color(0xFF05070A))
+                        listOf(BgPure, BgVoid)
                     ),
                     CircleShape
                 )
                 .border(
-                    width = 0.5.dp,
+                    width = 1.dp,
                     brush = Brush.verticalGradient(
-                        listOf(NeonCyan.copy(alpha = 0.40f), NeonCyan.copy(alpha = 0.10f))
+                        listOf(PrimaryGreen.copy(alpha = 0.50f), PrimaryGreen.copy(alpha = 0.15f))
                     ),
                     shape = CircleShape
                 ),
@@ -629,44 +652,42 @@ private fun DumbbellIcon(modifier: Modifier = Modifier) {
     Canvas(modifier) {
         val w  = size.width
         val h  = size.height
-        val cx = w / 2f
         val cy = h / 2f
 
-        val barColor  = Chrome
-        val plateCol  = Chrome.copy(alpha = 0.9f)
-        val claspCol  = NeonCyan.copy(alpha = 0.85f)
+        val barColor = DarkText.copy(alpha = 0.85f)
+        val plateCol = DarkText.copy(alpha = 0.75f)
+        val claspCol = PrimaryGreen.copy(alpha = 0.90f)
 
         drawLine(barColor, Offset(w * 0.15f, cy), Offset(w * 0.85f, cy), strokeWidth = h * 0.08f, cap = StrokeCap.Butt)
 
         drawRoundRect(
-            color  = plateCol,
-            topLeft = Offset(0f, cy - h * 0.28f),
-            size   = Size(w * 0.14f, h * 0.56f),
+            color        = plateCol,
+            topLeft      = Offset(0f, cy - h * 0.28f),
+            size         = Size(w * 0.14f, h * 0.56f),
             cornerRadius = CornerRadius(3f)
         )
         drawRoundRect(
-            color   = claspCol,
-            topLeft = Offset(w * 0.12f, cy - h * 0.2f),
-            size    = Size(w * 0.07f, h * 0.4f),
-            cornerRadius = CornerRadius(2f)
-        )
-
-        drawRoundRect(
-            color   = claspCol,
-            topLeft = Offset(w * 0.81f, cy - h * 0.2f),
-            size    = Size(w * 0.07f, h * 0.4f),
+            color        = claspCol,
+            topLeft      = Offset(w * 0.12f, cy - h * 0.2f),
+            size         = Size(w * 0.07f, h * 0.4f),
             cornerRadius = CornerRadius(2f)
         )
         drawRoundRect(
-            color   = plateCol,
-            topLeft = Offset(w * 0.86f, cy - h * 0.28f),
-            size    = Size(w * 0.14f, h * 0.56f),
+            color        = claspCol,
+            topLeft      = Offset(w * 0.81f, cy - h * 0.2f),
+            size         = Size(w * 0.07f, h * 0.4f),
+            cornerRadius = CornerRadius(2f)
+        )
+        drawRoundRect(
+            color        = plateCol,
+            topLeft      = Offset(w * 0.86f, cy - h * 0.28f),
+            size         = Size(w * 0.14f, h * 0.56f),
             cornerRadius = CornerRadius(3f)
         )
 
-        // Cyan arc above bar (AI motif)
+        // Green arc above bar
         drawArc(
-            color      = NeonCyan.copy(alpha = 0.60f),
+            color      = PrimaryGreen.copy(alpha = 0.75f),
             startAngle = 200f,
             sweepAngle = -40f,
             useCenter  = false,
@@ -681,7 +702,7 @@ private fun DumbbellIcon(modifier: Modifier = Modifier) {
 
 @Composable
 private fun BrandText() {
-    val alpha = remember { Animatable(0f) }
+    val alpha   = remember { Animatable(0f) }
     val offsetY = remember { Animatable(24f) }
     LaunchedEffect(Unit) {
         delay(1000)
@@ -695,7 +716,7 @@ private fun BrandText() {
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
-            // Outer cyan bloom
+            // Soft green bloom layer behind text
             Text(
                 text  = "FITMATE",
                 style = TextStyle(
@@ -703,10 +724,10 @@ private fun BrandText() {
                     fontSize      = 38.sp,
                     fontWeight    = FontWeight.Black,
                     letterSpacing = 8.sp,
-                    color         = NeonCyan.copy(alpha = 0.20f)
+                    color         = PrimaryGreen.copy(alpha = 0.12f)
                 )
             )
-            // Mid chrome glow
+            // Shadow depth layer
             Text(
                 text  = "FITMATE",
                 style = TextStyle(
@@ -714,11 +735,11 @@ private fun BrandText() {
                     fontSize      = 38.sp,
                     fontWeight    = FontWeight.Black,
                     letterSpacing = 8.sp,
-                    color         = Chrome.copy(alpha = 0.30f)
+                    color         = LightGray.copy(alpha = 0.60f)
                 ),
                 modifier = Modifier.offset(y = 1.dp)
             )
-            // Crisp top layer
+            // Crisp dark top layer
             Text(
                 text  = "FITMATE",
                 style = TextStyle(
@@ -726,7 +747,7 @@ private fun BrandText() {
                     fontSize      = 38.sp,
                     fontWeight    = FontWeight.Black,
                     letterSpacing = 8.sp,
-                    color         = Chrome
+                    color         = DarkText
                 )
             )
         }
@@ -738,7 +759,7 @@ private fun BrandText() {
                 fontSize      = 10.sp,
                 fontWeight    = FontWeight.Light,
                 letterSpacing = 5.sp,
-                color         = ChromeDim
+                color         = SecondaryText.copy(alpha = 0.70f)
             )
         )
     }
@@ -757,7 +778,7 @@ private fun StatPillsRow() {
     }
 
     Row(
-        modifier            = Modifier.graphicsLayer { this.alpha = alpha.value },
+        modifier              = Modifier.graphicsLayer { this.alpha = alpha.value },
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         listOf(
@@ -772,36 +793,52 @@ private fun StatPillsRow() {
 private fun StatPill(value: String, label: String) {
     Column(
         modifier = Modifier
-            .background(GlassWhite, RoundedCornerShape(8.dp))
-            .border(
-                0.5.dp,
-                Brush.verticalGradient(
-                    listOf(SurfaceBorder, NeonCyan.copy(alpha = 0.10f))
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(BgPure, BgVoid)
                 ),
-                RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 0.8.dp,
+                brush = Brush.verticalGradient(
+                    listOf(LightGray, PrimaryGreen.copy(alpha = 0.15f))
+                ),
+                shape = RoundedCornerShape(12.dp)
             )
             .padding(horizontal = 16.dp, vertical = 10.dp),
-        horizontalAlignment  = Alignment.CenterHorizontally,
-        verticalArrangement  = Arrangement.spacedBy(2.dp)
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
+        // Green accent top bar
         Box(
             Modifier
                 .width(24.dp)
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Transparent, NeonCyan.copy(alpha = 0.50f), Color.Transparent)
+                        listOf(Color.Transparent, PrimaryGreen.copy(alpha = 0.55f), Color.Transparent)
                     )
                 )
         )
         Spacer(Modifier.height(4.dp))
         Text(
             text  = value,
-            style = TextStyle(fontFamily = Orbitron, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Chrome)
+            style = TextStyle(
+                fontFamily = Orbitron,
+                fontSize   = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color      = DarkText
+            )
         )
         Text(
             text  = label,
-            style = TextStyle(fontFamily = Rajdhani, fontSize = 8.sp, letterSpacing = 2.sp, color = ChromeDim)
+            style = TextStyle(
+                fontFamily    = Rajdhani,
+                fontSize      = 8.sp,
+                letterSpacing = 2.sp,
+                color         = SecondaryText
+            )
         )
     }
 }
@@ -837,10 +874,13 @@ private fun HoloBars() {
                 Modifier
                     .width(3.dp)
                     .height(h.dp)
-                    .graphicsLayer { scaleY = pulse; transformOrigin = TransformOrigin(0.5f, 1f) }
+                    .graphicsLayer {
+                        scaleY           = pulse
+                        transformOrigin  = TransformOrigin(0.5f, 1f)
+                    }
                     .background(
                         Brush.verticalGradient(
-                            listOf(NeonCyan.copy(alpha = 0.95f), NeonCyan.copy(alpha = 0.25f))
+                            listOf(PrimaryGreen.copy(alpha = 0.90f), PrimaryGreen.copy(alpha = 0.20f))
                         ),
                         RoundedCornerShape(2.dp)
                     )
@@ -874,26 +914,28 @@ private fun BottomHud(statusText: String, progress: Float) {
                 fontFamily    = Orbitron,
                 fontSize      = 9.sp,
                 letterSpacing = 3.sp,
-                color         = NeonCyan.copy(alpha = 0.70f)
+                color         = PrimaryGreen.copy(alpha = 0.75f)
             )
         )
 
         Spacer(Modifier.height(14.dp))
 
-        // Main progress track
+        // Main progress track — liquid glass style
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(2.dp)
-                .background(GlassWhite, RoundedCornerShape(2.dp))
+                .height(3.dp)
+                .background(LightGray, RoundedCornerShape(3.dp))
         ) {
             Box(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(fraction = progress)
                     .background(
-                        Brush.horizontalGradient(listOf(NeonCyan, SoftCyan, Chrome)),
-                        RoundedCornerShape(2.dp)
+                        Brush.horizontalGradient(
+                            listOf(PrimaryGreen, SoftGreen, BgPure.copy(alpha = 0.90f))
+                        ),
+                        RoundedCornerShape(3.dp)
                     )
             )
         }
@@ -914,8 +956,12 @@ private fun BottomHud(statusText: String, progress: Float) {
                         .weight(1f)
                         .height(3.dp)
                         .background(
-                            if (filled) Brush.horizontalGradient(listOf(NeonCyan, Chrome.copy(alpha = 0.7f)))
-                            else        Brush.horizontalGradient(listOf(GlassWhite, GlassWhite)),
+                            if (filled) Brush.horizontalGradient(
+                                listOf(PrimaryGreen, SoftGreen.copy(alpha = 0.70f))
+                            )
+                            else Brush.horizontalGradient(
+                                listOf(LightGray, LightGray)
+                            ),
                             RoundedCornerShape(2.dp)
                         )
                 )
@@ -925,11 +971,11 @@ private fun BottomHud(statusText: String, progress: Float) {
         Spacer(Modifier.height(6.dp))
 
         Text(
-            text  = "${(progress * 100).toInt()}%",
-            style = TextStyle(
+            text     = "${(progress * 100).toInt()}%",
+            style    = TextStyle(
                 fontFamily    = Orbitron,
                 fontSize      = 9.sp,
-                color         = NeonCyan.copy(alpha = 0.40f),
+                color         = PrimaryGreen.copy(alpha = 0.50f),
                 letterSpacing = 1.sp
             ),
             modifier = Modifier.align(Alignment.End)
