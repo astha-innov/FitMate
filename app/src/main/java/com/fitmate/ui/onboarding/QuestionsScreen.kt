@@ -2,6 +2,7 @@ package com.fitmate.ui.onboarding
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -334,7 +335,7 @@ private fun ContinueButton(
             )
         ) {
             Text(
-                text = if (isLastStep) "Generate My AI Plan ✦" else "Continue",
+                text = if (isLastStep) "Generate my fitness plan" else "Continue",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.2.sp
@@ -433,15 +434,6 @@ fun SliderQuestion(
     unit: String,
     onValueChange: (Float) -> Unit
 ) {
-    val animatedValue by animateFloatAsState(
-        targetValue = value,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "slider_value"
-    )
-
     QuestionTitle(title)
     Spacer(modifier = Modifier.height(48.dp))
 
@@ -460,7 +452,7 @@ fun SliderQuestion(
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = animatedValue.toInt().toString(),
+                    text = value.toInt().toString(),
                     fontSize = 72.sp,
                     fontWeight = FontWeight.Black,
                     color = FMTextPrimary,
@@ -500,23 +492,69 @@ fun SliderQuestion(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = range,
-            colors = SliderDefaults.colors(
-                thumbColor = FMGreen,
-                activeTrackColor = FMGreen,
-                inactiveTrackColor = FMBorder,
-                activeTickColor = Color.Transparent,
-                inactiveTickColor = Color.Transparent
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            SliderStepButton(
+                label = "-",
+                enabled = value > range.start,
+                onClick = {
+                    onValueChange((value - 1f).coerceAtLeast(range.start))
+                }
+            )
+            Slider(
+                value = value,
+                onValueChange = onValueChange,
+                valueRange = range,
+                colors = SliderDefaults.colors(
+                    thumbColor = FMGreen,
+                    activeTrackColor = FMGreen,
+                    inactiveTrackColor = FMBorder,
+                    activeTickColor = Color.Transparent,
+                    inactiveTickColor = Color.Transparent
+                ),
+                modifier = Modifier.weight(1f)
+            )
+            SliderStepButton(
+                label = "+",
+                enabled = value < range.endInclusive,
+                onClick = {
+                    onValueChange((value + 1f).coerceAtMost(range.endInclusive))
+                }
+            )
+        }
     }
 }
 
 // ── Reusable UI Components ────────────────────────────────────────────────
+
+@Composable
+private fun SliderStepButton(
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.size(44.dp),
+        shape = CircleShape,
+        border = BorderStroke(1.dp, if (enabled) FMGreen else FMBorder),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = FMGreen,
+            disabledContentColor = FMTextSecondary.copy(alpha = 0.45f)
+        ),
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
 
 @Composable
 fun QuestionTitle(text: String) {

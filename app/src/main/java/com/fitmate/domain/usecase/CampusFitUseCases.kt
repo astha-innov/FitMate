@@ -35,6 +35,8 @@ class CalculateGoalMetricsUseCase {
             GoalType.MUSCLE_GAIN -> 280
             GoalType.LEAN_BODY -> -80
             GoalType.STRESS_RELIEF -> 0
+            GoalType.CARDIO_STAMINA -> 0
+            GoalType.FLEXIBILITY_MOBILITY -> 0
         }
         val calories = (maintenance + delta).roundToInt()
         val protein = when (profile.goal) {
@@ -42,6 +44,8 @@ class CalculateGoalMetricsUseCase {
             GoalType.MUSCLE_GAIN -> profile.weightKg * 2.0
             GoalType.LEAN_BODY -> profile.weightKg * 1.7
             GoalType.STRESS_RELIEF -> profile.weightKg * 1.4
+            GoalType.CARDIO_STAMINA -> profile.weightKg * 1.6
+            GoalType.FLEXIBILITY_MOBILITY -> profile.weightKg * 1.4
         }.roundToInt()
         val water = (profile.weightKg * 0.035).let { (it * 10).roundToInt() / 10.0 }
         return GoalMetrics(
@@ -53,6 +57,8 @@ class CalculateGoalMetricsUseCase {
                 GoalType.MUSCLE_GAIN -> "Surplus"
                 GoalType.LEAN_BODY -> "Lean recomposition"
                 GoalType.STRESS_RELIEF -> "Steady maintenance"
+                GoalType.CARDIO_STAMINA -> "Performance maintenance"
+                GoalType.FLEXIBILITY_MOBILITY -> "Steady maintenance"
             },
             bmi = profile.weightKg / ((profile.heightCm / 100.0) * (profile.heightCm / 100.0)),
         )

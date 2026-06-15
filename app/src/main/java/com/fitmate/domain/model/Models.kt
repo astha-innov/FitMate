@@ -7,6 +7,8 @@ enum class GoalType(val label: String) {
     MUSCLE_GAIN("Muscle gain"),
     LEAN_BODY("Lean body"),
     STRESS_RELIEF("Reduce stress & relax"),
+    CARDIO_STAMINA("Cardio / Stamina"),
+    FLEXIBILITY_MOBILITY("Increasing flexibility and mobility"),
 }
 
 enum class FoodPreference(val label: String) {
@@ -118,11 +120,16 @@ enum class WorkoutWeekday(val label: String) {
 }
 
 enum class WorkoutFocus(val label: String) {
+    PUSH("Push"),
+    PULL("Pull"),
     CHEST_BICEPS("Chest + Biceps"),
     BACK_REAR_DELTS("Back + Rear Delts"),
     LEGS("Legs"),
     SHOULDERS_TRICEPS("Shoulders + Triceps"),
     CORE_CONDITIONING("Core + Conditioning"),
+    CONDITIONING("Conditioning"),
+    FULL_BODY("Full Body"),
+    MOBILITY("Mobility + Recovery"),
     REST("Rest Day"),
 }
 
@@ -138,9 +145,17 @@ data class WorkoutDaySchedule(
     val exercises: List<WorkoutExerciseConfig> = emptyList(),
 )
 
+enum class WorkoutPlanType {
+    DEFAULT,
+    CUSTOM,
+}
+
 data class WeeklyWorkoutSchedule(
     val days: List<WorkoutDaySchedule>,
     val isCustom: Boolean,
+    val planType: WorkoutPlanType = if (isCustom) WorkoutPlanType.CUSTOM else WorkoutPlanType.DEFAULT,
+    val generatedForGoal: GoalType? = null,
+    val version: Int = 1,
 )
 
 data class WorkoutExerciseProgress(

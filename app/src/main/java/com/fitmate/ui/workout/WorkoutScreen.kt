@@ -99,7 +99,9 @@ import com.fitmate.domain.model.WorkoutDaySchedule
 import com.fitmate.domain.model.WorkoutExerciseConfig
 import com.fitmate.domain.model.WorkoutExerciseProgress
 import com.fitmate.domain.model.WorkoutFocus
+import com.fitmate.domain.model.WorkoutPlanType
 import com.fitmate.domain.model.WorkoutWeekday
+import com.fitmate.domain.workout.WorkoutExerciseCatalog
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 
@@ -148,6 +150,9 @@ fun WorkoutScreen(
     val workoutListState = rememberLazyListState()
     var showPlanChoiceDialog by rememberSaveable { mutableStateOf(false) }
     var showPlanBuilder by rememberSaveable { mutableStateOf(false) }
+    var showGoalChangeDialog by rememberSaveable { mutableStateOf(false) }
+    var showReplaceCustomDialog by rememberSaveable { mutableStateOf(false) }
+    var dismissedGoalPromptFor by rememberSaveable { mutableStateOf<String?>(null) }
     var editingDay by remember { mutableStateOf<WorkoutDaySchedule?>(null) }
     var selectedInstructionExercise by remember { mutableStateOf<SelectedExerciseDetail?>(null) }
     val collapsedDays = remember {
@@ -160,11 +165,21 @@ fun WorkoutScreen(
         }
     }
 
+    LaunchedEffect(schedule?.planType, schedule?.generatedForGoal, state.profile.goal) {
+        val recommendedGoalChanged = schedule?.planType == WorkoutPlanType.DEFAULT &&
+            schedule.generatedForGoal != state.profile.goal
+        if (recommendedGoalChanged && dismissedGoalPromptFor != state.profile.goal.name) {
+            showGoalChangeDialog = true
+        }
+    }
+
     if (showPlanChoiceDialog) {
         PlanChoiceDialog(
             onDismiss = { showPlanChoiceDialog = false },
             onChooseDefault = {
-                viewModel.saveWorkoutSchedule(createDefaultWorkoutSchedule())
+                viewModel.saveWorkoutSchedule(
+                    viewModel.generateRecommendedWorkoutSchedule(state.profile)
+                )
                 showPlanChoiceDialog = false
             },
             onChooseCustom = {
@@ -174,11 +189,46 @@ fun WorkoutScreen(
         )
     }
 
+    if (showGoalChangeDialog) {
+        RecommendedPlanConfirmationDialog(
+            title = "Your fitness goal changed",
+            message = "Generate a new recommended workout plan for ${state.profile.goal.label}?",
+            confirmLabel = "Generate New Plan",
+            onDismiss = {
+                dismissedGoalPromptFor = state.profile.goal.name
+                showGoalChangeDialog = false
+            },
+            onConfirm = {
+                viewModel.saveWorkoutSchedule(
+                    viewModel.generateRecommendedWorkoutSchedule(state.profile)
+                )
+                dismissedGoalPromptFor = null
+                showGoalChangeDialog = false
+            }
+        )
+    }
+
+    if (showReplaceCustomDialog) {
+        RecommendedPlanConfirmationDialog(
+            title = "Replace custom plan?",
+            message = "Your custom workout will be replaced with a recommended ${state.profile.goal.label} plan.",
+            confirmLabel = "Use Recommended Plan",
+            onDismiss = { showReplaceCustomDialog = false },
+            onConfirm = {
+                viewModel.saveWorkoutSchedule(
+                    viewModel.generateRecommendedWorkoutSchedule(state.profile)
+                )
+                showReplaceCustomDialog = false
+            }
+        )
+    }
+
     CompositionLocalProvider(LocalImageLoader provides gifImageLoader) {
 
         if (showPlanBuilder) {
             SequentialPlanBuilderDialog(
                 initialSchedule = schedule,
+                fallbackSchedule = viewModel.generateRecommendedWorkoutSchedule(state.profile),
                 onDismiss = { showPlanBuilder = false },
                 onSave = {
                     viewModel.saveWorkoutSchedule(it)
@@ -192,12 +242,16 @@ fun WorkoutScreen(
                 day = day,
                 onDismiss = { editingDay = null },
                 onSave = { updatedDay ->
-                    val currentSchedule = state.workoutSchedule ?: createDefaultWorkoutSchedule()
+                    val currentSchedule = state.workoutSchedule
+                        ?: viewModel.generateRecommendedWorkoutSchedule(state.profile)
                     viewModel.saveWorkoutSchedule(
                         currentSchedule.copy(
                             days = currentSchedule.days.map {
                                 if (it.weekday == updatedDay.weekday) updatedDay else it
-                            }
+                            },
+                            isCustom = true,
+                            planType = WorkoutPlanType.CUSTOM,
+                            generatedForGoal = null,
                         )
                     )
                     editingDay = null
@@ -263,7 +317,16 @@ fun WorkoutScreen(
                         item {
                             WorkoutHeroCard(
                                 isCustom = schedule?.isCustom == true,
-                                onCustomize = { showPlanBuilder = true }
+                                onCustomize = { showPlanBuilder = true },
+                                onUseRecommended = {
+                                    if (schedule?.planType == WorkoutPlanType.CUSTOM) {
+                                        showReplaceCustomDialog = true
+                                    } else {
+                                        viewModel.saveWorkoutSchedule(
+                                            viewModel.generateRecommendedWorkoutSchedule(state.profile)
+                                        )
+                                    }
+                                }
                             )
                         }
 
@@ -296,7 +359,8 @@ fun WorkoutScreen(
 @Composable
 private fun WorkoutHeroCard(
     isCustom: Boolean,
-    onCustomize: () -> Unit
+    onCustomize: () -> Unit,
+    onUseRecommended: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -307,14 +371,18 @@ private fun WorkoutHeroCard(
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
             Text(
-                text = if (isCustom) "Custom weekly split active" else "Build your weekly split",
+                text = if (isCustom) "Custom weekly split active" else "Recommended weekly plan active",
                 style = MaterialTheme.typography.headlineSmall,
                 color = FitMateTextPrimary,
                 fontWeight = FontWeight.ExtraBold
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Choose what to train on each weekday, keep at least one rest day, and tune every exercise with slider-based set and rep controls.",
+                text = if (isCustom) {
+                    "Choose what to train on each weekday, keep at least one rest day, and tune every exercise with slider-based set and rep controls."
+                } else {
+                    "Your weekly schedule, exercises, sets, and reps are matched to your saved fitness goal and profile."
+                },
                 color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -331,6 +399,24 @@ private fun WorkoutHeroCard(
                 Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Make custom plan", fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = onUseRecommended,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, FitMateBorder)
+            ) {
+                Icon(Icons.Outlined.Refresh, contentDescription = null, tint = FitMateTextPrimary)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isCustom) {
+                        "Use recommended plan"
+                    } else {
+                        "Regenerate recommended plan"
+                    },
+                    color = FitMateTextPrimary
+                )
             }
         }
     }
@@ -1122,7 +1208,7 @@ private fun PlanChoiceDialog(
         onDismiss = onDismiss
     ) {
         Text(
-            text = "Start with the default weekly split or build your own schedule day by day.",
+            text = "Start with a plan recommended for your fitness goal or build your own schedule day by day.",
             color = FitMateTextSecondary
         )
         Spacer(modifier = Modifier.height(18.dp))
@@ -1135,7 +1221,7 @@ private fun PlanChoiceDialog(
                     contentColor = FitMateWhiteBackground
                 )
             ) {
-                Text("Default plan")
+                Text("Recommended plan")
             }
             OutlinedButton(
                 onClick = onChooseCustom,
@@ -1149,14 +1235,54 @@ private fun PlanChoiceDialog(
 }
 
 @Composable
+private fun RecommendedPlanConfirmationDialog(
+    title: String,
+    message: String,
+    confirmLabel: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    NeonDialogShell(
+        title = title,
+        onDismiss = onDismiss
+    ) {
+        Text(
+            text = message,
+            color = FitMateTextSecondary
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+                border = BorderStroke(1.dp, FitMateBorder)
+            ) {
+                Text("Cancel", color = FitMateTextPrimary)
+            }
+            Button(
+                onClick = onConfirm,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FitMateGreen,
+                    contentColor = FitMateWhiteBackground
+                )
+            ) {
+                Text(confirmLabel)
+            }
+        }
+    }
+}
+
+@Composable
 private fun SequentialPlanBuilderDialog(
     initialSchedule: WeeklyWorkoutSchedule?,
+    fallbackSchedule: WeeklyWorkoutSchedule,
     onDismiss: () -> Unit,
     onSave: (WeeklyWorkoutSchedule) -> Unit
 ) {
-    val selections = remember(initialSchedule) {
+    val selections = remember(initialSchedule, fallbackSchedule) {
         mutableStateListOf<WorkoutDaySchedule>().apply {
-            addAll(initialSchedule?.days ?: createDefaultWorkoutSchedule().days)
+            addAll(initialSchedule?.days ?: fallbackSchedule.days)
         }
     }
     var stepIndex by remember { mutableIntStateOf(0) }
@@ -1322,7 +1448,10 @@ private fun SequentialPlanBuilderDialog(
                         onSave(
                             WeeklyWorkoutSchedule(
                                 days = selections.toList(),
-                                isCustom = true
+                                isCustom = true,
+                                planType = WorkoutPlanType.CUSTOM,
+                                generatedForGoal = null,
+                                version = fallbackSchedule.version,
                             )
                         )
                     }
@@ -1740,71 +1869,11 @@ private fun NeonDialogShell(
     }
 }
 
-private fun createDefaultWorkoutSchedule(): WeeklyWorkoutSchedule {
-    val focusByDay = listOf(
-        WorkoutWeekday.SUNDAY to WorkoutFocus.CHEST_BICEPS,
-        WorkoutWeekday.MONDAY to WorkoutFocus.BACK_REAR_DELTS,
-        WorkoutWeekday.TUESDAY to WorkoutFocus.LEGS,
-        WorkoutWeekday.WEDNESDAY to WorkoutFocus.SHOULDERS_TRICEPS,
-        WorkoutWeekday.THURSDAY to WorkoutFocus.CORE_CONDITIONING,
-        WorkoutWeekday.FRIDAY to WorkoutFocus.REST,
-        WorkoutWeekday.SATURDAY to WorkoutFocus.REST,
-    )
-
-    return WeeklyWorkoutSchedule(
-        days = focusByDay.map { (weekday, focus) ->
-            WorkoutDaySchedule(
-                weekday = weekday,
-                focus = focus,
-                exercises = defaultExercisesForFocus(focus)
-            )
-        },
-        isCustom = false
-    )
-}
-
 private fun availableExercisesForFocus(
     focus: WorkoutFocus
 ): List<ExerciseLibraryEntry> {
-    val names = when (focus) {
-        WorkoutFocus.CHEST_BICEPS -> listOf(
-            "Push-Ups",
-            "Cable Chest Press",
-            "Butterfly",
-            "Incline Inner Biceps Curls",
-        )
-        WorkoutFocus.BACK_REAR_DELTS -> listOf(
-            "Barbell Rear Delt Row",
-            "Elevated Cable Rows",
-            "Deadlift with Bands",
-            "Dynamic Back Stretch",
-        )
-        WorkoutFocus.LEGS -> listOf(
-            "Hack Squat",
-            "Barbell Lunge",
-            "Elevated Back Lunge",
-            "Cable Hip Adduction",
-        )
-        WorkoutFocus.SHOULDERS_TRICEPS -> listOf(
-            "Shoulder Raise",
-            "Body Tricep Press",
-            "Tricep Extension",
-            "Bench Dips",
-        )
-        WorkoutFocus.CORE_CONDITIONING -> listOf(
-            "Cable Crunch",
-            "Decline Reverse Crunch",
-            "Bent Knee Hip Raise",
-            "Battling Ropes",
-            "Bottoms Up",
-            "Mountain Climber",
-            "Jumping Jack",
-            "Plank",
-            "Sit-Up",
-        )
-        WorkoutFocus.REST -> emptyList()
-    }
-    return names.mapNotNull(LocalExerciseDatabase::exerciseByName)
+    return WorkoutExerciseCatalog.namesFor(focus)
+        .mapNotNull(LocalExerciseDatabase::exerciseByName)
 }
 
 private fun defaultExercisesForFocus(
@@ -1823,11 +1892,16 @@ private fun focusPreviewImage(
     focus: WorkoutFocus
 ): String {
     return when (focus) {
+        WorkoutFocus.PUSH -> "chest_press.gif"
+        WorkoutFocus.PULL -> "bench_press.gif"
         WorkoutFocus.CHEST_BICEPS -> "pushup.gif"
         WorkoutFocus.BACK_REAR_DELTS -> "bench_press.gif"
         WorkoutFocus.LEGS -> "lifting_weights.gif"
         WorkoutFocus.SHOULDERS_TRICEPS -> "chest_press.gif"
         WorkoutFocus.CORE_CONDITIONING -> "gym_buddy.gif"
+        WorkoutFocus.CONDITIONING -> "gym_buddy.gif"
+        WorkoutFocus.FULL_BODY -> "lifting_weights.gif"
+        WorkoutFocus.MOBILITY -> "gym_buddy.gif"
         WorkoutFocus.REST -> ""
     }
 }

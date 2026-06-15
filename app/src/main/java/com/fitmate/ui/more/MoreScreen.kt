@@ -207,6 +207,30 @@ fun MoreScreen(
                 accent = MoreGreen,
                 onClick = { activeDialog = MoreDialog.LEGAL }
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Button(
+                onClick = {
+                    backendService.signOut()
+                    restartApp(context)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = WarningRedBg,
+                    contentColor = MoreRed
+                ),
+                border = BorderStroke(1.dp, MoreRed.copy(alpha = 0.35f)),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+            ) {
+                Text(
+                    text = "Log out",
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fitmate.data.CampusFitRepositoryImpl
+import com.fitmate.data.LocalExerciseDatabase
 import com.fitmate.domain.analytics.AnalyticsEngine
 import com.fitmate.domain.analytics.AnalyticsSnapshot
 import com.fitmate.domain.model.AiConfig
@@ -31,6 +32,7 @@ import com.fitmate.domain.usecase.CalculateGoalMetricsUseCase
 import com.fitmate.domain.usecase.CreateDietRecommendationUseCase
 
 import com.fitmate.domain.usecase.CreateWorkoutPlanUseCase
+import com.fitmate.domain.usecase.GenerateWorkoutScheduleUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -72,6 +74,8 @@ class CampusFitViewModel(
         CreateDietRecommendationUseCase(),
     private val createWorkoutPlan: CreateWorkoutPlanUseCase =
         CreateWorkoutPlanUseCase(),
+    private val generateWorkoutSchedule: GenerateWorkoutScheduleUseCase =
+        GenerateWorkoutScheduleUseCase(LocalExerciseDatabase.exercises),
     private val analyticsEngine: AnalyticsEngine = AnalyticsEngine(),
 ) : ViewModel() {
 
@@ -199,6 +203,9 @@ class CampusFitViewModel(
 
     fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule) =
         repository.saveWorkoutSchedule(schedule)
+
+    fun generateRecommendedWorkoutSchedule(profile: UserProfile): WeeklyWorkoutSchedule =
+        generateWorkoutSchedule(profile)
 
     fun recordWorkoutSet(
         weekday: WorkoutWeekday,
