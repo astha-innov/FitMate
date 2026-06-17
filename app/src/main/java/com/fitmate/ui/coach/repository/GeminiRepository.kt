@@ -12,32 +12,38 @@ class GeminiRepository {
         question: String
     ): String {
 
-        val response =
-            GeminiClient.api.generateContent(
-                apiKey = apiKey,
+        val request =
+            GeminiRequest(
+                contents = listOf(
+                    Content(
+                        parts = listOf(
+                            Part(
+                                text =
+                                    """
+                                You are FitMate AI Coach.
+                                Give practical fitness advice.
 
-                request = GeminiRequest(
-                    contents = listOf(
-                        Content(
-                            parts = listOf(
-                                Part(
-                                    text =
-                                        """
-                                    You are FitMate AI Coach.
-                                    Give practical fitness advice.
-                                    
-                                    User Question:
-                                    $question
-                                    """.trimIndent()
-                                )
+                                User Question:
+                                $question
+                                """.trimIndent()
                             )
                         )
                     )
                 )
             )
 
-        return response
-            .candidates
+        val response =
+            GeminiClient.api.generateContent(
+                apiKey = apiKey,
+                request = request
+            )
+
+        if (!response.isSuccessful) {
+            return "HTTP ${response.code()}\n${response.errorBody()?.string()}"
+        }
+
+        return response.body()
+            ?.candidates
             ?.firstOrNull()
             ?.content
             ?.parts

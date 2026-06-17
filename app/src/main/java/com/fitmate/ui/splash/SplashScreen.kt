@@ -970,7 +970,7 @@ private fun BottomHud(statusText: String, progress: Float) {
 
         Spacer(Modifier.height(6.dp))
 
-        Text(
+         Text(
             text     = "${(progress * 100).toInt()}%",
             style    = TextStyle(
                 fontFamily    = Orbitron,
