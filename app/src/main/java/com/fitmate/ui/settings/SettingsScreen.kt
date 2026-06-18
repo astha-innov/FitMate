@@ -1,4 +1,4 @@
-﻿package com.fitmate.ui.more
+﻿package com.fitmate.ui.settings
 
 import android.app.Activity
 import android.content.Context
@@ -6,9 +6,6 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.util.Patterns
 import androidx.compose.ui.unit.sp
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,7 +51,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -116,12 +112,12 @@ private val MoreGreen = FitGreenDim
 private val MoreGold = Color(0xFFF59E0B) // Amber/Gold warning tone tailored for light UI panels
 private val MoreRed = WarningRed
 
-private enum class MoreDialog {
+private enum class SettingsDialog {
     EDIT_PROFILE, ACCOUNT_SECURITY, DATA_PRIVACY, FEEDBACK, LEGAL
 }
 
 @Composable
-fun MoreScreen(
+fun SettingsScreen(
     state: CampusFitUiState,
     viewModel: CampusFitViewModel
 ) {
@@ -129,15 +125,9 @@ fun MoreScreen(
     val scope = rememberCoroutineScope()
     val auth = remember { FirebaseAuth.getInstance() }
     val backendService = remember { FirebaseBackendService() }
-    var activeDialog by rememberSaveable { mutableStateOf<MoreDialog?>(null) }
+    var activeDialog by rememberSaveable { mutableStateOf<SettingsDialog?>(null) }
     var showDeleteConfirm by rememberSaveable { mutableStateOf(false) }
     var privacyStatus by rememberSaveable { mutableStateOf<String?>(null) }
-    var entered by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        entered = true
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -161,19 +151,12 @@ fun MoreScreen(
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AnimatedVisibility(
-                visible = entered,
-                enter = fadeIn() + slideInVertically { -it / 5 }
-            ) {
-                MoreHeader()
-            }
-
             SettingsActionCard(
                 title = "Edit Profile",
                 subtitle = "Update the details you gave during setup.",
                 icon = Icons.Outlined.EditNote,
                 accent = MoreCyan,
-                onClick = { activeDialog = MoreDialog.EDIT_PROFILE }
+                onClick = { activeDialog = SettingsDialog.EDIT_PROFILE }
             )
 
             SettingsActionCard(
@@ -181,7 +164,7 @@ fun MoreScreen(
                 subtitle = "Manage your email, password, and account identity.",
                 icon = Icons.Outlined.GppGood,
                 accent = MoreGreen,
-                onClick = { activeDialog = MoreDialog.ACCOUNT_SECURITY }
+                onClick = { activeDialog = SettingsDialog.ACCOUNT_SECURITY }
             )
 
             SettingsActionCard(
@@ -189,7 +172,7 @@ fun MoreScreen(
                 subtitle = "Clear app data or permanently delete your account.",
                 icon = Icons.Outlined.PrivacyTip,
                 accent = MoreGold,
-                onClick = { activeDialog = MoreDialog.DATA_PRIVACY }
+                onClick = { activeDialog = SettingsDialog.DATA_PRIVACY }
             )
 
             SettingsActionCard(
@@ -197,7 +180,7 @@ fun MoreScreen(
                 subtitle = "Share ideas, issues, and suggestions for FitMate.",
                 icon = Icons.Outlined.Feedback,
                 accent = MoreCyan,
-                onClick = { activeDialog = MoreDialog.FEEDBACK }
+                onClick = { activeDialog = SettingsDialog.FEEDBACK }
             )
 
             SettingsActionCard(
@@ -205,7 +188,7 @@ fun MoreScreen(
                 subtitle = "Read policies and learn what FitMate is about.",
                 icon = Icons.Outlined.Info,
                 accent = MoreGreen,
-                onClick = { activeDialog = MoreDialog.LEGAL }
+                onClick = { activeDialog = SettingsDialog.LEGAL }
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -235,16 +218,16 @@ fun MoreScreen(
     }
 
     when (activeDialog) {
-        MoreDialog.EDIT_PROFILE -> EditProfileDialog(
+        SettingsDialog.EDIT_PROFILE -> EditProfileDialog(
             state = state,
             viewModel = viewModel,
             onDismiss = { activeDialog = null }
         )
-        MoreDialog.ACCOUNT_SECURITY -> AccountSecurityDialog(
+        SettingsDialog.ACCOUNT_SECURITY -> AccountSecurityDialog(
             auth = auth,
             onDismiss = { activeDialog = null }
         )
-        MoreDialog.DATA_PRIVACY -> DataPrivacyDialog(
+        SettingsDialog.DATA_PRIVACY -> DataPrivacyDialog(
             message = privacyStatus,
             onDismiss = { activeDialog = null },
             onClearData = {
@@ -259,11 +242,11 @@ fun MoreScreen(
             },
             onDeleteAccount = { showDeleteConfirm = true }
         )
-        MoreDialog.FEEDBACK -> FeedbackDialog(
+        SettingsDialog.FEEDBACK -> FeedbackDialog(
             auth = auth,
             onDismiss = { activeDialog = null }
         )
-        MoreDialog.LEGAL -> LegalAboutDialog(
+        SettingsDialog.LEGAL -> LegalAboutDialog(
             onDismiss = { activeDialog = null }
         )
         null -> Unit
@@ -310,33 +293,6 @@ fun MoreScreen(
                 )
             }
         )
-    }
-}
-
-@Composable
-private fun MoreHeader() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(26.dp),
-        colors = CardDefaults.cardColors(containerColor = MoreCard),
-        border = BorderStroke(1.dp, MoreBorder)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "More Options",
-                color = MoreText,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold
-            )
-            Text(
-                text = "Keep your account, profile, privacy, and app details in one clean place.",
-                color = MoreMuted,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
     }
 }
 

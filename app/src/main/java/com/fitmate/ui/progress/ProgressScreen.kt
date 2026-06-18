@@ -32,7 +32,6 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Insights
-import androidx.compose.material.icons.rounded.IosShare
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -107,9 +106,7 @@ fun ProgressScreen(
     val hasHistory = workoutLogs.isNotEmpty()
 
     // Core Calculations derived from state
-    val streakDays = remember(workoutSchedule, workoutLogs, today) {
-        calculateWorkoutStreak(workoutSchedule, workoutLogs, today)
-    }
+    val streakDays = analytics.currentStreak
 
     Box(
         modifier = modifier
@@ -126,8 +123,6 @@ fun ProgressScreen(
                     .padding(horizontal = 20.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                ScreenHeader()
-
                 AnalyticsHeroCard(
                     streak = streakDays,
                     consistencyScore = analytics.completionRate,
@@ -193,7 +188,6 @@ fun ProgressScreen(
         }
     }
 }
-
 // --- Subcomponents ---
 
 @Composable
@@ -208,38 +202,6 @@ private fun PremiumBaseCard(modifier: Modifier = Modifier, height: Dp? = null, c
         border = androidx.compose.foundation.BorderStroke(1.dp, DividerColor)
     ) {
         content()
-    }
-}
-
-@Composable
-private fun ScreenHeader() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Your Progress",
-                color = TextDark,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.5).sp
-            )
-            Text(
-                text = "Track your fitness journey",
-                color = TextSecondary,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-        IconButton(
-            onClick = { /* Handle share context */ },
-            modifier = Modifier
-                .background(CardWhite, CircleShape)
-                .border(1.dp, DividerColor, CircleShape)
-        ) {
-            Icon(Icons.Rounded.IosShare, contentDescription = "Share Analytics", tint = TextDark)
-        }
     }
 }
 
@@ -935,27 +897,4 @@ private fun workoutStatusForDate(
     if (date.isBefore(today)) return WorkoutDayStatus.MISSED // Past missed
 
     return WorkoutDayStatus.NONE
-}
-
-private fun calculateWorkoutStreak(
-    schedule: WeeklyWorkoutSchedule?,
-    logs: List<WorkoutDayLog>,
-    today: LocalDate
-): Int {
-    if (logs.isEmpty()) return 0
-    var streak = 0
-    var current = today
-
-    while (true) {
-        val status = workoutStatusForDate(current, schedule, logs, today)
-        if (status == WorkoutDayStatus.COMPLETED) {
-            streak++
-        } else if (status == WorkoutDayStatus.MISSED && current != today) {
-            break // Streak broken
-        } else if (status == WorkoutDayStatus.NONE && current != today) {
-            break // No log
-        }
-        current = current.minusDays(1)
-    }
-    return streak
 }

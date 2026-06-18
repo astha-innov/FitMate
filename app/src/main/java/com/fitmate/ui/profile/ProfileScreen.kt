@@ -90,7 +90,7 @@ private val DividerColor  = Color(0xFFF0F2F5)
 @Composable
 fun ProfileScreen(state: CampusFitUiState) {
     val profile = state.profile
-    val streakDays = 0 // Maintained existing logic
+    val streakDays = state.analytics.currentStreak
     val points = 0
     val workoutDaysPerWeek = remember(state.workoutSchedule) {
         state.workoutSchedule

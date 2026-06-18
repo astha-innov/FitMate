@@ -278,28 +278,7 @@ fun WorkoutScreen(
                 )
             } else {
                 Scaffold(
-                    containerColor = FitMateWhiteBackground,
-                    topBar = {
-                        TopAppBar(
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = FitMateWhiteBackground,
-                                titleContentColor = FitMateTextPrimary
-                            ),
-                            title = {
-                                Column {
-                                    Text(
-                                        text = "Workout Plan",
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "Make your split flexible, visual, and easy to update.",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = FitMateTextSecondary
-                                    )
-                                }
-                            }
-                        )
-                    }
+                    containerColor = FitMateWhiteBackground
                 ) { paddingValues ->
                     LazyColumn(
                         state = workoutListState,
