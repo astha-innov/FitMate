@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import com.fitmate.R
+import com.fitmate.ui.components.FitMateLogoMark
 
 // --- Premium Light Color Palette ---
 val PureWhite = Color(0xFFFFFFFF)
@@ -147,14 +148,10 @@ fun WelcomeScreen(
             ) {
 
                 // Branding Logo
-                Image(
-                    painter = painterResource(R.drawable.app_logo),
-                    contentDescription = "Logo",
+                FitMateLogoMark(
                     modifier = Modifier
                         .size(48.dp)
-                        .scale(logoScale)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Fit
+                        .scale(logoScale),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

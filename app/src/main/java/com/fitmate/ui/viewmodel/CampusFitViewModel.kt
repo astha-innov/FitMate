@@ -79,6 +79,8 @@ class CampusFitViewModel(
     private val analyticsEngine: AnalyticsEngine = AnalyticsEngine(),
 ) : ViewModel() {
 
+    val sessionReady: StateFlow<Boolean> = repository.sessionReady
+
     private val _personalizationState =
         MutableStateFlow(PersonalizationState())
 

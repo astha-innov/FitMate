@@ -41,6 +41,7 @@ class CampusFitRepositoryImpl(
     private val _latestMealAnalysis = MutableStateFlow(_mealLogs.value.firstOrNull()?.analysis)
     private val _workoutSchedule = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutSchedule() else null)
     private val _workoutLogs = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadWorkoutLogs() else emptyList())
+    private val _sessionReady = MutableStateFlow(false)
 
     override val profile: StateFlow<UserProfile> = _profile.asStateFlow()
     override val aiConfig: StateFlow<AiConfig> = _aiConfig.asStateFlow()
@@ -53,10 +54,17 @@ class CampusFitRepositoryImpl(
     override val latestMealAnalysis: StateFlow<MealAnalysis?> = _latestMealAnalysis.asStateFlow()
     override val workoutSchedule: StateFlow<WeeklyWorkoutSchedule?> = _workoutSchedule.asStateFlow()
     override val workoutLogs: StateFlow<List<WorkoutDayLog>> = _workoutLogs.asStateFlow()
+    override val sessionReady: StateFlow<Boolean> = _sessionReady.asStateFlow()
 
     init {
         normalizeDailyProgress()
-        scope.launch { bootstrapBackend() }
+        scope.launch {
+            try {
+                bootstrapBackend()
+            } finally {
+                _sessionReady.value = true
+            }
+        }
     }
 
     override fun updateProfile(profile: UserProfile) {

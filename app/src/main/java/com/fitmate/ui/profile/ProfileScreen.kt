@@ -152,35 +152,10 @@ fun ProfileScreen(state: CampusFitUiState) {
                 )
             )
 
-            // 3. NUTRITION SECTION (Image-heavy but compact data)
-            FriendlyInsightCard(
-                title = "Nutrition Profile",
-                subtitle = "Optimized for your goals",
-                emoji = "🥗",
-                headerImage = "profile/healthy_diet.png",
-                footerImage = "profile/meals.png"
-            ) {
-                LabelValueRow("Diet Goal", profile.goal.label)
-                LabelValueRow("Preference", profile.foodPreference.label)
-
-                state.personalizedPlan?.dietRecommendation?.title?.let {
-                    Text(
-                        text = it,
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
-                    )
-                }
-                state.personalizedPlan?.dietRecommendation?.meals?.take(3)?.forEach { meal ->
-                    FriendlyBulletRow(meal)
-                }
-            }
-
-            // 4. ACHIEVEMENT CENTER (Intentional section)
+            // 3. ACHIEVEMENT CENTER (Intentional section)
             AchievementCard(streakDays = streakDays, points = points)
 
-            // 5. TRAINING COMMITMENT (Standard Card)
+            // 4. TRAINING COMMITMENT (Standard Card)
             FriendlyInfoCard(
                 title = "Weekly Commitment",
                 subtitle = "Your training schedule",
@@ -195,20 +170,50 @@ fun ProfileScreen(state: CampusFitUiState) {
                 )
             )
 
-            // 6. HABITS (Compact)
-            FriendlyInsightCard(
-                title = "Daily Habits",
-                subtitle = "Stay consistent",
-                emoji = "⚡"
-            ) {
-                FriendlyBulletRow("Drink enough water")
-                FriendlyBulletRow("Complete workout")
-                FriendlyBulletRow("Hit protein goal")
-            }
-
             // Motivation Footer with small decorative model
             MotivationalCard()
         }
+    }
+}
+
+@Composable
+fun NutritionProfileCard(state: CampusFitUiState) {
+    val profile = state.profile
+    FriendlyInsightCard(
+        title = "Nutrition Profile",
+        subtitle = "Optimized for your goals",
+        emoji = "🥗",
+        headerImage = "profile/healthy_diet.png",
+        footerImage = "profile/meals.png"
+    ) {
+        LabelValueRow("Diet Goal", profile.goal.label)
+        LabelValueRow("Preference", profile.foodPreference.label)
+
+        state.personalizedPlan?.dietRecommendation?.title?.let {
+            Text(
+                text = it,
+                color = TextSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+            )
+        }
+        state.personalizedPlan?.dietRecommendation?.meals?.take(3)?.forEach { meal ->
+            FriendlyBulletRow(meal)
+        }
+    }
+}
+
+@Composable
+fun DailyHabitsCard() {
+    FriendlyInsightCard(
+        title = "Daily Habits",
+        subtitle = "Stay consistent",
+        emoji = "⚡"
+    ) {
+        FriendlyBulletRow("Drink enough water")
+        FriendlyBulletRow("Complete workout")
+        FriendlyBulletRow("Hit protein goal")
     }
 }
 

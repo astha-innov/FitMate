@@ -3,8 +3,6 @@ package com.fitmate.ui.auth
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -46,10 +44,6 @@ import com.fitmate.ui.viewmodel.AuthState
 import com.fitmate.ui.viewmodel.AuthViewModel
 import com.fitmate.ui.viewmodel.FakeAuthViewModel
 import com.fitmate.ui.viewmodel.PhoneAuthUiState
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.GoogleAuthProvider
 
 // --- PREMIUM DESIGN CONSTANTS ---
 val PrimaryGreen = Color(0xFF10B981)
@@ -76,32 +70,7 @@ fun SignInScreen(
     val context = LocalContext.current
     val activity = context.findActivity()
 
-    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id))
-        .requestEmail()
-        .build()
-
-    val googleSignInClient = GoogleSignIn.getClient(context, gso)
-    val launcher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account.idToken
-                if (idToken.isNullOrBlank()) {
-                    viewModel.showError("Google Sign-In did not return an ID token. Check Firebase SHA and OAuth client configuration.")
-                    return@rememberLauncherForActivityResult
-                }
-                val credential = GoogleAuthProvider.getCredential(idToken, null)
-                viewModel.signInWithCredential(credential, "Google Sign-In failed")
-            } catch (e: ApiException) {
-                viewModel.showError("Google Sign-In failed: ${e.statusCode}. Check SHA fingerprints and google-services.json.")
-            } catch (e: Exception) {
-                viewModel.showError(e.message ?: "Google Sign-In failed.")
-            }
-        }
+    val startGoogleSignIn = rememberGoogleSignInAction(viewModel)
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -300,7 +269,7 @@ fun SignInScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 PremiumSecondaryButton(
                     text = "Continue with Google",
-                    onClick = { launcher.launch(googleSignInClient.signInIntent) }
+                    onClick = startGoogleSignIn
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 PremiumTextField(

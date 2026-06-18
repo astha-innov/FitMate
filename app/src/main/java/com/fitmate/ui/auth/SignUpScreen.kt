@@ -3,8 +3,6 @@ package com.fitmate.ui.auth
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -43,10 +41,6 @@ import com.fitmate.ui.theme.FitMateTheme
 import com.fitmate.ui.viewmodel.AuthState
 import com.fitmate.ui.viewmodel.AuthViewModel
 import com.fitmate.ui.viewmodel.FakeAuthViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.GoogleAuthProvider
 
 @Suppress("DEPRECATION")
 @Composable
@@ -54,40 +48,7 @@ fun SignUpScreen(
     navController: NavController,
     viewModel: AuthViewModel
 ) {
-    val context = LocalContext.current
-    val activity = context.findActivity()
-
-    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id))
-        .requestEmail()
-        .build()
-
-    val googleSignInClient = GoogleSignIn.getClient(context, gso)
-    val launcher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-
-            try {
-                val account = task.getResult(ApiException::class.java)
-
-                val idToken = account.idToken
-                if (idToken.isNullOrBlank()) {
-                    viewModel.showError("Google Sign-In did not return an ID token. Check Firebase SHA and OAuth client configuration.")
-                    return@rememberLauncherForActivityResult
-                }
-
-                val credential = GoogleAuthProvider.getCredential(idToken, null)
-                viewModel.signInWithCredential(credential, "Google Sign-In failed")
-
-            } catch (e: ApiException) {
-                viewModel.showError("Google Sign-In failed: ${e.statusCode}. Check SHA fingerprints and google-services.json.")
-            } catch (e: Exception) {
-                viewModel.showError(e.message ?: "Google Sign-In failed.")
-            }
-        }
+    val startGoogleSignIn = rememberGoogleSignInAction(viewModel)
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -124,7 +85,7 @@ fun SignUpScreen(
     LaunchedEffect(authState) {
 
         if (authState is AuthState.Success) {
-            navController.navigate(Routes.SignIn.route) {
+            navController.navigate(Routes.Home.route) {
                 popUpTo(Routes.SignUp.route) {
                     inclusive = true
                 }
@@ -301,10 +262,7 @@ fun SignUpScreen(
 
             PremiumSecondaryButton( // Retained project component
                 text = "Continue with Google",
-                onClick = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    launcher.launch(signInIntent)
-                }
+                onClick = startGoogleSignIn
             )
 
             Spacer(modifier = Modifier.height(24.dp))

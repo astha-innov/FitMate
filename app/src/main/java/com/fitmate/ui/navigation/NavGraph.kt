@@ -13,6 +13,7 @@ import com.fitmate.ui.auth.SignUpScreen
 import com.fitmate.ui.coach.CoachChatScreen
 import com.fitmate.ui.splash.SplashScreen
 import com.fitmate.ui.viewmodel.AuthViewModel
+import com.fitmate.data.AppStorage
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -35,9 +36,10 @@ fun NavGraph() {
             SplashScreen(
 
                 onSplashFinished = {
-
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    currentUser?.uid?.let(AppStorage::prepareForUser)
                     navController.navigate(
-                        Routes.SignUp.route
+                        if (currentUser != null) Routes.Home.route else Routes.SignUp.route
                     ) {
 
                         popUpTo(

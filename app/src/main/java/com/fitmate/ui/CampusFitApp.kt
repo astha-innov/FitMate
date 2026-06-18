@@ -130,6 +130,7 @@ import com.fitmate.ui.theme.FitMateTheme
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 
 private enum class IntroStage {
+    LOADING,
     WELCOME,
     QUESTIONS,
     PERSONALIZING,
@@ -147,8 +148,16 @@ fun CampusFitApp(
     val personalizationState by
     viewModel.personalizationState.collectAsStateWithLifecycle()
 
+    val sessionReady by viewModel.sessionReady.collectAsStateWithLifecycle()
+
     var stage by rememberSaveable {
-        mutableStateOf(IntroStage.WELCOME)
+        mutableStateOf(IntroStage.LOADING)
+    }
+
+    LaunchedEffect(sessionReady, uiState.setupCompleted) {
+        if (sessionReady && stage == IntroStage.LOADING) {
+            stage = if (uiState.setupCompleted) IntroStage.HOME else IntroStage.WELCOME
+        }
     }
 
     // Move to personalization screen
@@ -178,6 +187,8 @@ fun CampusFitApp(
     ) {
 
         when (stage) {
+
+            IntroStage.LOADING -> Unit
 
             IntroStage.WELCOME -> {
 

@@ -3,6 +3,7 @@ package com.fitmate.ui.viewmodel
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fitmate.data.AppStorage
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -55,6 +56,8 @@ open class AuthViewModel : ViewModel() {
                     password
                 ).await()
 
+                prepareAuthenticatedUser()
+
                 _authState.value = AuthState.Success
 
             } catch (e: Exception) {
@@ -87,6 +90,8 @@ open class AuthViewModel : ViewModel() {
                     password
                 ).await()
 
+                prepareAuthenticatedUser()
+
                 _authState.value = AuthState.Success
 
             } catch (e: Exception) {
@@ -111,6 +116,7 @@ open class AuthViewModel : ViewModel() {
             try {
                 _isLoading.value = true
                 auth.signInWithCredential(credential).await()
+                prepareAuthenticatedUser()
                 _authState.value = AuthState.Success
             } catch (exception: Exception) {
                 _authState.value = AuthState.Error(exception.message ?: failureLabel)
@@ -198,6 +204,7 @@ open class AuthViewModel : ViewModel() {
             try {
                 _isLoading.value = true
                 auth.signInWithCredential(credential).await()
+                prepareAuthenticatedUser()
                 _phoneAuthState.value = PhoneAuthUiState.Verified
                 _authState.value = AuthState.Success
             } catch (exception: Exception) {
@@ -233,6 +240,10 @@ open class AuthViewModel : ViewModel() {
 
     fun resetState() {
         _authState.value = AuthState.Idle
+    }
+
+    private fun prepareAuthenticatedUser() {
+        auth.currentUser?.uid?.let(AppStorage::prepareForUser)
     }
 
     fun showError(message: String) {

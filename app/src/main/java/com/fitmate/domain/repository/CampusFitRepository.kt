@@ -26,6 +26,7 @@ interface CampusFitRepository {
     val latestMealAnalysis: StateFlow<MealAnalysis?>
     val workoutSchedule: StateFlow<WeeklyWorkoutSchedule?>
     val workoutLogs: StateFlow<List<WorkoutDayLog>>
+    val sessionReady: StateFlow<Boolean>
 
     fun updateProfile(profile: UserProfile)
     fun updateAiConfig(config: AiConfig)

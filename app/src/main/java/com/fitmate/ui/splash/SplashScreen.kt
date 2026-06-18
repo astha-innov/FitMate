@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.fitmate.ui.components.FitMateLogoMark
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -640,63 +641,14 @@ private fun OrbitalLogoRing() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            DumbbellIcon(Modifier.size(44.dp))
+            FitMateLogoMark(
+                modifier = Modifier.size(76.dp),
+            )
         }
     }
 }
 
 // ── Dumbbell Icon ─────────────────────────────────────────────────────────────
-
-@Composable
-private fun DumbbellIcon(modifier: Modifier = Modifier) {
-    Canvas(modifier) {
-        val w  = size.width
-        val h  = size.height
-        val cy = h / 2f
-
-        val barColor = DarkText.copy(alpha = 0.85f)
-        val plateCol = DarkText.copy(alpha = 0.75f)
-        val claspCol = PrimaryGreen.copy(alpha = 0.90f)
-
-        drawLine(barColor, Offset(w * 0.15f, cy), Offset(w * 0.85f, cy), strokeWidth = h * 0.08f, cap = StrokeCap.Butt)
-
-        drawRoundRect(
-            color        = plateCol,
-            topLeft      = Offset(0f, cy - h * 0.28f),
-            size         = Size(w * 0.14f, h * 0.56f),
-            cornerRadius = CornerRadius(3f)
-        )
-        drawRoundRect(
-            color        = claspCol,
-            topLeft      = Offset(w * 0.12f, cy - h * 0.2f),
-            size         = Size(w * 0.07f, h * 0.4f),
-            cornerRadius = CornerRadius(2f)
-        )
-        drawRoundRect(
-            color        = claspCol,
-            topLeft      = Offset(w * 0.81f, cy - h * 0.2f),
-            size         = Size(w * 0.07f, h * 0.4f),
-            cornerRadius = CornerRadius(2f)
-        )
-        drawRoundRect(
-            color        = plateCol,
-            topLeft      = Offset(w * 0.86f, cy - h * 0.28f),
-            size         = Size(w * 0.14f, h * 0.56f),
-            cornerRadius = CornerRadius(3f)
-        )
-
-        // Green arc above bar
-        drawArc(
-            color      = PrimaryGreen.copy(alpha = 0.75f),
-            startAngle = 200f,
-            sweepAngle = -40f,
-            useCenter  = false,
-            topLeft    = Offset(w * 0.3f, cy - h * 0.32f),
-            size       = Size(w * 0.4f, h * 0.4f),
-            style      = Stroke(width = h * 0.06f, cap = StrokeCap.Round)
-        )
-    }
-}
 
 // ── Brand Text ────────────────────────────────────────────────────────────────
 

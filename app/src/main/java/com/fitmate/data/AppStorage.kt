@@ -41,6 +41,19 @@ object AppStorage {
 
     fun isReady(): Boolean = ::prefs.isInitialized
 
+    fun prepareForUser(userId: String) {
+        val activeUserId = prefs.getString(ACTIVE_USER_ID, null)
+        if (activeUserId == userId) return
+        if (activeUserId == null) {
+            prefs.edit().putString(ACTIVE_USER_ID, userId).apply()
+            return
+        }
+
+        val editor = prefs.edit()
+        USER_SCOPED_KEYS.forEach(editor::remove)
+        editor.putString(ACTIVE_USER_ID, userId).apply()
+    }
+
     fun saveSetupCompleted(completed: Boolean) {
         prefs.edit().putBoolean("setup_completed", completed).apply()
     }
@@ -402,6 +415,20 @@ object AppStorage {
         "MAINTENANCE" -> GoalType.STRESS_RELIEF
         else -> GoalType.valueOf(raw)
     }
+
+    private const val ACTIVE_USER_ID = "active_user_id"
+    private val USER_SCOPED_KEYS = listOf(
+        "setup_completed",
+        "profile_json",
+        "ai_config_json",
+        "theme_mode",
+        "plan_json",
+        "discipline_json",
+        "goal_progress_json",
+        "meal_logs_json",
+        "workout_schedule_json",
+        "workout_logs_json",
+    )
 
     private fun parseActivityLevel(raw: String): ActivityLevel = runCatching {
         ActivityLevel.valueOf(raw)

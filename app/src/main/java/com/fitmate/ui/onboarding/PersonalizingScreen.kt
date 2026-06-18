@@ -12,7 +12,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -50,12 +49,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fitmate.R
+import com.fitmate.ui.components.FitMateLogoMark
 import com.fitmate.ui.viewmodel.PersonalizationState
 import kotlinx.coroutines.delay
 
@@ -214,14 +212,11 @@ private fun PulsingLogo() {
                 )
             )
         }
-        Image(
-            painter = painterResource(R.drawable.app_logo),
-            contentDescription = null,
+        FitMateLogoMark(
             modifier = Modifier
                 .size(100.dp)
                 .scale(scale)
-                .clip(RoundedCornerShape(22.dp))
-                .border(1.dp, _NeonCyan.a(0.22f), RoundedCornerShape(22.dp))
+                .padding(22.dp),
         )
     }
 }

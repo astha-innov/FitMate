@@ -2,8 +2,12 @@
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.MoreHoriz
@@ -26,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +45,9 @@ import com.fitmate.ui.coach.CoachChatScreen
 import androidx.compose.material.icons.outlined.SmartToy
 import com.fitmate.ui.coach.CoachIntroScreen
 import androidx.compose.material.icons.outlined.Chat
+import com.fitmate.ui.components.FitMateLogoMark
+import com.fitmate.ui.diet.DietScreen
+import androidx.compose.material.icons.outlined.RestaurantMenu
 
 private val NeonCyan = Color(0xFF00E5FF)
 private val DeepSpace = Color(0xFF05070A)
@@ -58,6 +66,10 @@ enum class HomeTab(
     WORKOUT(
         "Workout",
         Icons.AutoMirrored.Outlined.DirectionsRun
+    ),
+    DIET(
+        "Diet",
+        Icons.Outlined.RestaurantMenu
     ),
     PROGRESS(
         "Progress",
@@ -101,19 +113,28 @@ fun AppNavigation(
                     titleContentColor = TextPrimary
                 ),
                 title = {
-                    Column {
-                        Text(
-                            text = "FitMate",
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (currentTab == HomeTab.PROFILE) {
+                            FitMateLogoMark(modifier = Modifier.size(34.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
+                        }
+                        Column {
+                            Text(
+                                text = "FitMate",
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
 
-                        Text(
-                            text = state.personalizedPlan?.aiSummary
-                                ?: "AI-powered fitness",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = TextSecondary
-                        )
+                            Text(
+                                text = if (currentTab == HomeTab.PROFILE) {
+                                    "EXCUSES don’t burn CALORIES"
+                                } else {
+                                    state.personalizedPlan?.aiSummary ?: "AI-powered fitness"
+                                },
+                                style = MaterialTheme.typography.labelMedium,
+                                color = TextSecondary
+                            )
+                        }
                     }
                 }
             )
@@ -174,6 +195,9 @@ fun AppNavigation(
 
                 HomeTab.WORKOUT ->
                     WorkoutScreen(state, viewModel)
+
+                HomeTab.DIET ->
+                    DietScreen(state)
 
                 HomeTab.PROGRESS ->
                     ProgressScreen(
