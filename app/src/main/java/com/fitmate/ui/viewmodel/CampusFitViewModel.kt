@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fitmate.data.CampusFitRepositoryImpl
 import com.fitmate.data.LocalExerciseDatabase
+import com.fitmate.data.LocalExerciseCatalog
 import com.fitmate.domain.analytics.AnalyticsEngine
 import com.fitmate.domain.analytics.AnalyticsSnapshot
 import com.fitmate.domain.model.AiConfig
@@ -75,7 +76,7 @@ class CampusFitViewModel(
     private val createWorkoutPlan: CreateWorkoutPlanUseCase =
         CreateWorkoutPlanUseCase(),
     private val generateWorkoutSchedule: GenerateWorkoutScheduleUseCase =
-        GenerateWorkoutScheduleUseCase(LocalExerciseDatabase.exercises),
+        GenerateWorkoutScheduleUseCase(LocalExerciseDatabase.exercises, LocalExerciseCatalog),
     private val analyticsEngine: AnalyticsEngine = AnalyticsEngine(),
 ) : ViewModel() {
 
@@ -288,6 +289,9 @@ class CampusFitViewModel(
                     )
 
                 repository.savePersonalizedPlan(plan)
+                if (repository.workoutSchedule.value == null) {
+                    repository.saveWorkoutSchedule(generateWorkoutSchedule(profile))
+                }
 
                 delay(250)
 

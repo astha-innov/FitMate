@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -79,11 +80,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.compose.AsyncImage
@@ -91,6 +94,7 @@ import coil.compose.LocalImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.fitmate.data.LocalExerciseDatabase
+import com.fitmate.data.LocalExerciseCatalog
 import com.fitmate.domain.model.ExerciseLibraryEntry
 import com.fitmate.domain.model.ExerciseMetricType
 import com.fitmate.domain.model.WorkoutDayLog
@@ -101,7 +105,6 @@ import com.fitmate.domain.model.WorkoutExerciseProgress
 import com.fitmate.domain.model.WorkoutFocus
 import com.fitmate.domain.model.WorkoutPlanType
 import com.fitmate.domain.model.WorkoutWeekday
-import com.fitmate.domain.workout.WorkoutExerciseCatalog
 import com.fitmate.ui.viewmodel.CampusFitUiState
 import com.fitmate.ui.viewmodel.CampusFitViewModel
 
@@ -126,6 +129,32 @@ private val EasyColor              = Color(0xFF10B981)
 private val MediumColor            = Color(0xFFF59E0B)
 private val HardColor              = Color(0xFFEF4444)
 // ──────────────────────────────────────────────────────────────────────────
+
+private val workoutWeekdaysMondayFirst = listOf(
+    WorkoutWeekday.MONDAY,
+    WorkoutWeekday.TUESDAY,
+    WorkoutWeekday.WEDNESDAY,
+    WorkoutWeekday.THURSDAY,
+    WorkoutWeekday.FRIDAY,
+    WorkoutWeekday.SATURDAY,
+    WorkoutWeekday.SUNDAY,
+)
+
+private val workoutWeekdayDisplayIndex = workoutWeekdaysMondayFirst
+    .withIndex()
+    .associate { (index, weekday) -> weekday to index }
+
+private val customWorkoutFocusOptions = listOf(
+    WorkoutFocus.PUSH,
+    WorkoutFocus.PULL,
+    WorkoutFocus.FULL_BODY,
+    WorkoutFocus.MOBILITY,
+    WorkoutFocus.ARMS_ABS,
+    WorkoutFocus.LEGS_SHOULDERS,
+    WorkoutFocus.UPPER_BODY_POWER,
+    WorkoutFocus.ARM_SPECIALIZATION_WEAK_POINTS,
+    WorkoutFocus.REST,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -193,7 +222,7 @@ fun WorkoutScreen(
         RecommendedPlanConfirmationDialog(
             title = "Your fitness goal changed",
             message = "Generate a new recommended workout plan for ${state.profile.goal.label}?",
-            confirmLabel = "Generate New Plan",
+            confirmLabel = "Confirm",
             onDismiss = {
                 dismissedGoalPromptFor = state.profile.goal.name
                 showGoalChangeDialog = false
@@ -212,7 +241,7 @@ fun WorkoutScreen(
         RecommendedPlanConfirmationDialog(
             title = "Replace custom plan?",
             message = "Your custom workout will be replaced with a recommended ${state.profile.goal.label} plan.",
-            confirmLabel = "Use Recommended Plan",
+            confirmLabel = "Confirm",
             onDismiss = { showReplaceCustomDialog = false },
             onConfirm = {
                 viewModel.saveWorkoutSchedule(
@@ -310,7 +339,10 @@ fun WorkoutScreen(
                         }
 
                         schedule?.days?.let { days ->
-                            items(days, key = { it.weekday.name }) { day ->
+                            val displayDays = days.sortedBy {
+                                workoutWeekdayDisplayIndex[it.weekday] ?: Int.MAX_VALUE
+                            }
+                            items(displayDays, key = { it.weekday.name }) { day ->
                                 WorkoutDayCard(
                                     day = day,
                                     workoutLogs = state.workoutLogs,
@@ -582,7 +614,10 @@ private fun ExerciseCardRow(
                         .size(72.dp)
                         .clip(RoundedCornerShape(18.dp))
                         .background(FitMateCard),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = ColorPainter(FitMateCard),
+                    error = ColorPainter(FitMateCard),
+                    fallback = ColorPainter(FitMateCard),
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -664,7 +699,20 @@ private fun WorkoutInstructionScreen(
     val markdown = remember(exercise.instructionMarkdownAsset) {
         loadAssetText(context, "workout_details/instructions/${exercise.instructionMarkdownAsset}")
     }
-    val parsed = remember(markdown) { parseInstructionMarkdown(markdown) }
+    val parsed = remember(markdown, exercise.name, exercise.instructions) {
+        if (markdown.isBlank()) {
+            ParsedInstructions(
+                title = "${exercise.name} instructions",
+                steps = listOf(
+                    exercise.instructions.ifBlank {
+                        LocalExerciseCatalog.DEFAULT_INSTRUCTION_FALLBACK
+                    }
+                )
+            )
+        } else {
+            parseInstructionMarkdown(markdown)
+        }
+    }
     val persistedProgress = remember(workoutLogs, detail.weekday, exercise.name) {
         todayProgressFor(detail.weekday, exercise.name, workoutLogs)
     }
@@ -750,7 +798,10 @@ private fun WorkoutInstructionScreen(
                                 .fillMaxWidth()
                                 .height(260.dp)
                                 .background(FitMateCard),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Fit,
+                            placeholder = ColorPainter(FitMateCard),
+                            error = ColorPainter(FitMateCard),
+                            fallback = ColorPainter(FitMateCard),
                         )
                         Column(
                             modifier = Modifier.padding(20.dp),
@@ -1261,7 +1312,11 @@ private fun SequentialPlanBuilderDialog(
 ) {
     val selections = remember(initialSchedule, fallbackSchedule) {
         mutableStateListOf<WorkoutDaySchedule>().apply {
-            addAll(initialSchedule?.days ?: fallbackSchedule.days)
+            addAll(
+                (initialSchedule?.days ?: fallbackSchedule.days).sortedBy {
+                    workoutWeekdayDisplayIndex[it.weekday] ?: Int.MAX_VALUE
+                }
+            )
         }
     }
     var stepIndex by remember { mutableIntStateOf(0) }
@@ -1273,13 +1328,16 @@ private fun SequentialPlanBuilderDialog(
     NeonDialogShell(
         title = "Make custom plan",
         onDismiss = onDismiss,
+        widthFraction = 0.96f,
+        heightFraction = 0.92f,
+        usePlatformDefaultWidth = false,
         scrollable = true
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterHorizontally)
         ) {
-            WorkoutWeekday.entries.forEachIndexed { index, _ ->
+            workoutWeekdaysMondayFirst.forEachIndexed { index, _ ->
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
@@ -1297,7 +1355,7 @@ private fun SequentialPlanBuilderDialog(
         }
         Spacer(modifier = Modifier.height(14.dp))
         Text(
-            text = "Step ${stepIndex + 1} of ${WorkoutWeekday.entries.size}",
+            text = "Step ${stepIndex + 1} of ${workoutWeekdaysMondayFirst.size}",
             color = FitMateBlue,
             fontWeight = FontWeight.Bold
         )
@@ -1367,14 +1425,15 @@ private fun SequentialPlanBuilderDialog(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            WorkoutFocus.entries.chunked(2).forEach { rowItems ->
+            customWorkoutFocusOptions.chunked(2).forEach { rowItems ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     rowItems.forEach { focus ->
                         FocusChip(
-                            label = focus.label,
+                            label = customFocusTitle(focus),
+                            subtitle = customFocusSubtitle(focus),
                             selected = day.focus == focus,
                             onClick = {
                                 selections[stepIndex] = WorkoutDaySchedule(
@@ -1407,10 +1466,13 @@ private fun SequentialPlanBuilderDialog(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(
                 onClick = {
-                    if (stepIndex > 0) stepIndex--
+                    if (stepIndex == 0) {
+                        onDismiss()
+                    } else {
+                        stepIndex--
+                    }
                 },
                 modifier = Modifier.weight(1f),
-                enabled = stepIndex > 0,
                 border = BorderStroke(1.dp, FitMateBorder)
             ) {
                 Text("Back", color = FitMateTextPrimary)
@@ -1453,7 +1515,7 @@ private fun WorkoutDayEditorDialog(
     onDismiss: () -> Unit,
     onSave: (WorkoutDaySchedule) -> Unit
 ) {
-    var workingFocus by remember(day) { mutableStateOf(day.focus) }
+    val workingFocus = day.focus
     val exerciseStates = remember(day) {
         mutableStateMapOf<String, EditableExerciseState>().apply {
             availableExercisesForFocus(day.focus).forEach { entry ->
@@ -1471,53 +1533,11 @@ private fun WorkoutDayEditorDialog(
     NeonDialogShell(
         title = "Edit ${day.weekday.label}",
         onDismiss = onDismiss,
-        widthFraction = 0.95f,
+        widthFraction = 0.96f,
+        heightFraction = 0.92f,
+        usePlatformDefaultWidth = false,
         scrollable = true
     ) {
-        Text(
-            text = "Pick the day's focus, then tune each exercise with sliders. Difficulty updates live as you change the load.",
-            color = FitMateTextSecondary
-        )
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            WorkoutFocus.entries.chunked(2).forEach { rowItems ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    rowItems.forEach { focus ->
-                        FocusChip(
-                            label = focus.label,
-                            selected = workingFocus == focus,
-                            onClick = {
-                                workingFocus = focus
-                                exerciseStates.clear()
-                                availableExercisesForFocus(focus).forEach { entry ->
-                                    val existing = day.exercises.firstOrNull { it.exerciseName == entry.name }
-                                    exerciseStates[entry.name] = EditableExerciseState(
-                                        selected = existing != null,
-                                        sets = existing?.sets ?: 3,
-                                        amount = existing?.amount ?: entry.defaultAmount
-                                    )
-                                }
-                                errorMessage = null
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    if (rowItems.size < 2) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
         if (workingFocus == WorkoutFocus.REST) {
             Surface(
                 shape = RoundedCornerShape(22.dp),
@@ -1675,7 +1695,10 @@ private fun EditableExerciseCard(
                         .size(88.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .background(FitMateCard),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = ColorPainter(FitMateCard),
+                    error = ColorPainter(FitMateCard),
+                    fallback = ColorPainter(FitMateCard),
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1786,6 +1809,7 @@ private fun DifficultyPill(
 @Composable
 private fun FocusChip(
     label: String,
+    subtitle: String? = null,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -1796,13 +1820,32 @@ private fun FocusChip(
         border = BorderStroke(1.dp, if (selected) FitMateGreen else FitMateBorder),
         modifier = modifier.clickable(onClick = onClick)
     ) {
-        Text(
-            text = label,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
-            color = if (selected) FitMateGreen else FitMateTextPrimary,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            textAlign = TextAlign.Center
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = label,
+                color = if (selected) FitMateGreen else FitMateTextPrimary,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            subtitle?.let {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = it,
+                    color = if (selected) {
+                        FitMateGreen.copy(alpha = 0.78f)
+                    } else {
+                        FitMateTextSecondary
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 
@@ -1811,14 +1854,22 @@ private fun NeonDialogShell(
     title: String,
     onDismiss: () -> Unit,
     widthFraction: Float = 0.92f,
+    heightFraction: Float? = null,
+    usePlatformDefaultWidth: Boolean = true,
     scrollable: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = usePlatformDefaultWidth)
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(widthFraction)
-                .heightIn(max = 820.dp),
+                .then(
+                    heightFraction?.let { Modifier.fillMaxHeight(it) }
+                        ?: Modifier.heightIn(max = 820.dp)
+                ),
             colors = CardDefaults.cardColors(containerColor = FitMateSurface),
             border = BorderStroke(1.dp, FitMateBorder),
             shape = RoundedCornerShape(30.dp),
@@ -1851,8 +1902,20 @@ private fun NeonDialogShell(
 private fun availableExercisesForFocus(
     focus: WorkoutFocus
 ): List<ExerciseLibraryEntry> {
-    return WorkoutExerciseCatalog.namesFor(focus)
-        .mapNotNull(LocalExerciseDatabase::exerciseByName)
+    return LocalExerciseCatalog.forFocus(focus)
+        .mapNotNull { LocalExerciseDatabase.exerciseByName(it.name) }
+}
+
+private fun customFocusTitle(focus: WorkoutFocus): String = when (focus) {
+    WorkoutFocus.PUSH -> "PUSH"
+    WorkoutFocus.PULL -> "PULL"
+    else -> focus.label
+}
+
+private fun customFocusSubtitle(focus: WorkoutFocus): String? = when (focus) {
+    WorkoutFocus.PUSH -> "Chest + Shoulders + Triceps"
+    WorkoutFocus.PULL -> "Back + Biceps + Forearms"
+    else -> null
 }
 
 private fun defaultExercisesForFocus(
@@ -1881,6 +1944,10 @@ private fun focusPreviewImage(
         WorkoutFocus.CONDITIONING -> "gym_buddy.gif"
         WorkoutFocus.FULL_BODY -> "lifting_weights.gif"
         WorkoutFocus.MOBILITY -> "gym_buddy.gif"
+        WorkoutFocus.ARMS_ABS -> "gym_buddy.gif"
+        WorkoutFocus.LEGS_SHOULDERS -> "lifting_weights.gif"
+        WorkoutFocus.UPPER_BODY_POWER -> "bench_press.gif"
+        WorkoutFocus.ARM_SPECIALIZATION_WEAK_POINTS -> "chest_press.gif"
         WorkoutFocus.REST -> ""
     }
 }

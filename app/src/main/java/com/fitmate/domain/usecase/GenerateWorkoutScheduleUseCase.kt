@@ -12,10 +12,11 @@ import com.fitmate.domain.model.WorkoutExerciseConfig
 import com.fitmate.domain.model.WorkoutFocus
 import com.fitmate.domain.model.WorkoutPlanType
 import com.fitmate.domain.model.WorkoutWeekday
-import com.fitmate.domain.workout.WorkoutExerciseCatalog
+import com.fitmate.domain.workout.ExerciseRecommendationSource
 
 class GenerateWorkoutScheduleUseCase(
     exerciseLibrary: List<ExerciseLibraryEntry>,
+    private val recommendationSource: ExerciseRecommendationSource,
 ) {
     private val exercisesByName = exerciseLibrary.associateBy(ExerciseLibraryEntry::name)
 
@@ -43,58 +44,58 @@ class GenerateWorkoutScheduleUseCase(
     private fun templateFor(profile: UserProfile): List<Pair<WorkoutWeekday, WorkoutFocus>> {
         val baseTemplate = when (profile.goal) {
             GoalType.MUSCLE_GAIN -> listOf(
-                WorkoutWeekday.SUNDAY to WorkoutFocus.PUSH,
-                WorkoutWeekday.MONDAY to WorkoutFocus.PULL,
-                WorkoutWeekday.TUESDAY to WorkoutFocus.LEGS,
-                WorkoutWeekday.WEDNESDAY to WorkoutFocus.PUSH,
-                WorkoutWeekday.THURSDAY to WorkoutFocus.PULL,
-                WorkoutWeekday.FRIDAY to WorkoutFocus.LEGS,
-                WorkoutWeekday.SATURDAY to WorkoutFocus.REST,
+                WorkoutWeekday.MONDAY to WorkoutFocus.PUSH,
+                WorkoutWeekday.TUESDAY to WorkoutFocus.PULL,
+                WorkoutWeekday.WEDNESDAY to WorkoutFocus.LEGS,
+                WorkoutWeekday.THURSDAY to WorkoutFocus.PUSH,
+                WorkoutWeekday.FRIDAY to WorkoutFocus.PULL,
+                WorkoutWeekday.SATURDAY to WorkoutFocus.LEGS,
+                WorkoutWeekday.SUNDAY to WorkoutFocus.REST,
             )
             GoalType.FAT_LOSS -> listOf(
-                WorkoutWeekday.SUNDAY to WorkoutFocus.FULL_BODY,
-                WorkoutWeekday.MONDAY to WorkoutFocus.CONDITIONING,
-                WorkoutWeekday.TUESDAY to WorkoutFocus.REST,
-                WorkoutWeekday.WEDNESDAY to WorkoutFocus.FULL_BODY,
-                WorkoutWeekday.THURSDAY to WorkoutFocus.CONDITIONING,
-                WorkoutWeekday.FRIDAY to WorkoutFocus.CORE_CONDITIONING,
-                WorkoutWeekday.SATURDAY to WorkoutFocus.REST,
+                WorkoutWeekday.MONDAY to WorkoutFocus.FULL_BODY,
+                WorkoutWeekday.TUESDAY to WorkoutFocus.CONDITIONING,
+                WorkoutWeekday.WEDNESDAY to WorkoutFocus.REST,
+                WorkoutWeekday.THURSDAY to WorkoutFocus.FULL_BODY,
+                WorkoutWeekday.FRIDAY to WorkoutFocus.CONDITIONING,
+                WorkoutWeekday.SATURDAY to WorkoutFocus.CORE_CONDITIONING,
+                WorkoutWeekday.SUNDAY to WorkoutFocus.REST,
             )
             GoalType.LEAN_BODY -> listOf(
-                WorkoutWeekday.SUNDAY to WorkoutFocus.PUSH,
-                WorkoutWeekday.MONDAY to WorkoutFocus.PULL,
-                WorkoutWeekday.TUESDAY to WorkoutFocus.REST,
-                WorkoutWeekday.WEDNESDAY to WorkoutFocus.LEGS,
-                WorkoutWeekday.THURSDAY to WorkoutFocus.CONDITIONING,
-                WorkoutWeekday.FRIDAY to WorkoutFocus.FULL_BODY,
-                WorkoutWeekday.SATURDAY to WorkoutFocus.REST,
+                WorkoutWeekday.MONDAY to WorkoutFocus.PUSH,
+                WorkoutWeekday.TUESDAY to WorkoutFocus.PULL,
+                WorkoutWeekday.WEDNESDAY to WorkoutFocus.REST,
+                WorkoutWeekday.THURSDAY to WorkoutFocus.LEGS,
+                WorkoutWeekday.FRIDAY to WorkoutFocus.CONDITIONING,
+                WorkoutWeekday.SATURDAY to WorkoutFocus.FULL_BODY,
+                WorkoutWeekday.SUNDAY to WorkoutFocus.REST,
             )
             GoalType.CARDIO_STAMINA -> listOf(
-                WorkoutWeekday.SUNDAY to WorkoutFocus.CONDITIONING,
-                WorkoutWeekday.MONDAY to WorkoutFocus.FULL_BODY,
-                WorkoutWeekday.TUESDAY to WorkoutFocus.REST,
-                WorkoutWeekday.WEDNESDAY to WorkoutFocus.CONDITIONING,
-                WorkoutWeekday.THURSDAY to WorkoutFocus.CORE_CONDITIONING,
-                WorkoutWeekday.FRIDAY to WorkoutFocus.CONDITIONING,
-                WorkoutWeekday.SATURDAY to WorkoutFocus.REST,
+                WorkoutWeekday.MONDAY to WorkoutFocus.CONDITIONING,
+                WorkoutWeekday.TUESDAY to WorkoutFocus.FULL_BODY,
+                WorkoutWeekday.WEDNESDAY to WorkoutFocus.REST,
+                WorkoutWeekday.THURSDAY to WorkoutFocus.CONDITIONING,
+                WorkoutWeekday.FRIDAY to WorkoutFocus.CORE_CONDITIONING,
+                WorkoutWeekday.SATURDAY to WorkoutFocus.CONDITIONING,
+                WorkoutWeekday.SUNDAY to WorkoutFocus.REST,
             )
             GoalType.FLEXIBILITY_MOBILITY -> listOf(
-                WorkoutWeekday.SUNDAY to WorkoutFocus.MOBILITY,
-                WorkoutWeekday.MONDAY to WorkoutFocus.REST,
+                WorkoutWeekday.MONDAY to WorkoutFocus.MOBILITY,
                 WorkoutWeekday.TUESDAY to WorkoutFocus.MOBILITY,
                 WorkoutWeekday.WEDNESDAY to WorkoutFocus.FULL_BODY,
                 WorkoutWeekday.THURSDAY to WorkoutFocus.REST,
                 WorkoutWeekday.FRIDAY to WorkoutFocus.MOBILITY,
                 WorkoutWeekday.SATURDAY to WorkoutFocus.MOBILITY,
+                WorkoutWeekday.SUNDAY to WorkoutFocus.REST,
             )
             GoalType.STRESS_RELIEF -> listOf(
-                WorkoutWeekday.SUNDAY to WorkoutFocus.FULL_BODY,
                 WorkoutWeekday.MONDAY to WorkoutFocus.MOBILITY,
-                WorkoutWeekday.TUESDAY to WorkoutFocus.REST,
+                WorkoutWeekday.TUESDAY to WorkoutFocus.FULL_BODY,
                 WorkoutWeekday.WEDNESDAY to WorkoutFocus.CORE_CONDITIONING,
                 WorkoutWeekday.THURSDAY to WorkoutFocus.MOBILITY,
                 WorkoutWeekday.FRIDAY to WorkoutFocus.REST,
                 WorkoutWeekday.SATURDAY to WorkoutFocus.FULL_BODY,
+                WorkoutWeekday.SUNDAY to WorkoutFocus.REST,
             )
         }
         val needsAdditionalRecovery =
@@ -122,15 +123,17 @@ class GenerateWorkoutScheduleUseCase(
     ): List<WorkoutExerciseConfig> {
         if (focus == WorkoutFocus.REST) return emptyList()
 
-        val pool = WorkoutExerciseCatalog.namesFor(focus)
+        val pool = recommendationSource.recommendationNames(focus, profile)
             .mapNotNull(exercisesByName::get)
-            .let { filterForEquipment(it, profile) }
         if (pool.isEmpty()) return emptyList()
 
         val exerciseCount = when {
-            profile.workoutMinutes < 30 -> 2
-            profile.workoutMinutes < 50 -> 3
-            else -> 4
+            profile.workoutMinutes < 20 -> 2
+            profile.workoutMinutes <= 30 -> 3
+            profile.workoutMinutes <= 45 -> 4
+            profile.workoutMinutes <= 60 -> 5
+            profile.workoutMinutes <= 90 -> 7
+            else -> 9
         }.coerceAtMost(pool.size)
         val offset = occurrence % pool.size
         val rotated = pool.drop(offset) + pool.take(offset)
@@ -142,33 +145,6 @@ class GenerateWorkoutScheduleUseCase(
                 amount = amountFor(entry, profile.goal, profile.experienceLevel),
             )
         }
-    }
-
-    private fun filterForEquipment(
-        exercises: List<ExerciseLibraryEntry>,
-        profile: UserProfile,
-    ): List<ExerciseLibraryEntry> {
-        val explicitlyBodyweightOnly = profile.equipment.any {
-            it.equals("No equipment", ignoreCase = true) ||
-                it.equals("Bodyweight only", ignoreCase = true)
-        }
-        if (!explicitlyBodyweightOnly) return exercises
-
-        val bodyweightExercises = setOf(
-            "Push-Ups",
-            "Body Tricep Press",
-            "Bench Dips",
-            "Dynamic Back Stretch",
-            "Elevated Back Lunge",
-            "Bottoms Up",
-            "Mountain Climber",
-            "Jumping Jack",
-            "Plank",
-            "Sit-Up",
-            "Decline Reverse Crunch",
-            "Bent Knee Hip Raise",
-        )
-        return exercises.filter { it.name in bodyweightExercises }.ifEmpty { exercises }
     }
 
     private fun setsFor(goal: GoalType, experience: ExperienceLevel): Int {

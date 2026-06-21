@@ -3,9 +3,9 @@ package com.fitmate.data
 import com.fitmate.domain.model.ExerciseLibraryEntry
 import com.fitmate.domain.model.ExerciseMetricType
 
-object LocalExerciseDatabase {
+internal object LegacyExerciseEntries {
 
-    val exercises: List<ExerciseLibraryEntry> = listOf(
+    val entries: List<ExerciseLibraryEntry> = listOf(
         ExerciseLibraryEntry(
             name = "Push-Ups",
             muscleGroup = "Chest",
@@ -381,7 +381,4 @@ object LocalExerciseDatabase {
         )
     )
 
-    fun exerciseByName(name: String): ExerciseLibraryEntry? {
-        return exercises.firstOrNull { it.name == name }
-    }
 }

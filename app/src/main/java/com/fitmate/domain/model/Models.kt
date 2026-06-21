@@ -130,6 +130,10 @@ enum class WorkoutFocus(val label: String) {
     CONDITIONING("Conditioning"),
     FULL_BODY("Full Body"),
     MOBILITY("Mobility + Recovery"),
+    ARMS_ABS("ARMS + ABS"),
+    LEGS_SHOULDERS("LEGS + SHOULDERS"),
+    UPPER_BODY_POWER("UPPER BODY POWER"),
+    ARM_SPECIALIZATION_WEAK_POINTS("ARM SPECIALIZATION + WEAK POINTS"),
     REST("Rest Day"),
 }
 
