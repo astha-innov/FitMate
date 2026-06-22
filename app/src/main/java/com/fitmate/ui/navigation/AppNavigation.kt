@@ -49,7 +49,7 @@ import androidx.compose.material.icons.outlined.SmartToy
 import com.fitmate.ui.coach.CoachIntroScreen
 import androidx.compose.material.icons.outlined.Chat
 import com.fitmate.ui.components.FitMateLogoMark
-import com.fitmate.ui.diet.DietScreen
+import com.fitmate.ui.diet.PersonalizedNutritionScreen
 import androidx.compose.material.icons.outlined.RestaurantMenu
 
 private val NeonCyan = Color(0xFF00E5FF)
@@ -249,7 +249,7 @@ fun AppNavigation(
                     WorkoutScreen(state, viewModel)
 
                 HomeTab.DIET ->
-                    DietScreen(state)
+                    PersonalizedNutritionScreen()
 
                 HomeTab.PROGRESS ->
                     ProgressScreen(

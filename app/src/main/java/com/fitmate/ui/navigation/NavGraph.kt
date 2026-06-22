@@ -36,15 +36,13 @@ fun NavGraph() {
             SplashScreen(
 
                 onSplashFinished = {
-                    val currentUser = FirebaseAuth.getInstance().currentUser
-                    currentUser?.uid?.let(AppStorage::prepareForUser)
-                    navController.navigate(
-                        if (currentUser != null) Routes.Home.route else Routes.SignUp.route
-                    ) {
 
-                        popUpTo(
-                            Routes.Splash.route
-                        ) {
+                    FirebaseAuth.getInstance().currentUser?.uid?.let {
+                        AppStorage.prepareForUser(it)
+                    }
+
+                    navController.navigate(Routes.SignUp.route) {
+                        popUpTo(Routes.Splash.route) {
                             inclusive = true
                         }
                     }

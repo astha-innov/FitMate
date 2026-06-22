@@ -3,15 +3,13 @@
 /app/build/
 /local.properties
 SESSION_MIGRATION.md
-
+.kotlin/
 
 # Android Studio / IntelliJ
 /.idea/
 *.iml
 
 # Firebase / Google service credentials
-
-
 
 firebase-debug.log
 firestore-debug.log

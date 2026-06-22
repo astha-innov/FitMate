@@ -170,6 +170,12 @@ fun ProfileScreen(state: CampusFitUiState) {
                 )
             )
 
+            // 5. NUTRITION SECTION
+            NutritionProfileCard(state)
+
+// 6. DAILY HABITS
+            DailyHabitsCard()
+
             // Motivation Footer with small decorative model
             MotivationalCard()
         }
