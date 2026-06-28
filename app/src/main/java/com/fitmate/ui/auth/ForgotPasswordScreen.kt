@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -84,7 +85,7 @@ fun ForgotPasswordScreen(
 
         Image(
             painter = painterResource(id = R.drawable.body_transformation),
-            contentDescription = "Fitness Background",
+            contentDescription = stringResource(R.string.fitness_background),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
@@ -127,13 +128,13 @@ fun ForgotPasswordScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = PrimaryText
                     )
                 }
 
                 Text(
-                    text = "FITMATE",
+                    text = stringResource(R.string.fitmate_brand),
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
@@ -151,7 +152,7 @@ fun ForgotPasswordScreen(
 
             // 4. HEADER TEXT
             Text(
-                text = "Reset Password",
+                text = stringResource(R.string.reset_password),
                 color = PrimaryText,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -159,7 +160,7 @@ fun ForgotPasswordScreen(
             )
 
             Text(
-                text = "Enter your email and we'll send a secure password reset link.",
+                text = stringResource(R.string.reset_password_hint),
                 color = SecondaryText,
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
@@ -193,14 +194,14 @@ fun ForgotPasswordScreen(
                     PremiumTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = "Email",
+                        label = stringResource(R.string.email),
                         icon = Icons.Default.Email
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     PremiumButton(
-                        text = "Send Reset Link",
+                        text = stringResource(R.string.send_reset_link),
                         loading = loading || resetState is PasswordResetState.Sending,
                         onClick = { viewModel.sendPasswordReset(email) }
                     )

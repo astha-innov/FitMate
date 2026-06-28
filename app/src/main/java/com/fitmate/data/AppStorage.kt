@@ -81,8 +81,19 @@ object AppStorage {
     fun saveThemeMode(mode: AppThemeMode) {
         prefs.edit().putString("theme_mode", mode.name).apply()
     }
+    fun loadThemeMode(): AppThemeMode =
+        AppThemeMode.valueOf(
+            prefs.getString("theme_mode", AppThemeMode.SYSTEM.name)!!
+        )
+    fun saveLanguage(languageCode: String) {
+        prefs.edit()
+            .putString(ACTIVE_LANGUAGE, languageCode)
+            .apply()
+    }
 
-    fun loadThemeMode(): AppThemeMode = AppThemeMode.valueOf(prefs.getString("theme_mode", AppThemeMode.LIGHT.name)!!)
+    fun loadLanguage(): String {
+        return prefs.getString(ACTIVE_LANGUAGE, "en") ?: "en"
+    }
 
     fun savePlan(plan: PersonalizedPlan) {
         prefs.edit().putString("plan_json", planToJson(plan).toString()).apply()
@@ -417,6 +428,8 @@ object AppStorage {
     }
 
     private const val ACTIVE_USER_ID = "active_user_id"
+
+    private const val ACTIVE_LANGUAGE = "active_language"
     private val USER_SCOPED_KEYS = listOf(
         "setup_completed",
         "profile_json",

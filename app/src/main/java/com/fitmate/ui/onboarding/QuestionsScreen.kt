@@ -21,10 +21,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fitmate.R
 import com.fitmate.domain.model.ActivityLevel
 import com.fitmate.domain.model.ExperienceLevel
 import com.fitmate.domain.model.FoodPreference
@@ -132,13 +134,13 @@ fun QuestionsScreen(
                     ) {
                         when (step) {
                             0 -> GenderSelection(gender) { gender = it }
-                            1 -> SliderQuestion("How old are you?", age, 14f..80f, "years") { age = it }
-                            2 -> SliderQuestion("What's your height?", height, 120f..220f, "cm") { height = it }
-                            3 -> SliderQuestion("What's your weight?", weight, 40f..150f, "kg") { weight = it }
+                            1 -> SliderQuestion(stringResource(R.string.question_age), age, 14f..80f, stringResource(R.string.unit_years)) { age = it }
+                            2 -> SliderQuestion(stringResource(R.string.question_height), height, 120f..220f, stringResource(R.string.unit_cm)) { height = it }
+                            3 -> SliderQuestion(stringResource(R.string.question_weight), weight, 40f..150f, stringResource(R.string.unit_kg)) { weight = it }
                             4 -> GoalSelection(selectedGoal) { selectedGoal = it }
                             5 -> ActivitySelection(selectedActivity) { selectedActivity = it }
                             6 -> FoodSelection(selectedFood) { selectedFood = it }
-                            7 -> SliderQuestion("Daily workout goal?", workoutMinutes, 10f..120f, "min/day") { workoutMinutes = it }
+                            7 -> SliderQuestion(stringResource(R.string.question_workout_goal), workoutMinutes, 10f..120f, stringResource(R.string.unit_min_day)) { workoutMinutes = it }
                         }
                     }
                 }
@@ -248,7 +250,7 @@ private fun TopProgressSection(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                             tint = FMTextPrimary,
                             modifier = Modifier.size(20.dp)
                         )
@@ -257,7 +259,7 @@ private fun TopProgressSection(
             }
 
             Text(
-                text = "Step ${currentStep + 1} of $totalSteps",
+                text = stringResource(R.string.step_of, currentStep + 1, totalSteps),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = FMTextSecondary,
@@ -335,7 +337,7 @@ private fun ContinueButton(
             )
         ) {
             Text(
-                text = if (isLastStep) "Generate my fitness plan" else "Continue",
+                text = if (isLastStep) stringResource(R.string.generate_fitness_plan) else stringResource(R.string.continue_action),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.2.sp
@@ -348,8 +350,8 @@ private fun ContinueButton(
 
 @Composable
 fun GenderSelection(selectedGender: String, onSelect: (String) -> Unit) {
-    val genders = listOf("Male", "Female", "Other")
-    QuestionTitle("What is your\ngender?")
+    val genders = listOf(stringResource(R.string.gender_male), stringResource(R.string.gender_female), stringResource(R.string.gender_other))
+    QuestionTitle(stringResource(R.string.question_gender))
     Spacer(modifier = Modifier.height(32.dp))
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         genders.forEachIndexed { index, g ->
@@ -365,7 +367,7 @@ fun GenderSelection(selectedGender: String, onSelect: (String) -> Unit) {
 
 @Composable
 fun GoalSelection(selectedGoal: GoalType, onSelect: (GoalType) -> Unit) {
-    QuestionTitle("What's your\nmain goal?")
+    QuestionTitle(stringResource(R.string.question_main_goal))
     Spacer(modifier = Modifier.height(32.dp))
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         GoalType.entries.forEachIndexed { index, goal ->
@@ -386,7 +388,7 @@ fun GoalSelection(selectedGoal: GoalType, onSelect: (GoalType) -> Unit) {
 
 @Composable
 fun ActivitySelection(selectedActivity: ActivityLevel, onSelect: (ActivityLevel) -> Unit) {
-    QuestionTitle("How active\nare you?")
+    QuestionTitle(stringResource(R.string.question_activity))
     Spacer(modifier = Modifier.height(32.dp))
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         ActivityLevel.entries.forEachIndexed { index, activity ->
@@ -407,7 +409,7 @@ fun ActivitySelection(selectedActivity: ActivityLevel, onSelect: (ActivityLevel)
 
 @Composable
 fun FoodSelection(selectedFood: FoodPreference, onSelect: (FoodPreference) -> Unit) {
-    QuestionTitle("Any food\npreferences?")
+    QuestionTitle(stringResource(R.string.question_food))
     Spacer(modifier = Modifier.height(32.dp))
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         FoodPreference.entries.forEachIndexed { index, food ->
@@ -498,7 +500,7 @@ fun SliderQuestion(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             SliderStepButton(
-                label = "-",
+                label = stringResource(R.string.symbol_minus),
                 enabled = value > range.start,
                 onClick = {
                     onValueChange((value - 1f).coerceAtLeast(range.start))
@@ -518,7 +520,7 @@ fun SliderQuestion(
                 modifier = Modifier.weight(1f)
             )
             SliderStepButton(
-                label = "+",
+                label = stringResource(R.string.symbol_plus),
                 enabled = value < range.endInclusive,
                 onClick = {
                     onValueChange((value + 1f).coerceAtMost(range.endInclusive))
@@ -705,7 +707,7 @@ fun AnimatedOptionCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "✓",
+                            text = stringResource(R.string.step_done),
                             color = FMBackground,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Black

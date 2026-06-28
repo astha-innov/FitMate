@@ -32,6 +32,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -136,7 +137,7 @@ fun OtpVerificationScreen(
 
         Image(
             painter = painterResource(id = R.drawable.body_transformation),
-            contentDescription = "Fitness Background",
+            contentDescription = stringResource(R.string.fitness_background),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
@@ -176,13 +177,13 @@ fun OtpVerificationScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = PrimaryText
                     )
                 }
 
                 Text(
-                    text = "FITMATE",
+                    text = stringResource(R.string.fitmate_brand),
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
@@ -200,7 +201,7 @@ fun OtpVerificationScreen(
 
             // 4. HEADER TEXT
             Text(
-                text = "Verify OTP",
+                text = stringResource(R.string.verify_otp),
                 color = PrimaryText,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -208,7 +209,7 @@ fun OtpVerificationScreen(
             )
 
             Text(
-                text = "We sent a verification code to ${phoneNumber.ifBlank { "your phone" }}.",
+                text = if (phoneNumber.isNotBlank()) stringResource(R.string.otp_sent_to, phoneNumber) else stringResource(R.string.otp_sent_to_phone),
                 color = SecondaryText,
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
@@ -277,7 +278,7 @@ fun OtpVerificationScreen(
 
                     // TIMER & RESEND
                     Text(
-                        text = if (secondsLeft > 0) "Resend code in: $secondsLeft seconds" else "You can request a new code now",
+                        text = if (secondsLeft > 0) stringResource(R.string.resend_code_in, secondsLeft) else stringResource(R.string.request_new_code),
                         color = SecondaryText,
                         fontSize = 14.sp
                     )
@@ -292,7 +293,7 @@ fun OtpVerificationScreen(
                         }
                     ) {
                         Text(
-                            text = "Resend Again?",
+                            text = stringResource(R.string.resend_otp),
                             color = if (secondsLeft == 0) PrimaryGreen else SecondaryText.copy(alpha = 0.5f),
                             fontWeight = FontWeight.Bold
                         )
@@ -301,12 +302,12 @@ fun OtpVerificationScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     PremiumButton(
-                        text = "Verify Now",
+                        text = stringResource(R.string.verify_now),
                         loading = loading || phoneState is PhoneAuthUiState.Verifying,
                         onClick = {
                             val code = otpDigits.joinToString("")
                             if (code.length != 6) {
-                                localError = "Enter the complete 6-digit OTP."
+                                localError = context.getString(R.string.error_incomplete_otp)
                             } else {
                                 viewModel.verifyOtp(code)
                             }

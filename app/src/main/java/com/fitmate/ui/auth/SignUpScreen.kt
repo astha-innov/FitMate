@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -130,7 +131,7 @@ fun SignUpScreen(
 
             // BRANDING
             Text(
-                text = "FITMATE",
+                text = stringResource(R.string.fitmate_brand),
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Black,
@@ -146,7 +147,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Create Account",
+                text = stringResource(R.string.create_account),
                 color = Color(0xFF111827), // Updated for white theme
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold, // Improved typography
@@ -154,7 +155,7 @@ fun SignUpScreen(
             )
 
             Text(
-                text = "Join the future of fitness today.",
+                text = stringResource(R.string.signup_subtitle),
                 color = Color(0xFF6B7280), // Updated for white theme
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp)
@@ -193,7 +194,7 @@ fun SignUpScreen(
                         onValueChange = {
                             username = it
                         },
-                        label = "Username",
+                        label = stringResource(R.string.username),
                         icon = Icons.Default.Person
                     )
 
@@ -204,7 +205,7 @@ fun SignUpScreen(
                         onValueChange = {
                             email = it
                         },
-                        label = "Email",
+                        label = stringResource(R.string.email),
                         icon = Icons.Default.Email
                     )
 
@@ -215,7 +216,7 @@ fun SignUpScreen(
                         onValueChange = {
                             password = it
                         },
-                        label = "Password",
+                        label = stringResource(R.string.password),
                         icon = Icons.Default.Lock,
                         isPassword = true
                     )
@@ -223,7 +224,7 @@ fun SignUpScreen(
                     Spacer(modifier = Modifier.height(28.dp))
 
                     PremiumButton( // Retained project component
-                        text = "Create Account",
+                        text = stringResource(R.string.create_account),
                         loading = loading,
                         onClick = {
 
@@ -246,7 +247,7 @@ fun SignUpScreen(
                 )
 
                 Text(
-                    text = "  OR  ",
+                    text = stringResource(R.string.or_divider),
                     color = Color(0xFF6B7280), // Updated for white theme
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -261,7 +262,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             PremiumSecondaryButton( // Retained project component
-                text = "Continue with Google",
+                text = stringResource(R.string.continue_with_google),
                 onClick = startGoogleSignIn
             )
 
@@ -277,7 +278,7 @@ fun SignUpScreen(
             ) {
 
                 Text(
-                    text = "Already have an account? Sign In",
+                    text = stringResource(R.string.already_have_account),
                     color = Color(0xFF6B7280), // Updated for white theme
                     fontWeight = FontWeight.SemiBold
                 )

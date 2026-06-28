@@ -4,6 +4,7 @@ package com.fitmate.ui
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fitmate.domain.model.AppThemeMode
@@ -67,8 +68,14 @@ fun CampusFitApp(
         }
     }
 
+    val darkTheme = when (uiState.themeMode) {
+        AppThemeMode.SYSTEM -> isSystemInDarkTheme()
+        AppThemeMode.DARK -> true
+        AppThemeMode.LIGHT -> false
+    }
+
     FitMateTheme(
-        darkTheme = uiState.themeMode == AppThemeMode.DARK
+        darkTheme = darkTheme
     ) {
 
         when (stage) {

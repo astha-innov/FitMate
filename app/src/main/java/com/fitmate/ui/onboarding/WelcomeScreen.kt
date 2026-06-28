@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,7 +76,7 @@ fun WelcomeScreen(
         // 1. Full Screen Hero Image
         Image(
             painter = painterResource(id = R.drawable.model),
-            contentDescription = "Welcome Background",
+            contentDescription = stringResource(R.string.welcome_background_desc),
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -104,8 +105,8 @@ fun WelcomeScreen(
                     .align(Alignment.TopEnd)
                     .padding(top = 100.dp, end = 24.dp),
                 icon = Icons.Default.Whatshot,
-                label = "Calories",
-                value = "450 kcal",
+                label = stringResource(R.string.stat_calories),
+                value = stringResource(R.string.stat_calories_value),
                 delay = 0,
                 startAnimation = startAnimation
             )
@@ -115,8 +116,8 @@ fun WelcomeScreen(
                     .align(Alignment.CenterStart)
                     .padding(start = 24.dp, bottom = 180.dp),
                 icon = Icons.Default.Favorite,
-                label = "Heart Rate",
-                value = "72 BPM",
+                label = stringResource(R.string.stat_heart_rate),
+                value = stringResource(R.string.stat_heart_rate_value),
                 delay = 200,
                 startAnimation = startAnimation
             )
@@ -158,7 +159,7 @@ fun WelcomeScreen(
 
                 // Typography & Branding Text
                 Text(
-                    text = "FITMATE",
+                    text = stringResource(R.string.fitmate_brand),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Black,
                         letterSpacing = 2.sp
@@ -167,7 +168,7 @@ fun WelcomeScreen(
                 )
 
                 Text(
-                    text = "Ultimate Fitness Partner",
+                    text = stringResource(R.string.welcome_tagline),
                     style = MaterialTheme.typography.titleMedium,
                     color = PrimaryButton,
                     fontWeight = FontWeight.Bold,
@@ -177,7 +178,7 @@ fun WelcomeScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Transform your routine into a lifestyle with AI-driven tracking.",
+                    text = stringResource(R.string.welcome_body),
                     style = MaterialTheme.typography.bodyLarge,
                     color = SecondaryText,
                     textAlign = TextAlign.Center,
@@ -202,7 +203,7 @@ fun WelcomeScreen(
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
-                        text = "GET STARTED",
+                        text = stringResource(R.string.get_started),
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp

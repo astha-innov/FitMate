@@ -52,11 +52,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fitmate.R
 import com.fitmate.domain.model.WorkoutFocus
 import com.fitmate.ui.viewmodel.CampusFitUiState
 
@@ -131,24 +133,24 @@ fun ProfileScreen(state: CampusFitUiState) {
             // Compact Base Stats
             FriendlyStatRow(
                 items = listOf(
-                    ProfileInfoItem("Age", "${profile.age} yrs"),
-                    ProfileInfoItem("Height", "${profile.heightCm} cm"),
-                    ProfileInfoItem("Weight", "${profile.weightKg} kg"),
+                    ProfileInfoItem(stringResource(R.string.profile_label_age), "${profile.age} ${stringResource(R.string.profile_unit_yrs)}"),
+                    ProfileInfoItem(stringResource(R.string.profile_label_height), "${profile.heightCm} ${stringResource(R.string.unit_cm)}"),
+                    ProfileInfoItem(stringResource(R.string.profile_label_weight), "${profile.weightKg} ${stringResource(R.string.unit_kg)}"),
                 )
             )
 
             // 2. JOURNEY SECTION (Second Largest, ContentScale.Fit for visibility)
             FriendlyInfoCard(
-                title = "Your Journey",
-                subtitle = "Current fitness goals",
+                title = stringResource(R.string.profile_journey_title),
+                subtitle = stringResource(R.string.profile_journey_subtitle),
                 icon = Icons.Outlined.MonitorWeight,
                 headerImage = "profile/body_transformation.png",
                 imageScale = ContentScale.Fit, // Critical fix for PNG visibility
                 imageHeight = 465,
                 items = listOf(
-                    ProfileInfoItem("Goal", profile.goal.label),
-                    ProfileInfoItem("Level", profile.experienceLevel.label),
-                    ProfileInfoItem("Activity", profile.activityLevel.label),
+                    ProfileInfoItem(stringResource(R.string.profile_label_goal), profile.goal.label),
+                    ProfileInfoItem(stringResource(R.string.profile_label_level), profile.experienceLevel.label),
+                    ProfileInfoItem(stringResource(R.string.profile_label_activity), profile.activityLevel.label),
                 )
             )
 
@@ -157,15 +159,15 @@ fun ProfileScreen(state: CampusFitUiState) {
 
             // 4. TRAINING COMMITMENT (Standard Card)
             FriendlyInfoCard(
-                title = "Weekly Commitment",
-                subtitle = "Your training schedule",
+                title = stringResource(R.string.profile_commitment_title),
+                subtitle = stringResource(R.string.profile_commitment_subtitle),
                 icon = Icons.Outlined.Schedule,
                 items = listOf(
-                    ProfileInfoItem("Session", "${profile.workoutMinutes} min"),
-                    ProfileInfoItem("Duration", "${profile.workoutMinutes} min"),
+                    ProfileInfoItem(stringResource(R.string.profile_label_session), "${profile.workoutMinutes} ${stringResource(R.string.profile_unit_min)}"),
+                    ProfileInfoItem(stringResource(R.string.profile_label_duration), "${profile.workoutMinutes} ${stringResource(R.string.profile_unit_min)}"),
                     ProfileInfoItem(
-                        "Days/Week",
-                        if (workoutDaysPerWeek > 0) "$workoutDaysPerWeek days" else "Not set"
+                        stringResource(R.string.profile_label_days_week),
+                        if (workoutDaysPerWeek > 0) "$workoutDaysPerWeek ${stringResource(R.string.profile_unit_days)}" else stringResource(R.string.profile_not_set)
                     ),
                 )
             )
@@ -186,14 +188,14 @@ fun ProfileScreen(state: CampusFitUiState) {
 fun NutritionProfileCard(state: CampusFitUiState) {
     val profile = state.profile
     FriendlyInsightCard(
-        title = "Nutrition Profile",
-        subtitle = "Optimized for your goals",
-        emoji = "🥗",
+        title = stringResource(R.string.profile_nutrition_title),
+        subtitle = stringResource(R.string.profile_nutrition_subtitle),
+        emoji = stringResource(R.string.profile_emoji_nutrition),
         headerImage = "profile/healthy_diet.png",
         footerImage = "profile/meals.png"
     ) {
-        LabelValueRow("Diet Goal", profile.goal.label)
-        LabelValueRow("Preference", profile.foodPreference.label)
+        LabelValueRow(stringResource(R.string.profile_diet_goal), profile.goal.label)
+        LabelValueRow(stringResource(R.string.profile_preference), profile.foodPreference.label)
 
         state.personalizedPlan?.dietRecommendation?.title?.let {
             Text(
@@ -213,13 +215,13 @@ fun NutritionProfileCard(state: CampusFitUiState) {
 @Composable
 fun DailyHabitsCard() {
     FriendlyInsightCard(
-        title = "Daily Habits",
-        subtitle = "Stay consistent",
-        emoji = "⚡"
+        title = stringResource(R.string.profile_habits_title),
+        subtitle = stringResource(R.string.profile_habits_subtitle),
+        emoji = stringResource(R.string.profile_emoji_habits)
     ) {
-        FriendlyBulletRow("Drink enough water")
-        FriendlyBulletRow("Complete workout")
-        FriendlyBulletRow("Hit protein goal")
+        FriendlyBulletRow(stringResource(R.string.profile_habit_water))
+        FriendlyBulletRow(stringResource(R.string.profile_habit_workout))
+        FriendlyBulletRow(stringResource(R.string.profile_habit_protein))
     }
 }
 
@@ -246,7 +248,7 @@ private fun ProfileHero(streakDays: Int, goalLabel: String) {
             if (heroImg != null) {
                 Image(
                     bitmap = heroImg,
-                    contentDescription = "Hero Background",
+                    contentDescription = stringResource(R.string.profile_hero_bg_desc),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -294,14 +296,14 @@ private fun ProfileHero(streakDays: Int, goalLabel: String) {
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "Hello, Champion",
+                            text = stringResource(R.string.profile_greeting),
                             color = Color.White,
                             fontWeight = FontWeight.Black,
                             fontSize = 28.sp,
                             letterSpacing = (-0.5).sp
                         )
                         Text(
-                            text = "Consistency beats intensity.",
+                            text = stringResource(R.string.profile_motto),
                             color = Color.White.copy(alpha = 0.85f),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -328,7 +330,7 @@ private fun ProfileHero(streakDays: Int, goalLabel: String) {
                             .background(FitGreen)
                     )
                     Text(
-                        text = "CURRENT GOAL: ${goalLabel.uppercase()}",
+                        text = stringResource(R.string.profile_current_goal_prefix, goalLabel.uppercase()),
                         color = Color.White,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.ExtraBold,
@@ -355,7 +357,7 @@ private fun StreakChip(streakDays: Int) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.LocalFireDepartment,
-                contentDescription = "Streak",
+                contentDescription = stringResource(R.string.profile_streak_desc),
                 tint = FitGreenDim,
                 modifier = Modifier.size(20.dp)
             )
@@ -450,7 +452,7 @@ private fun FriendlyInfoCard(
                         .fillMaxWidth()
                         .height(imageHeight.dp)
                         .background(Color.White)
-                         // Subtle padding for Fit scale
+                    // Subtle padding for Fit scale
                 ) {
                     Image(
                         bitmap = imgBitmap,
@@ -584,7 +586,7 @@ private fun FriendlyInsightCard(
                 ) {
                     Image(
                         bitmap = hImg,
-                        contentDescription = "Banner",
+                        contentDescription = stringResource(R.string.profile_banner_desc),
                         contentScale = ContentScale.Crop, // Crop is fine for header banners
                         modifier = Modifier.fillMaxSize()
                     )
@@ -649,7 +651,7 @@ private fun FriendlyInsightCard(
                     ) {
                         Image(
                             bitmap = fImg,
-                            contentDescription = "Recommendation",
+                            contentDescription = stringResource(R.string.profile_recommendation_desc),
                             contentScale =ContentScale.Fit,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -675,7 +677,7 @@ private fun AchievementCard(streakDays: Int, points: Int) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Title Header
             Text(
-                text = "🏆 Achievement Center",
+                text = stringResource(R.string.profile_achievement_center),
                 color = TextDark,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -697,7 +699,7 @@ private fun AchievementCard(streakDays: Int, points: Int) {
                 ) {
                     Image(
                         bitmap = trophyImg,
-                        contentDescription = "Achievements",
+                        contentDescription = stringResource(R.string.profile_achievements_desc),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -716,12 +718,12 @@ private fun AchievementCard(streakDays: Int, points: Int) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     AchievementChip(
-                        label = "STREAK",
-                        value = "${streakDays}d",
+                        label = stringResource(R.string.profile_streak_label),
+                        value = "${streakDays}${stringResource(R.string.profile_unit_day_short)}",
                         modifier = Modifier.weight(1f)
                     )
                     AchievementChip(
-                        label = "POINTS",
+                        label = stringResource(R.string.profile_points_label),
                         value = "$points",
                         modifier = Modifier.weight(1f)
                     )
@@ -839,13 +841,13 @@ private fun MotivationalCard() {
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Keep going! 💪",
+                    text = stringResource(R.string.profile_keep_going),
                     color = Color.White,
                     fontWeight = FontWeight.Black,
                     fontSize = 18.sp
                 )
                 Text(
-                    text = "Your profile is your training compass. Stay consistent, trust the process, and let the results follow.",
+                    text = stringResource(R.string.profile_quote),
                     color = Color.White.copy(alpha = 0.9f),
                     style = MaterialTheme.typography.bodySmall,
                     lineHeight = 18.sp
@@ -862,7 +864,7 @@ private fun MotivationalCard() {
                 ) {
                     Image(
                         bitmap = modelImg,
-                        contentDescription = "Decorative Model",
+                        contentDescription = stringResource(R.string.profile_decorative_model_desc),
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxSize()

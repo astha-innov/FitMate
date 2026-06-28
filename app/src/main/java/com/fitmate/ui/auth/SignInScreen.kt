@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -132,7 +133,7 @@ fun SignInScreen(
 
         Image(
             painter = painterResource(id = R.drawable.body_transformation),
-            contentDescription = "Fitness Background",
+            contentDescription = stringResource(R.string.fitness_background),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
@@ -174,7 +175,7 @@ fun SignInScreen(
                 }
             ) {
                 Text(
-                    text = "FITMATE",
+                    text = stringResource(R.string.fitmate_brand),
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
@@ -184,7 +185,7 @@ fun SignInScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Welcome Back",
+                    text = stringResource(R.string.welcome_back),
                     color = PrimaryText,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -192,7 +193,7 @@ fun SignInScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Continue your fitness transformation\njourney with FitMate.",
+                    text = stringResource(R.string.signin_subtitle),
                     color = SecondaryText,
                     fontSize = 15.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -226,14 +227,14 @@ fun SignInScreen(
                     PremiumTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = "Email",
+                        label = stringResource(R.string.email),
                         icon = Icons.Default.Email
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     PremiumTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = "Password",
+                        label = stringResource(R.string.password),
                         icon = Icons.Default.Lock,
                         isPassword = true
                     )
@@ -241,11 +242,11 @@ fun SignInScreen(
                         onClick = { navController.navigate(Routes.ForgotPassword.route) },
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("Forgot Password?", color = PrimaryGreen, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.forgot_password), color = PrimaryGreen, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     PremiumButton(
-                        text = "Sign In",
+                        text = stringResource(R.string.sign_in),
                         loading = loading,
                         onClick = { viewModel.signIn(email, password) }
                     )
@@ -263,24 +264,24 @@ fun SignInScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = CardBorder)
-                    Text("  OR  ", color = SecondaryText, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.or_divider), color = SecondaryText, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     HorizontalDivider(modifier = Modifier.weight(1f), color = CardBorder)
                 }
                 Spacer(modifier = Modifier.height(32.dp))
                 PremiumSecondaryButton(
-                    text = "Continue with Google",
+                    text = stringResource(R.string.continue_with_google),
                     onClick = startGoogleSignIn
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 PremiumTextField(
                     value = phoneNumber,
                     onValueChange = { phoneNumber = it },
-                    label = "Phone Number",
+                    label = stringResource(R.string.phone_number),
                     icon = Icons.Default.Phone
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 PremiumSecondaryButton(
-                    text = "Send OTP",
+                    text = stringResource(R.string.send_otp),
                     loading = phoneAuthState is PhoneAuthUiState.Sending,
                     onClick = { viewModel.sendOtp(activity, phoneNumber) }
                 )
@@ -289,8 +290,8 @@ fun SignInScreen(
                     onClick = { navController.navigate(Routes.SignUp.route) },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    Text(text = "Don't have an account? ", color = SecondaryText, fontSize = 14.sp)
-                    Text(text = "Sign Up", color = PrimaryGreen, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.no_account), color = SecondaryText, fontSize = 14.sp)
+                    Text(text = stringResource(R.string.sign_up_link), color = PrimaryGreen, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
 
                 if (authState is AuthState.Error) {

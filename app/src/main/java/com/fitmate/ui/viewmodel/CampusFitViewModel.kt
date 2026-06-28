@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 data class CampusFitUiState(
     val profile: UserProfile = UserProfile(),
     val aiConfig: AiConfig = AiConfig(),
-    val themeMode: AppThemeMode = AppThemeMode.LIGHT,
+    val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val setupCompleted: Boolean = false,
     val personalizedPlan: PersonalizedPlan? = null,
     val profileSnapshot: ProfileSnapshot? = null,

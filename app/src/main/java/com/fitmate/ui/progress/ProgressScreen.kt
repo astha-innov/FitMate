@@ -58,11 +58,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fitmate.R
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.model.WorkoutDayLog
 import com.fitmate.domain.model.WorkoutDayStatus
@@ -244,7 +246,7 @@ private fun AnalyticsHeroCard(
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = if (streak == 1) "1 Day Streak" else "$streak Day Streak",
+                                text = if (streak == 1) stringResource(R.string.progress_streak_day_single) else stringResource(R.string.progress_streak_days_multi, streak),
                                 color = TextDark,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
@@ -252,14 +254,14 @@ private fun AnalyticsHeroCard(
                         }
                         Text(
                             text =
-                                "Good Evening\n\n" +
-                                        "$totalWorkouts workouts completed\n" +
-                                        "$streak day streak\n\n" +
-                                        "AI Insight:\n" +
-                                        if (consistencyScore >= 80)
-                                            "You are ahead of last week's pace."
-                                        else
-                                            "Consistency can be improved this week.",
+                                stringResource(R.string.progress_hero_summary,
+                                    totalWorkouts,
+                                    streak,
+                                    if (consistencyScore >= 80)
+                                        stringResource(R.string.coach_ai_insight_body)
+                                    else
+                                        stringResource(R.string.progress_insight_consistency_low)
+                                ),
                             color = TextSecondary,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(top = 8.dp, start = 52.dp)
@@ -276,13 +278,13 @@ private fun AnalyticsHeroCard(
                 ) {
                     Column {
                         Text(
-                            text = "Consistency Score",
+                            text = stringResource(R.string.progress_consistency_score),
                             color = TextSecondary,
                             style = MaterialTheme.typography.labelLarge
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "$consistencyScore%",
+                            text = stringResource(R.string.progress_percentage, consistencyScore),
                             color = TextDark,
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.ExtraBold
@@ -329,22 +331,22 @@ private fun AiCoachCard(
                     .background(FitGreenLight, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Rounded.AutoAwesome, contentDescription = "AI Assistant", tint = FitGreen, modifier = Modifier.size(28.dp))
+                Icon(Icons.Rounded.AutoAwesome, contentDescription = stringResource(R.string.coach_ai_metrics), tint = FitGreen, modifier = Modifier.size(28.dp))
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = "AI Coach Insight",
+                    text = stringResource(R.string.progress_ai_insight),
                     color = TextDark,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 val insight = when {
                     completionRate >= 80 ->
-                        "Excellent consistency. Keep pushing."
+                        stringResource(R.string.progress_insight_excellent)
                     completionRate >= 60 ->
-                        "Good progress. One extra workout this week could boost results."
+                        stringResource(R.string.progress_insight_good)
                     else ->
-                        "Workout consistency is dropping. Try completing your scheduled sessions."
+                        stringResource(R.string.progress_insight_poor)
                 }
 
                 Text(
@@ -355,7 +357,7 @@ private fun AiCoachCard(
                 )
 
                 Text(
-                    text = "Current streak: $streak days • Total workouts: $totalWorkouts",
+                    text = stringResource(R.string.progress_streak_workouts, streak, totalWorkouts),
                     color = TextSecondary,
                     style = MaterialTheme.typography.labelSmall
                 )
@@ -374,7 +376,7 @@ private fun FitnessScoreCard(score: Int, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text("Fitness Score", color = TextSecondary, style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.progress_fitness_score_label), color = TextSecondary, style = MaterialTheme.typography.labelMedium)
             Spacer(modifier = Modifier.height(16.dp))
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
@@ -408,7 +410,7 @@ private fun CompletionRingCard(completed: Int, missed: Int, modifier: Modifier =
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text("Completion", color = TextSecondary, style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.progress_completion_label), color = TextSecondary, style = MaterialTheme.typography.labelMedium)
             Spacer(modifier = Modifier.height(16.dp))
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
@@ -421,7 +423,7 @@ private fun CompletionRingCard(completed: Int, missed: Int, modifier: Modifier =
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "${(animatedProgress * 100).roundToInt()}%",
+                        text = stringResource(R.string.progress_percentage, (animatedProgress * 100).roundToInt()),
                         color = TextDark,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.ExtraBold
@@ -446,7 +448,7 @@ private fun WeeklyActivityChart(
 
     PremiumBaseCard {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Activity This Week", color = TextDark, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.progress_activity_week_title), color = TextDark, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(24.dp))
 
             Box(modifier = Modifier
@@ -504,7 +506,15 @@ private fun WeeklyActivityChart(
 
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").forEach { day ->
+                listOf(
+                    stringResource(R.string.day_mon_short),
+                    stringResource(R.string.day_tue_short),
+                    stringResource(R.string.day_wed_short),
+                    stringResource(R.string.day_thu_short),
+                    stringResource(R.string.day_fri_short),
+                    stringResource(R.string.day_sat_short),
+                    stringResource(R.string.day_sun_short)
+                ).forEach { day ->
                     Text(day, color = TextSecondary, style = MaterialTheme.typography.labelSmall)
                 }
             }
@@ -524,7 +534,7 @@ private fun MonthlySummaryCard(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                "Monthly Summary",
+                stringResource(R.string.progress_monthly_summary_title),
                 color = TextDark,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
@@ -536,28 +546,28 @@ private fun MonthlySummaryCard(
             ) {
                 SummaryStat(
                     Icons.Rounded.CheckCircle,
-                    "Workouts",
+                    stringResource(R.string.progress_stat_workouts),
                     totalWorkouts.toString(),
                     FitGreen
                 )
 
                 SummaryStat(
                     Icons.Filled.LocalFireDepartment,
-                    "Streak",
+                    stringResource(R.string.progress_stat_streak),
                     longestStreak.toString(),
                     FitOrange
                 )
 
                 SummaryStat(
                     Icons.Rounded.Insights,
-                    "Rate",
-                    "$completionRate%",
+                    stringResource(R.string.progress_stat_rate),
+                    stringResource(R.string.progress_percentage, completionRate),
                     FitBlue
                 )
             }
 
             Text(
-                "$completedSets sets completed this month",
+                stringResource(R.string.progress_sets_completed_suffix, completedSets),
                 color = TextSecondary,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -588,29 +598,29 @@ private fun PersonalRecordsCard(
     bestWeek: Int
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Personal Records", color = TextDark, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.progress_personal_records_title), color = TextDark, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             MetricCard(
-                "Longest Streak",
+                stringResource(R.string.progress_longest_streak_label),
                 longestStreak.toString(),
-                "Days",
+                stringResource(R.string.progress_days_suffix),
                 Modifier.weight(1f)
             )
 
             MetricCard(
-                "Best Week",
+                stringResource(R.string.progress_best_week_label),
                 bestWeek.toString(),
-                "Logs",
+                stringResource(R.string.progress_logs_suffix),
                 Modifier.weight(1f)
             )
 
             MetricCard(
-                "Total",
+                stringResource(R.string.progress_total_label),
                 totalWorkouts.toString(),
-                "Workouts",
+                stringResource(R.string.progress_workouts_suffix),
                 Modifier.weight(1f)
             )
         }
@@ -641,7 +651,7 @@ private fun WorkoutHeatmap(
 ){
     PremiumBaseCard {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Activity Heatmap", color = TextDark, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.progress_heatmap_title), color = TextDark, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             val weeks = 6
@@ -721,17 +731,25 @@ private fun EnhancedCalendarCard(
                 }
                 Row {
                     IconButton(onClick = onPreviousMonth, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Filled.ChevronLeft, contentDescription = "Prev Month", tint = TextDark)
+                        Icon(Icons.Filled.ChevronLeft, contentDescription = stringResource(R.string.progress_calendar_prev), tint = TextDark)
                     }
                     IconButton(onClick = onNextMonth, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Filled.ChevronRight, contentDescription = "Next Month", tint = TextDark)
+                        Icon(Icons.Filled.ChevronRight, contentDescription = stringResource(R.string.progress_calendar_next), tint = TextDark)
                     }
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { label ->
+                    listOf(
+                        stringResource(R.string.day_sun_short),
+                        stringResource(R.string.day_mon_short),
+                        stringResource(R.string.day_tue_short),
+                        stringResource(R.string.day_wed_short),
+                        stringResource(R.string.day_thu_short),
+                        stringResource(R.string.day_fri_short),
+                        stringResource(R.string.day_sat_short)
+                    ).forEach { label ->
                         Text(
                             text = label,
                             modifier = Modifier.width(36.dp),
@@ -806,7 +824,7 @@ private fun CalendarDayCell(date: LocalDate, today: LocalDate, status: WorkoutDa
         if (status == WorkoutDayStatus.MISSED) {
             Icon(
                 imageVector = Icons.Rounded.Cancel,
-                contentDescription = "Missed",
+                contentDescription = stringResource(R.string.progress_status_missed),
                 tint = TextSecondary.copy(alpha = 0.4f),
                 modifier = Modifier
                     .size(10.dp)
@@ -841,7 +859,7 @@ private fun EmptyStateView() {
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "Complete your first workout to unlock your progress insights.",
+            text = stringResource(R.string.progress_no_data_title),
             color = TextDark,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
@@ -849,7 +867,7 @@ private fun EmptyStateView() {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Your data will appear here once you log your activity.",
+            text = stringResource(R.string.progress_no_data_subtitle),
             color = TextSecondary,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center

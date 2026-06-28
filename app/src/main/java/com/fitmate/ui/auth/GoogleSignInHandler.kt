@@ -33,20 +33,20 @@ fun rememberGoogleSignInAction(viewModel: AuthViewModel): () -> Unit {
             val idToken = account.idToken
             if (idToken.isNullOrBlank()) {
                 viewModel.showError(
-                    "Google Sign-In did not return an ID token. Check Firebase SHA and OAuth client configuration."
+                    context.getString(R.string.error_google_sign_in_no_token)
                 )
                 return@rememberLauncherForActivityResult
             }
             viewModel.signInWithCredential(
                 GoogleAuthProvider.getCredential(idToken, null),
-                "Google Sign-In failed"
+                context.getString(R.string.error_google_sign_in_failed)
             )
         } catch (exception: ApiException) {
             viewModel.showError(
-                "Google Sign-In failed: ${exception.statusCode}. Check SHA fingerprints and google-services.json."
+                context.getString(R.string.error_google_sign_in_failed_status, exception.statusCode)
             )
         } catch (exception: Exception) {
-            viewModel.showError(exception.message ?: "Google Sign-In failed.")
+            viewModel.showError(exception.message ?: context.getString(R.string.error_google_sign_in_failed_fallback))
         }
     }
 

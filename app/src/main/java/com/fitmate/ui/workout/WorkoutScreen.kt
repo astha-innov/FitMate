@@ -3,6 +3,7 @@
 import android.os.Build
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -83,6 +84,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
@@ -93,6 +95,7 @@ import coil.compose.AsyncImage
 import coil.compose.LocalImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import com.fitmate.R
 import com.fitmate.data.LocalExerciseDatabase
 import com.fitmate.data.LocalExerciseCatalog
 import com.fitmate.domain.model.ExerciseLibraryEntry
@@ -196,7 +199,7 @@ fun WorkoutScreen(
 
     LaunchedEffect(schedule?.planType, schedule?.generatedForGoal, state.profile.goal) {
         val recommendedGoalChanged = schedule?.planType == WorkoutPlanType.DEFAULT &&
-            schedule.generatedForGoal != state.profile.goal
+                schedule.generatedForGoal != state.profile.goal
         if (recommendedGoalChanged && dismissedGoalPromptFor != state.profile.goal.name) {
             showGoalChangeDialog = true
         }
@@ -220,9 +223,9 @@ fun WorkoutScreen(
 
     if (showGoalChangeDialog) {
         RecommendedPlanConfirmationDialog(
-            title = "Your fitness goal changed",
-            message = "Generate a new recommended workout plan for ${state.profile.goal.label}?",
-            confirmLabel = "Confirm",
+            title = stringResource(R.string.workout_goal_changed_title),
+            message = stringResource(R.string.workout_goal_changed_msg, state.profile.goal.label),
+            confirmLabel = stringResource(R.string.workout_btn_confirm),
             onDismiss = {
                 dismissedGoalPromptFor = state.profile.goal.name
                 showGoalChangeDialog = false
@@ -239,9 +242,9 @@ fun WorkoutScreen(
 
     if (showReplaceCustomDialog) {
         RecommendedPlanConfirmationDialog(
-            title = "Replace custom plan?",
-            message = "Your custom workout will be replaced with a recommended ${state.profile.goal.label} plan.",
-            confirmLabel = "Confirm",
+            title = stringResource(R.string.workout_replace_custom_title),
+            message = stringResource(R.string.workout_replace_custom_msg, state.profile.goal.label),
+            confirmLabel = stringResource(R.string.workout_btn_confirm),
             onDismiss = { showReplaceCustomDialog = false },
             onConfirm = {
                 viewModel.saveWorkoutSchedule(
@@ -382,7 +385,7 @@ private fun WorkoutHeroCard(
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
             Text(
-                text = if (isCustom) "Custom weekly split active" else "Recommended weekly plan active",
+                text = if (isCustom) stringResource(R.string.workout_hero_custom_title) else stringResource(R.string.workout_hero_recommended_title),
                 style = MaterialTheme.typography.headlineSmall,
                 color = FitMateTextPrimary,
                 fontWeight = FontWeight.ExtraBold
@@ -390,9 +393,9 @@ private fun WorkoutHeroCard(
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = if (isCustom) {
-                    "Choose what to train on each weekday, keep at least one rest day, and tune every exercise with slider-based set and rep controls."
+                    stringResource(R.string.workout_hero_custom_desc)
                 } else {
-                    "Your weekly schedule, exercises, sets, and reps are matched to your saved fitness goal and profile."
+                    stringResource(R.string.workout_hero_recommended_desc)
                 },
                 color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodyMedium
@@ -409,7 +412,7 @@ private fun WorkoutHeroCard(
             ) {
                 Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Make custom plan", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.workout_btn_make_custom), fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedButton(
@@ -422,9 +425,9 @@ private fun WorkoutHeroCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = if (isCustom) {
-                        "Use recommended plan"
+                        stringResource(R.string.workout_btn_use_recommended)
                     } else {
-                        "Regenerate recommended plan"
+                        stringResource(R.string.workout_btn_regenerate_recommended)
                     },
                     color = FitMateTextPrimary
                 )
@@ -507,7 +510,7 @@ private fun WorkoutDayCard(
                     if (!isRestDay && day.exercises.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "${day.exercises.size} exercises",
+                            text = stringResource(R.string.workout_exercises_count, day.exercises.size),
                             color = FitMateGreenLight,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium
@@ -525,7 +528,7 @@ private fun WorkoutDayCard(
                 ) {
                     Icon(
                         imageVector = if (collapsed) Icons.Outlined.ExpandMore else Icons.Outlined.ExpandLess,
-                        contentDescription = if (collapsed) "Expand ${day.weekday.label}" else "Collapse ${day.weekday.label}",
+                        contentDescription = if (collapsed) stringResource(R.string.workout_calendar_next) else stringResource(R.string.workout_calendar_prev),
                         tint = FitMateTextPrimary
                     )
                 }
@@ -540,7 +543,7 @@ private fun WorkoutDayCard(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Edit,
-                        contentDescription = "Edit ${day.weekday.label}",
+                        contentDescription = stringResource(R.string.workout_edit_day_title, day.weekday.label),
                         tint = FitMateTextPrimary
                     )
                 }
@@ -553,7 +556,7 @@ private fun WorkoutDayCard(
                             Icon(Icons.Outlined.EventBusy, contentDescription = null, tint = RestAccent)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Rest day selected by you. Recovery, mobility, and lighter movement live here.",
+                                text = stringResource(R.string.workout_rest_day_note),
                                 color = FitMateTextSecondary
                             )
                         }
@@ -629,7 +632,7 @@ private fun ExerciseCardRow(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${config.sets} sets • ${formatAmount(entry, config.amount)}",
+                        text = stringResource(R.string.workout_sets_reps_format, config.sets, formatAmount(entry, config.amount)),
                         color = FitMateBlue,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -646,7 +649,7 @@ private fun ExerciseCardRow(
                         shape = RoundedCornerShape(18.dp),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                     ) {
-                        Text("Open", color = FitMateTextPrimary)
+                        Text(stringResource(R.string.workout_btn_open), color = FitMateTextPrimary)
                     }
                     AnimatedVisibility(
                         visible = isCompleted,
@@ -665,14 +668,14 @@ private fun ExerciseCardRow(
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Outlined.Check,
-                                        contentDescription = "Exercise completed",
+                                        contentDescription = stringResource(R.string.workout_completed),
                                         tint = FitMateWhiteBackground,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
                             }
                             Text(
-                                text = "Completed",
+                                text = stringResource(R.string.workout_completed),
                                 color = FitMateGreen,
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold
@@ -702,7 +705,7 @@ private fun WorkoutInstructionScreen(
     val parsed = remember(markdown, exercise.name, exercise.instructions) {
         if (markdown.isBlank()) {
             ParsedInstructions(
-                title = "${exercise.name} instructions",
+                title = exercise.name + " " + context.getString(R.string.workout_instructions_label).lowercase(),
                 steps = listOf(
                     exercise.instructions.ifBlank {
                         LocalExerciseCatalog.DEFAULT_INSTRUCTION_FALLBACK
@@ -753,7 +756,7 @@ private fun WorkoutInstructionScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                             tint = FitMateTextPrimary
                         )
                     }
@@ -765,7 +768,7 @@ private fun WorkoutInstructionScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Exercise instructions",
+                            text = stringResource(R.string.workout_exercise_instructions),
                             style = MaterialTheme.typography.labelMedium,
                             color = FitMateTextSecondary
                         )
@@ -808,7 +811,7 @@ private fun WorkoutInstructionScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "${detail.config.sets} sets • ${formatAmount(exercise, detail.config.amount)}",
+                                text = stringResource(R.string.workout_sets_reps_format, detail.config.sets, formatAmount(exercise, detail.config.amount)),
                                 color = FitMateBlue,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
@@ -855,7 +858,7 @@ private fun WorkoutInstructionScreen(
                                         when {
                                             questionnaireSubmitted -> Unit
                                             selectedStopReason == null -> {
-                                                questionnaireError = "Select a reason before submitting."
+                                                questionnaireError = context.getString(R.string.workout_error_select_reason)
                                             }
                                             else -> {
                                                 if (selectedStopReason == StopReason.COMPLETED_SET) {
@@ -878,7 +881,7 @@ private fun WorkoutInstructionScreen(
                                 )
                             }
                             InstructionsAccordion(
-                                title = parsed.title.ifBlank { "${exercise.name} instructions" },
+                                title = parsed.title.ifBlank { exercise.name + " " + context.getString(R.string.workout_instructions_label).lowercase() },
                                 steps = parsed.steps,
                                 expanded = instructionsExpanded,
                                 onToggle = { instructionsExpanded = !instructionsExpanded }
@@ -913,13 +916,13 @@ private fun WorkoutProgressCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Set progress",
+                    text = stringResource(R.string.workout_set_progress),
                     color = FitMateTextPrimary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "$completedSets / $totalSets sets",
+                    text = stringResource(R.string.workout_sets_progress, completedSets, totalSets),
                     color = if (completedSets >= totalSets) FitMateGreen else FitMateBlue,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
@@ -936,9 +939,9 @@ private fun WorkoutProgressCard(
             )
             Text(
                 text = if (completedSets >= totalSets) {
-                    "You've completed every planned set for this exercise."
+                    stringResource(R.string.workout_progress_desc_complete)
                 } else {
-                    "Complete a set, stop the timer, and log the outcome to move this bar forward."
+                    stringResource(R.string.workout_progress_desc_incomplete)
                 },
                 color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodySmall
@@ -966,7 +969,7 @@ private fun WorkoutTimerCard(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text(
-                text = "Workout timer",
+                text = stringResource(R.string.workout_timer_label),
                 color = FitMateTextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
@@ -988,7 +991,7 @@ private fun WorkoutTimerCard(
                         disabledContentColor = FitMateWhiteBackground.copy(alpha = 0.55f)
                     )
                 ) {
-                    Text("Start Workout", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.workout_btn_start), fontWeight = FontWeight.Bold)
                 }
                 Surface(
                     modifier = Modifier.weight(1f),
@@ -1019,15 +1022,15 @@ private fun WorkoutTimerCard(
                         disabledContentColor = FitMateRed.copy(alpha = 0.35f)
                     )
                 ) {
-                    Text("Stop Workout", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.workout_btn_stop), fontWeight = FontWeight.Bold)
                 }
             }
             Text(
                 text = when {
-                    workoutComplete -> "All planned sets are complete for this exercise."
-                    isTimerRunning -> "Timer is live. Stop it when the current set ends."
-                    elapsedSeconds > 0 -> "Timer paused. Submit the reason below to log this round."
-                    else -> "Start the timer when you begin your current set."
+                    workoutComplete -> stringResource(R.string.workout_timer_status_complete)
+                    isTimerRunning -> stringResource(R.string.workout_timer_status_live)
+                    elapsedSeconds > 0 -> stringResource(R.string.workout_timer_status_paused)
+                    else -> stringResource(R.string.workout_timer_status_idle)
                 },
                 color = FitMateTextSecondary,
                 style = MaterialTheme.typography.bodySmall
@@ -1055,19 +1058,19 @@ private fun WorkoutStopQuestionnaire(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Why did you stop the timer?",
+                text = stringResource(R.string.workout_stop_reason),
                 color = FitMateTextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             StopReasonOption(
-                text = "Completed my current set",
+                text = stringResource(R.string.workout_stop_completed_set),
                 selected = selectedReason == StopReason.COMPLETED_SET,
                 enabled = !submitted,
                 onClick = { onSelect(StopReason.COMPLETED_SET) }
             )
             StopReasonOption(
-                text = "Can't continue anymore, I give up :(",
+                text = stringResource(R.string.workout_stop_give_up),
                 selected = selectedReason == StopReason.GIVE_UP,
                 enabled = !submitted,
                 onClick = { onSelect(StopReason.GIVE_UP) }
@@ -1091,7 +1094,7 @@ private fun WorkoutStopQuestionnaire(
                     disabledContentColor = FitMateWhiteBackground.copy(alpha = 0.55f)
                 )
             ) {
-                Text("Submit", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.submit), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1165,20 +1168,20 @@ private fun InstructionsAccordion(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Instructions",
+                        text = stringResource(R.string.workout_instructions_label),
                         color = FitMateTextPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = if (expanded) "Tap to collapse" else "Tap to view step-by-step instructions",
+                        text = if (expanded) stringResource(R.string.workout_instructions_tap_collapse) else stringResource(R.string.workout_instructions_tap_expand),
                         color = FitMateTextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
                 Icon(
                     imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                    contentDescription = if (expanded) "Collapse instructions" else "Expand instructions",
+                    contentDescription = if (expanded) stringResource(R.string.workout_instructions_tap_collapse) else stringResource(R.string.workout_instructions_tap_expand),
                     tint = FitMateBlue
                 )
             }
@@ -1234,11 +1237,11 @@ private fun PlanChoiceDialog(
     onChooseCustom: () -> Unit
 ) {
     NeonDialogShell(
-        title = "Choose your workout setup",
+        title = stringResource(R.string.workout_setup_title),
         onDismiss = onDismiss
     ) {
         Text(
-            text = "Start with a plan recommended for your fitness goal or build your own schedule day by day.",
+            text = stringResource(R.string.workout_no_plan_body),
             color = FitMateTextSecondary
         )
         Spacer(modifier = Modifier.height(18.dp))
@@ -1251,14 +1254,14 @@ private fun PlanChoiceDialog(
                     contentColor = FitMateWhiteBackground
                 )
             ) {
-                Text("Recommended plan")
+                Text(stringResource(R.string.workout_btn_recommended_plan))
             }
             OutlinedButton(
                 onClick = onChooseCustom,
                 modifier = Modifier.weight(1f),
                 border = BorderStroke(1.dp, FitMateBorder)
             ) {
-                Text("Custom plan", color = FitMateTextPrimary)
+                Text(stringResource(R.string.workout_btn_custom_plan), color = FitMateTextPrimary)
             }
         }
     }
@@ -1287,7 +1290,7 @@ private fun RecommendedPlanConfirmationDialog(
                 modifier = Modifier.weight(1f),
                 border = BorderStroke(1.dp, FitMateBorder)
             ) {
-                Text("Cancel", color = FitMateTextPrimary)
+                Text(stringResource(R.string.cancel), color = FitMateTextPrimary)
             }
             Button(
                 onClick = onConfirm,
@@ -1310,6 +1313,8 @@ private fun SequentialPlanBuilderDialog(
     onDismiss: () -> Unit,
     onSave: (WeeklyWorkoutSchedule) -> Unit
 ) {
+
+    val context = LocalContext.current
     val selections = remember(initialSchedule, fallbackSchedule) {
         mutableStateListOf<WorkoutDaySchedule>().apply {
             addAll(
@@ -1326,7 +1331,7 @@ private fun SequentialPlanBuilderDialog(
     val previewExercises = availableExercisesForFocus(day.focus).take(3)
 
     NeonDialogShell(
-        title = "Make custom plan",
+        title = stringResource(R.string.workout_btn_make_custom),
         onDismiss = onDismiss,
         widthFraction = 0.96f,
         heightFraction = 0.92f,
@@ -1355,7 +1360,7 @@ private fun SequentialPlanBuilderDialog(
         }
         Spacer(modifier = Modifier.height(14.dp))
         Text(
-            text = "Step ${stepIndex + 1} of ${workoutWeekdaysMondayFirst.size}",
+            text = stringResource(R.string.workout_custom_step, stepIndex + 1, workoutWeekdaysMondayFirst.size),
             color = FitMateBlue,
             fontWeight = FontWeight.Bold
         )
@@ -1368,7 +1373,7 @@ private fun SequentialPlanBuilderDialog(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Pick what you want to train on ${day.weekday.label}. Workouts can repeat, and at least one day must stay as rest.",
+            text = stringResource(R.string.workout_custom_pick, day.weekday.label),
             color = FitMateTextSecondary
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -1475,7 +1480,7 @@ private fun SequentialPlanBuilderDialog(
                 modifier = Modifier.weight(1f),
                 border = BorderStroke(1.dp, FitMateBorder)
             ) {
-                Text("Back", color = FitMateTextPrimary)
+                Text(stringResource(R.string.back), color = FitMateTextPrimary)
             }
 
             Button(
@@ -1484,7 +1489,7 @@ private fun SequentialPlanBuilderDialog(
                     if (stepIndex < selections.lastIndex) {
                         stepIndex++
                     } else if (restCount < 1) {
-                        errorMessage = "Please keep at least 1 rest day in your week."
+                        errorMessage = context.getString(R.string.workout_error_rest_requirement)
                     } else {
                         onSave(
                             WeeklyWorkoutSchedule(
@@ -1503,7 +1508,7 @@ private fun SequentialPlanBuilderDialog(
                     contentColor = FitMateWhiteBackground
                 )
             ) {
-                Text(if (stepIndex == selections.lastIndex) "Save plan" else "Next")
+                Text(if (stepIndex == selections.lastIndex) stringResource(R.string.workout_btn_save_plan) else stringResource(R.string.workout_btn_next))
             }
         }
     }
@@ -1529,9 +1534,10 @@ private fun WorkoutDayEditorDialog(
         }
     }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     NeonDialogShell(
-        title = "Edit ${day.weekday.label}",
+        title = stringResource(R.string.workout_edit_day_title, day.weekday.label),
         onDismiss = onDismiss,
         widthFraction = 0.96f,
         heightFraction = 0.92f,
@@ -1553,7 +1559,7 @@ private fun WorkoutDayEditorDialog(
                     Icon(Icons.Outlined.EventBusy, contentDescription = null, tint = RestAccent)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "This day will be saved as a rest day.",
+                        text = stringResource(R.string.workout_rest_day_saved),
                         color = FitMateTextPrimary
                     )
                 }
@@ -1595,7 +1601,7 @@ private fun WorkoutDayEditorDialog(
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Cancel", color = FitMateTextSecondary)
+                Text(stringResource(R.string.cancel), color = FitMateTextSecondary)
             }
             Button(
                 onClick = {
@@ -1619,7 +1625,7 @@ private fun WorkoutDayEditorDialog(
                                 )
                             }
                         if (chosen.isEmpty()) {
-                            errorMessage = "Select at least one exercise, or switch this day to rest."
+                            errorMessage = context.getString(R.string.workout_error_no_exercises)
                         } else {
                             onSave(
                                 WorkoutDaySchedule(
@@ -1637,7 +1643,7 @@ private fun WorkoutDayEditorDialog(
                     contentColor = FitMateWhiteBackground
                 )
             ) {
-                Text("Save edits")
+                Text(stringResource(R.string.workout_btn_save_edits))
             }
         }
     }
@@ -1675,7 +1681,7 @@ private fun EditableExerciseCard(
                     contentAlignment = Alignment.Center
                 ) {
                     if (state.selected) {
-                        Text("✓", color = FitMateWhiteBackground, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.step_done), color = FitMateWhiteBackground, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -1720,18 +1726,18 @@ private fun EditableExerciseCard(
             if (state.selected) {
                 Spacer(modifier = Modifier.height(16.dp))
                 WorkoutAmountSlider(
-                    title = "Sets",
+                    title = stringResource(R.string.workout_label_sets),
                     value = state.sets,
                     range = 1..6,
-                    unit = "sets",
+                    unit = stringResource(R.string.workout_unit_sets),
                     onValueChange = onSetsChange
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 WorkoutAmountSlider(
-                    title = if (entry.metricType == ExerciseMetricType.REPS) "Reps" else "Duration",
+                    title = if (entry.metricType == ExerciseMetricType.REPS) stringResource(R.string.workout_label_reps) else stringResource(R.string.workout_label_duration),
                     value = state.amount,
                     range = entry.minAmount..entry.maxAmount,
-                    unit = entry.metricType.unitLabel,
+                    unit = if (entry.metricType == ExerciseMetricType.REPS) stringResource(R.string.workout_unit_reps) else stringResource(R.string.workout_unit_sec),
                     onValueChange = onAmountChange
                 )
             }
@@ -1797,7 +1803,11 @@ private fun DifficultyPill(
         border = BorderStroke(1.dp, color.copy(alpha = 0.35f))
     ) {
         Text(
-            text = band.label,
+            text = when(band) {
+                DifficultyBand.EASY -> stringResource(R.string.difficulty_easy)
+                DifficultyBand.MEDIUM -> stringResource(R.string.difficulty_medium)
+                DifficultyBand.HARD -> stringResource(R.string.difficulty_hard)
+            },
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             color = color,
             style = MaterialTheme.typography.labelMedium,
@@ -1912,9 +1922,10 @@ private fun customFocusTitle(focus: WorkoutFocus): String = when (focus) {
     else -> focus.label
 }
 
+@Composable
 private fun customFocusSubtitle(focus: WorkoutFocus): String? = when (focus) {
-    WorkoutFocus.PUSH -> "Chest + Shoulders + Triceps"
-    WorkoutFocus.PULL -> "Back + Biceps + Forearms"
+    WorkoutFocus.PUSH -> stringResource(R.string.workout_focus_push_sub)
+    WorkoutFocus.PULL -> stringResource(R.string.workout_focus_pull_sub)
     else -> null
 }
 
@@ -2059,12 +2070,10 @@ private data class ParsedInstructions(
     val steps: List<String>,
 )
 
-private enum class DifficultyBand(
-    val label: String
-) {
-    EASY("Easy"),
-    MEDIUM("Medium"),
-    HARD("Hard"),
+private enum class DifficultyBand {
+    EASY,
+    MEDIUM,
+    HARD,
 }
 
 private enum class StopReason {
@@ -2119,7 +2128,7 @@ private fun HeroGifCarousel() {
                 val actualIndex = page % heroGifs.size
                 AsyncImage(
                     model = assetModel(heroGifs[actualIndex]),
-                    contentDescription = "Workout Carousel",
+                    contentDescription = stringResource(R.string.workout_weekly_title),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -2146,14 +2155,14 @@ private fun HeroGifCarousel() {
                     .padding(22.dp)
             ) {
                 Text(
-                    text = "Weekly Training",
+                    text = stringResource(R.string.workout_weekly_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = FitMateGreenLight,
                     fontWeight = FontWeight.ExtraBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Your personalized weekly workout split",
+                    text = stringResource(R.string.workout_weekly_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = FitMateWhiteBackground.copy(alpha = 0.85f)
                 )
@@ -2176,7 +2185,7 @@ private fun MotivationBanner() {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = assetModel("gym_motivation.gif"),
-                contentDescription = "Motivation",
+                contentDescription = stringResource(R.string.workout_discipline_quote),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
                 alpha = 0.45f
@@ -2198,14 +2207,14 @@ private fun MotivationBanner() {
                     .padding(22.dp)
             ) {
                 Text(
-                    text = "DISCIPLINE BEATS MOTIVATION",
+                    text = stringResource(R.string.workout_discipline_quote),
                     style = MaterialTheme.typography.titleLarge,
                     color = FitMateWhiteBackground,
                     fontWeight = FontWeight.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Stay Consistent. Trust The Process.",
+                    text = stringResource(R.string.workout_discipline_sub),
                     style = MaterialTheme.typography.bodyMedium,
                     color = FitMateWhiteBackground.copy(alpha = 0.7f)
                 )

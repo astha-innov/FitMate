@@ -34,6 +34,7 @@ enum class AiProviderMode(val label: String) {
 }
 
 enum class AppThemeMode(val label: String) {
+    SYSTEM("System"),
     LIGHT("Light"),
     DARK("Dark"),
 }

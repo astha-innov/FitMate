@@ -76,6 +76,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -417,7 +418,7 @@ fun AnimatedHeroBanner() {
                 .crossfade(true)
                 .build(),
             imageLoader    = gifLoader,
-            contentDescription = "Nutrition hero animation",
+            contentDescription = stringResource(R.string.diet_hero_desc),
             contentScale   = ContentScale.Crop,
             modifier       = Modifier
                 .fillMaxSize()
@@ -445,21 +446,21 @@ fun AnimatedHeroBanner() {
                 .padding(start = 22.dp, bottom = 22.dp, end = 22.dp)
         ) {
             Text(
-                text = "FitMate Nutrition",
+                text = stringResource(R.string.diet_title),
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White,
                 letterSpacing = (-0.5).sp
             )
             Text(
-                text = "Your nutrition partner",
+                text = stringResource(R.string.diet_subtitle),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.White.copy(alpha = 0.8f)
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "Eat smarter.  Train harder.  Recover better.",
+                text = stringResource(R.string.diet_tagline),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AppAccentGreen,
@@ -494,7 +495,7 @@ private fun HeroBannerCard(goal: String) {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "CURRENT GOAL",
+                    stringResource(R.string.diet_current_goal_label),
                     fontSize = 11.sp, fontWeight = FontWeight.Bold,
                     color = Color.White.copy(alpha = 0.5f), letterSpacing = 1.2.sp
                 )
@@ -505,11 +506,27 @@ private fun HeroBannerCard(goal: String) {
                     Text(config.emoji, fontSize = 34.sp)
                     Column {
                         Text(
-                            config.label,
+                            text = when(config.label) {
+                                "Muscle Gain" -> stringResource(R.string.goal_muscle_gain)
+                                "Fat Loss" -> stringResource(R.string.goal_fat_loss)
+                                "Lean Body" -> stringResource(R.string.goal_lean_body)
+                                "Reduce Stress & Relax" -> stringResource(R.string.goal_reduce_stress)
+                                "Cardio / Stamina" -> stringResource(R.string.goal_cardio)
+                                "Flexibility & Mobility" -> stringResource(R.string.goal_mobility)
+                                else -> config.label
+                            },
                             fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White
                         )
                         Text(
-                            config.subtitle,
+                            text = when(config.label) {
+                                "Muscle Gain" -> stringResource(R.string.sub_muscle_gain)
+                                "Fat Loss" -> stringResource(R.string.sub_fat_loss)
+                                "Lean Body" -> stringResource(R.string.sub_lean_body)
+                                "Reduce Stress & Relax" -> stringResource(R.string.sub_reduce_stress)
+                                "Cardio / Stamina" -> stringResource(R.string.sub_cardio)
+                                "Flexibility & Mobility" -> stringResource(R.string.sub_mobility)
+                                else -> config.subtitle
+                            },
                             fontSize = 13.sp, fontWeight = FontWeight.Medium,
                             color = Color.White.copy(alpha = 0.75f), lineHeight = 18.sp
                         )
@@ -525,7 +542,7 @@ private fun HeroBannerCard(goal: String) {
                 ) {
                     Icon(Icons.Rounded.FlashOn, contentDescription = null,
                         tint = AppText, modifier = Modifier.size(13.dp))
-                    Text("85% on track today", fontSize = 12.sp,
+                    Text(stringResource(R.string.diet_on_track_today), fontSize = 12.sp,
                         fontWeight = FontWeight.Bold, color = AppText)
                 }
             }
@@ -549,7 +566,7 @@ private fun TodayProgressSection(
         colors = CardDefaults.cardColors(containerColor = AppCardWhite)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Today's Progress", fontSize = 18.sp,
+            Text(stringResource(R.string.diet_today_progress_title), fontSize = 18.sp,
                 fontWeight = FontWeight.Bold, color = AppText)
             Spacer(Modifier.height(20.dp))
             Row(
@@ -569,7 +586,7 @@ private fun TodayProgressSection(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("$consumedCal", fontSize = 22.sp,
                             fontWeight = FontWeight.Black, color = AppText)
-                        Text("/ $targetCal kcal", fontSize = 10.sp,
+                        Text(stringResource(R.string.diet_kcal_target_format, targetCal), fontSize = 10.sp,
                             fontWeight = FontWeight.Medium, color = AppSecondaryText)
                     }
                 }
@@ -577,9 +594,9 @@ private fun TodayProgressSection(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.padding(start = 16.dp)
                 ) {
-                    MacroMetricRow("Protein", consumedPro,  targetPro,  AppMacroProtein)
-                    MacroMetricRow("Carbs",   consumedCarb, targetCarb, AppMacroCarbs)
-                    MacroMetricRow("Fat",     consumedFats, targetFats, AppMacroFat)
+                    MacroMetricRow(stringResource(R.string.diet_protein), consumedPro,  targetPro,  AppMacroProtein)
+                    MacroMetricRow(stringResource(R.string.diet_carbs),   consumedCarb, targetCarb, AppMacroCarbs)
+                    MacroMetricRow(stringResource(R.string.diet_fat),     consumedFats, targetFats, AppMacroFat)
                 }
             }
         }
@@ -600,7 +617,7 @@ private fun MacroMetricRow(label: String, current: Int, target: Int, color: Colo
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = AppText)
-                Text("${current}g / ${target}g", fontSize = 10.sp, color = AppSecondaryText)
+                Text(stringResource(R.string.diet_macro_format, current, target), fontSize = 10.sp, color = AppSecondaryText)
             }
             Spacer(Modifier.height(4.dp))
             Box(modifier = Modifier
@@ -638,13 +655,13 @@ private fun NutritionInsightCard(currentProtein: Int, targetProtein: Int) {
             }
             Spacer(Modifier.width(16.dp))
             Column {
-                Text("Nutrition Insight", fontSize = 13.sp,
+                Text(stringResource(R.string.diet_insight_title), fontSize = 13.sp,
                     fontWeight = FontWeight.Bold, color = AppSecondaryText)
                 Text(
                     text = if (remaining > 0)
-                        "Increase protein intake by ${remaining}g today to hit your macro target."
+                        stringResource(R.string.diet_insight_increase, remaining)
                     else
-                        "Macro targets met perfectly. Excellent consistency today.",
+                        stringResource(R.string.diet_insight_perfect),
                     fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = AppText,
                     lineHeight = 18.sp, modifier = Modifier.padding(top = 2.dp)
                 )
@@ -666,7 +683,7 @@ private fun MealsForYourGoalSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(
-            "Meals For Your Goal",
+            stringResource(R.string.diet_meals_for_goal_title),
             fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppText,
             modifier = Modifier.padding(horizontal = 20.dp)
         )
@@ -730,8 +747,17 @@ fun PremiumMealCard(meal: DietMealItem, onTap: () -> Unit) {
                             .background(badge.second, RoundedCornerShape(8.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(badge.first, fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(
+                            text = when(badge.first) {
+                                "Non Veg" -> stringResource(R.string.diet_badge_non_veg)
+                                "Eggetarian" -> stringResource(R.string.diet_badge_eggetarian)
+                                "High Protein" -> stringResource(R.string.diet_badge_high_protein)
+                                "Low Calorie" -> stringResource(R.string.diet_badge_low_calorie)
+                                else -> badge.first
+                            },
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold, color = Color.White
+                        )
                     }
                 }
                 // Bottom-left meal type
@@ -743,7 +769,16 @@ fun PremiumMealCard(meal: DietMealItem, onTap: () -> Unit) {
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        meal.mealType.uppercase(),
+                        text = (when(meal.mealType) {
+                            "Breakfast" -> stringResource(R.string.meal_breakfast)
+                            "Lunch" -> stringResource(R.string.meal_lunch)
+                            "Dinner" -> stringResource(R.string.meal_dinner)
+                            "Snack" -> stringResource(R.string.meal_snacks)
+                            "Drink" -> stringResource(R.string.meal_drink)
+                            "Salad" -> stringResource(R.string.meal_salad)
+                            "Soup" -> stringResource(R.string.meal_soup)
+                            else -> meal.mealType
+                        }).uppercase(),
                         fontSize = 8.sp, fontWeight = FontWeight.Bold,
                         color = Color.White, letterSpacing = 0.8.sp
                     )
@@ -809,9 +844,9 @@ private fun WaterTrackerCard() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("Water Intake", fontSize = 18.sp,
+                    Text(stringResource(R.string.diet_water_intake_title), fontSize = 18.sp,
                         fontWeight = FontWeight.Bold, color = AppText)
-                    Text("Daily Water Goal", fontSize = 12.sp,
+                    Text(stringResource(R.string.diet_water_goal_subtitle), fontSize = 12.sp,
                         color = AppSecondaryText, fontWeight = FontWeight.Medium)
                 }
                 Row(
@@ -829,7 +864,7 @@ private fun WaterTrackerCard() {
                             ) { if (waterCount > 0) waterCount-- },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Rounded.Remove, "Remove glass",
+                        Icon(Icons.Rounded.Remove, stringResource(R.string.diet_water_remove_desc),
                             modifier = Modifier.size(18.dp), tint = AppText)
                     }
 
@@ -847,7 +882,7 @@ private fun WaterTrackerCard() {
                             ) { if (waterCount < 20) waterCount++ },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Rounded.Add, "Add glass",
+                        Icon(Icons.Rounded.Add, stringResource(R.string.diet_water_add_desc),
                             modifier = Modifier.size(18.dp), tint = AppText)
                     }
                 }
@@ -855,7 +890,7 @@ private fun WaterTrackerCard() {
 
             // Count label + animated progress bar
             Text(
-                text = "$waterCount / $targetGlasses glasses",
+                text = stringResource(R.string.diet_water_progress_format, waterCount, targetGlasses),
                 fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = AppText
             )
             LinearProgressIndicator(
@@ -879,7 +914,7 @@ private fun WaterTrackerCard() {
                         .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Text(
-                        "🎉 Hydration Goal Completed!",
+                        stringResource(R.string.diet_water_done),
                         fontSize = 14.sp, fontWeight = FontWeight.Bold,
                         color = Color(0xFF2E7D32)
                     )
@@ -902,7 +937,7 @@ private fun TodayMealPlanSection(
         modifier = Modifier.padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Today's Meal Plan", fontSize = 20.sp,
+        Text(stringResource(R.string.diet_meal_plan_title), fontSize = 20.sp,
             fontWeight = FontWeight.Bold, color = AppText)
         mealSlots.forEach { slot ->
             val count = remember(goal, diet) {
@@ -984,18 +1019,26 @@ private fun MealSlotCard(
                         Text(meta.emoji, fontSize = 20.sp)
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(meta.label, fontSize = 16.sp,
+                        Text(
+                            text = when(meta.label) {
+                                "Breakfast" -> stringResource(R.string.meal_breakfast)
+                                "Lunch" -> stringResource(R.string.meal_lunch)
+                                "Dinner" -> stringResource(R.string.meal_dinner)
+                                "Snacks" -> stringResource(R.string.meal_snacks)
+                                else -> meta.label
+                            },
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = AppText)
                         Text(
-                            if (mealCount > 0) "$mealCount Recommended Meals"
-                            else "Tap to view meals",
+                            if (mealCount > 0) stringResource(R.string.diet_recommended_meals_format, mealCount)
+                            else stringResource(R.string.diet_tap_to_view),
                             fontSize = 12.sp, color = AppSecondaryText
                         )
                     }
                 }
                 Icon(
                     Icons.Rounded.ArrowForwardIos,
-                    contentDescription = "Open",
+                    contentDescription = stringResource(R.string.back),
                     tint   = AppSecondaryText,
                     modifier = Modifier
                         .size(16.dp)
@@ -1057,10 +1100,18 @@ private fun MealSelectionBottomSheet(
                         .padding(top = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(slot.uppercase(), fontSize = 12.sp,
+                    Text(
+                        text = (when(slot) {
+                            "Breakfast" -> stringResource(R.string.meal_breakfast)
+                            "Lunch" -> stringResource(R.string.meal_lunch)
+                            "Dinner" -> stringResource(R.string.meal_dinner)
+                            "Snacks" -> stringResource(R.string.meal_snacks)
+                            else -> slot
+                        }).uppercase(),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppSecondaryText, letterSpacing = 1.sp)
-                    Text("Choose Your Nutrition Goal", fontSize = 22.sp,
+                    Text(stringResource(R.string.diet_choose_goal_title), fontSize = 22.sp,
                         fontWeight = FontWeight.Black, color = AppText)
                 }
             }
@@ -1097,7 +1148,7 @@ private fun MealSelectionBottomSheet(
                     modifier = Modifier.padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Food Preference", fontSize = 18.sp,
+                    Text(stringResource(R.string.diet_food_preference_title), fontSize = 18.sp,
                         fontWeight = FontWeight.Bold, color = AppText)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         dietOptions.forEach { (emoji, label) ->
@@ -1129,7 +1180,13 @@ private fun MealSelectionBottomSheet(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Text(
-                            "Suggested for $slot",
+                            text = stringResource(R.string.diet_suggested_for_format, when(slot) {
+                                "Breakfast" -> stringResource(R.string.meal_breakfast)
+                                "Lunch" -> stringResource(R.string.meal_lunch)
+                                "Dinner" -> stringResource(R.string.meal_dinner)
+                                "Snacks" -> stringResource(R.string.meal_snacks)
+                                else -> slot
+                            }),
                             fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppText,
                             modifier = Modifier.padding(horizontal = 24.dp)
                         )
@@ -1158,7 +1215,7 @@ private fun MealSelectionBottomSheet(
                         modifier = Modifier.weight(1f).height(52.dp),
                         shape    = RoundedCornerShape(14.dp)
                     ) {
-                        Text("Cancel", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.cancel), fontWeight = FontWeight.Bold)
                     }
                     Button(
                         onClick  = { onApply(pendingGoal, pendingDiet) },
@@ -1166,7 +1223,7 @@ private fun MealSelectionBottomSheet(
                         shape    = RoundedCornerShape(14.dp),
                         colors   = ButtonDefaults.buttonColors(containerColor = AppText)
                     ) {
-                        Text("Apply Plan", fontWeight = FontWeight.Bold,
+                        Text(stringResource(R.string.diet_apply_plan), fontWeight = FontWeight.Bold,
                             color = AppAccentGreen)
                     }
                 }
@@ -1223,7 +1280,7 @@ private fun MealDetailDialog(
                             .clickable(onClick = onClose),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Rounded.Close, "Close",
+                        Icon(Icons.Rounded.Close, stringResource(R.string.close),
                             tint = Color.White, modifier = Modifier.size(18.dp))
                     }
                     // Meal type pill
@@ -1234,7 +1291,18 @@ private fun MealDetailDialog(
                             .background(Color.Black.copy(0.55f), RoundedCornerShape(8.dp))
                             .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
-                        Text(meal.mealType.uppercase(), fontSize = 10.sp,
+                        Text(
+                            text = (when(meal.mealType) {
+                                "Breakfast" -> stringResource(R.string.meal_breakfast)
+                                "Lunch" -> stringResource(R.string.meal_lunch)
+                                "Dinner" -> stringResource(R.string.meal_dinner)
+                                "Snack" -> stringResource(R.string.meal_snacks)
+                                "Drink" -> stringResource(R.string.meal_drink)
+                                "Salad" -> stringResource(R.string.meal_salad)
+                                "Soup" -> stringResource(R.string.meal_soup)
+                                else -> meal.mealType
+                            }).uppercase(),
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold, color = Color.White,
                             letterSpacing = 0.8.sp)
                     }
@@ -1249,14 +1317,27 @@ private fun MealDetailDialog(
 
                     // Macro chips row
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        DetailChip("⚡ ${meal.calories}", Color(0xFFFFF3E0), Color(0xFFE65100))
-                        DetailChip("💪 ${meal.protein} protein", Color(0xFFE8EAF6), AppMacroProtein)
+                        DetailChip(stringResource(R.string.diet_calories_format, meal.calories), Color(0xFFFFF3E0), Color(0xFFE65100))
+                        DetailChip(stringResource(R.string.diet_protein_format, meal.protein), Color(0xFFE8EAF6), AppMacroProtein)
                     }
 
                     // Info rows
-                    DetailInfoRow("Category",     meal.mealType)
-                    DetailInfoRow("Suitable for", meal.suitableGoals())
-                    DetailInfoRow("Diet",         meal.dietLabel())
+                    DetailInfoRow(stringResource(R.string.diet_label_category), when(meal.mealType) {
+                        "Breakfast" -> stringResource(R.string.meal_breakfast)
+                        "Lunch" -> stringResource(R.string.meal_lunch)
+                        "Dinner" -> stringResource(R.string.meal_dinner)
+                        "Snack" -> stringResource(R.string.meal_snacks)
+                        "Drink" -> stringResource(R.string.meal_drink)
+                        "Salad" -> stringResource(R.string.meal_salad)
+                        "Soup" -> stringResource(R.string.meal_soup)
+                        else -> meal.mealType
+                    })
+                    DetailInfoRow(stringResource(R.string.diet_label_suitable), meal.suitableGoals())
+                    DetailInfoRow(stringResource(R.string.diet_label_diet), when {
+                        meal.isNonVeg -> stringResource(R.string.diet_badge_non_veg)
+                        meal.hasEgg -> stringResource(R.string.diet_badge_eggetarian)
+                        else -> stringResource(R.string.diet_veg)
+                    })
 
                     // Action buttons
                     Row(
@@ -1267,7 +1348,7 @@ private fun MealDetailDialog(
                             onClick  = onClose,
                             modifier = Modifier.weight(1f).height(48.dp),
                             shape    = RoundedCornerShape(12.dp)
-                        ) { Text("Close", fontWeight = FontWeight.Bold) }
+                        ) { Text(stringResource(R.string.close), fontWeight = FontWeight.Bold) }
 
                         Button(
                             onClick  = onAdd,
@@ -1275,7 +1356,7 @@ private fun MealDetailDialog(
                             shape    = RoundedCornerShape(12.dp),
                             colors   = ButtonDefaults.buttonColors(containerColor = AppText)
                         ) {
-                            Text("Add To Plan", fontWeight = FontWeight.Bold,
+                            Text(stringResource(R.string.diet_add_to_plan), fontWeight = FontWeight.Bold,
                                 color = AppAccentGreen)
                         }
                     }
@@ -1349,7 +1430,15 @@ private fun GoalChip(
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(emoji, fontSize = 22.sp)
             Text(
-                label,
+                text = when(label) {
+                    "Muscle Gain" -> stringResource(R.string.goal_muscle_gain)
+                    "Fat Loss" -> stringResource(R.string.goal_fat_loss)
+                    "Lean Body" -> stringResource(R.string.goal_lean_body)
+                    "Reduce Stress & Relax" -> stringResource(R.string.goal_reduce_stress)
+                    "Cardio / Stamina" -> stringResource(R.string.goal_cardio)
+                    "Flexibility & Mobility" -> stringResource(R.string.goal_mobility)
+                    else -> label
+                },
                 fontSize = 15.sp,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                 color = if (selected) Color.White else AppText
@@ -1393,7 +1482,14 @@ private fun DietChip(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(emoji, fontSize = 20.sp)
-            Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = textColor)
+            Text(
+                text = when(label) {
+                    "Vegetarian" -> stringResource(R.string.diet_veg)
+                    "Eggetarian" -> stringResource(R.string.diet_badge_eggetarian)
+                    "Non Vegetarian" -> stringResource(R.string.diet_non_veg)
+                    else -> label
+                },
+                fontSize = 11.sp, fontWeight = FontWeight.Bold, color = textColor)
         }
     }
 }

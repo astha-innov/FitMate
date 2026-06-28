@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.fitmate.R
 import com.fitmate.ui.components.FitMateLogoMark
 import kotlin.math.pow
 import kotlin.random.Random
@@ -80,15 +82,13 @@ private fun spawnParticle(w: Float, h: Float, randomY: Boolean) = Particle(
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
 
-    val statuses = remember {
-        listOf(
-            "PREPARING YOUR PLAN...",
-            "LOADING BIOMETRICS...",
-            "SYNCING AI ENGINE...",
-            "PERSONALIZING EXPERIENCE...",
-            "READY."
-        )
-    }
+    val statuses = listOf(
+        stringResource(R.string.splash_status_preparing),
+        stringResource(R.string.splash_status_biometrics),
+        stringResource(R.string.splash_status_syncing),
+        stringResource(R.string.splash_status_personalizing),
+        stringResource(R.string.splash_status_ready)
+    )
     var statusText by remember { mutableStateOf(statuses[0]) }
     val progress   = remember { Animatable(0f) }
 
@@ -383,9 +383,9 @@ private fun FloatingHoloStats() {
     }
 
     Box(Modifier.fillMaxSize()) {
-        HoloStatCard("98.2",  "VO₂ MAX",    Modifier.padding(start = 18.dp, top = 178.dp).offset(y = floatY(3800, false)))
-        HoloStatCard("72 BPM","HEART RATE", Modifier.align(Alignment.TopEnd).padding(top = 236.dp, end = 18.dp).offset(y = floatY(4600, true)))
-        HoloStatCard("2,840", "KCAL",       Modifier.padding(start = 22.dp, top = 328.dp).offset(y = floatY(3200, false)))
+        HoloStatCard(stringResource(R.string.splash_stat_vo2_value),  stringResource(R.string.splash_stat_vo2_label),    Modifier.padding(start = 18.dp, top = 178.dp).offset(y = floatY(3800, false)))
+        HoloStatCard(stringResource(R.string.splash_stat_hr_value),stringResource(R.string.splash_stat_hr_label), Modifier.align(Alignment.TopEnd).padding(top = 236.dp, end = 18.dp).offset(y = floatY(4600, true)))
+        HoloStatCard(stringResource(R.string.splash_stat_kcal_value), stringResource(R.string.splash_stat_kcal_label),       Modifier.padding(start = 22.dp, top = 328.dp).offset(y = floatY(3200, false)))
     }
 }
 
@@ -463,7 +463,7 @@ private fun TopHudBar() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            "v2.4",
+            stringResource(R.string.splash_version),
             style = TextStyle(
                 fontFamily    = Orbitron,
                 fontSize      = 9.sp,
@@ -483,7 +483,7 @@ private fun TopHudBar() {
                 )
         )
         Text(
-            "AI ENGINE",
+            stringResource(R.string.splash_ai_engine),
             style = TextStyle(
                 fontFamily    = Orbitron,
                 fontSize      = 9.sp,
@@ -670,7 +670,7 @@ private fun BrandText() {
         Box(contentAlignment = Alignment.Center) {
             // Soft green bloom layer behind text
             Text(
-                text  = "FITMATE",
+                text  = stringResource(R.string.fitmate_brand),
                 style = TextStyle(
                     fontFamily    = Orbitron,
                     fontSize      = 38.sp,
@@ -681,7 +681,7 @@ private fun BrandText() {
             )
             // Shadow depth layer
             Text(
-                text  = "FITMATE",
+                text  = stringResource(R.string.fitmate_brand),
                 style = TextStyle(
                     fontFamily    = Orbitron,
                     fontSize      = 38.sp,
@@ -693,7 +693,7 @@ private fun BrandText() {
             )
             // Crisp dark top layer
             Text(
-                text  = "FITMATE",
+                text  = stringResource(R.string.fitmate_brand),
                 style = TextStyle(
                     fontFamily    = Orbitron,
                     fontSize      = 38.sp,
@@ -705,7 +705,7 @@ private fun BrandText() {
         }
 
         Text(
-            text  = "AI  ·  PERFORMANCE  ·  ELITE",
+            text  = stringResource(R.string.splash_tagline),
             style = TextStyle(
                 fontFamily    = Rajdhani,
                 fontSize      = 10.sp,
@@ -734,9 +734,9 @@ private fun StatPillsRow() {
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         listOf(
-            "12K+" to "Athletes",
-            "99%"  to "AI Score",
-            "4.9★" to "Rating"
+            stringResource(R.string.splash_stat_athletes_value) to stringResource(R.string.splash_stat_athletes_label),
+            stringResource(R.string.splash_stat_score_value)  to stringResource(R.string.splash_stat_score_label),
+            stringResource(R.string.splash_stat_rating_value) to stringResource(R.string.splash_stat_rating_label)
         ).forEach { (v, l) -> StatPill(v, l) }
     }
 }
@@ -922,8 +922,8 @@ private fun BottomHud(statusText: String, progress: Float) {
 
         Spacer(Modifier.height(6.dp))
 
-         Text(
-            text     = "${(progress * 100).toInt()}%",
+        Text(
+            text     = stringResource(R.string.progress_percentage, (progress * 100).toInt()),
             style    = TextStyle(
                 fontFamily    = Orbitron,
                 fontSize      = 9.sp,

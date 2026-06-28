@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FitMate</string>
+
+    <string name="back">Back</string>
+    <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="submit">Submit</string>
+    <string name="log_out">Log out</string>
+    <string name="or_divider">  OR  </string>
+
+    <string name="fitmate_brand">FITMATE</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="signin_subtitle">Continue your fitness transformation\njourney with FitMate.</string>
+    <string name="sign_in">Sign In</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="send_otp">Send OTP</string>
+    <string name="no_account">Don\'t have an account? </string>
+    <string name="sign_up_link">Sign Up</string>
+    <string name="create_account">Create Account</string>
+    <string name="signup_subtitle">Join the future of fitness today.</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="reset_password_hint">Enter your email and we\'ll send a secure password reset link.</string>
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="verify_otp">Verify OTP</string>
+    <string name="otp_sent_to">We sent a verification code to %1$s.</string>
+    <string name="otp_sent_to_phone">We sent a verification code to your phone.</string>
+    <string name="resend_otp">Resend Again?</string>
+    <string name="verify_now">Verify Now</string>
+
+    <string name="resend_code_in">Resend code in: %1$d seconds</string>
+    <string name="request_new_code">You can request a new code now</string>
+    <string name="error_incomplete_otp">Enter the complete 6-digit OTP.</string>
+
+    <string name="error_google_sign_in_no_token">Google Sign-In did not return an ID token. Check Firebase SHA and OAuth client configuration.</string>
+    <string name="error_google_sign_in_failed">Google Sign-In failed</string>
+    <string name="error_google_sign_in_failed_fallback">Google Sign-In failed.</string>
+    <string name="error_google_sign_in_failed_status">Google Sign-In failed: %1$d. Check SHA fingerprints and google-services.json.</string>
+
+    <string name="fitness_background">Fitness Background</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="phone_number">Phone Number</string>
+
+    <string name="welcome_tagline">Ultimate Fitness Partner</string>
+    <string name="welcome_body">Transform your routine into a lifestyle with AI-driven tracking.</string>
+    <string name="get_started">GET STARTED</string>
+    <string name="personalising">PERSONALISING</string>
+    <string name="back_to_setup">← Back to Setup</string>
+    <string name="step_of">Step %1$d of %2$d</string>
+    <string name="step_done">✓</string>
+
+    <string name="splash_tagline">AI  ·  PERFORMANCE  ·  ELITE</string>
+
+    <string name="settings_edit_profile_title">Edit Profile</string>
+    <string name="settings_edit_profile_subtitle">Update the details you gave during setup.</string>
+    <string name="settings_account_security_title">Account &amp; Security</string>
+    <string name="settings_account_security_subtitle">Manage your email, password, and account identity.</string>
+    <string name="settings_data_privacy_title">Data &amp; Privacy</string>
+    <string name="settings_data_privacy_subtitle">Clear app data or permanently delete your account.</string>
+    <string name="settings_feedback_title">Feedback</string>
+    <string name="settings_feedback_subtitle">Share ideas, issues, and suggestions for FitMate.</string>
+    <string name="settings_legal_title">Legal &amp; About</string>
+    <string name="settings_legal_subtitle">Read policies and learn what FitMate is about.</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_subtitle">Change the display language of the app.</string>
+
+    <string name="edit_profile_dialog_title">Edit Profile</string>
+    <string name="edit_profile_dialog_subtitle">Change your saved setup information here.</string>
+    <string name="field_age">Age</string>
+    <string name="field_height_cm">Height (cm)</string>
+    <string name="field_weight_kg">Weight (kg)</string>
+    <string name="field_gender">Gender</string>
+    <string name="field_budget_inr">Food budget (INR)</string>
+    <string name="field_workout_minutes">Workout time (minutes)</string>
+    <string name="field_equipment">Equipment (comma separated)</string>
+    <string name="selector_body_goal">Body Goal</string>
+    <string name="selector_food_pref">Food Preference</string>
+    <string name="selector_activity_level">Activity Level</string>
+    <string name="selector_fitness_level">Fitness Level</string>
+    <string name="profile_updated">Profile updated successfully.</string>
+
+    <string name="account_dialog_title">Account &amp; Security</string>
+    <string name="account_dialog_subtitle">Review your account details and update secure credentials.</string>
+    <string name="label_current_email">Current email</string>
+    <string name="label_username">Username</string>
+    <string name="label_signin_method">Sign-in method</string>
+    <string name="label_password">Password</string>
+    <string name="label_no_email">No email linked</string>
+    <string name="label_unknown">Unknown</string>
+    <string name="label_password_hidden">********</string>
+    <string name="field_new_email">New email</string>
+    <string name="field_current_password">Current password</string>
+    <string name="field_new_password">New password</string>
+    <string name="update_email">Update Email</string>
+    <string name="update_password">Update Password</string>
+    <string name="google_signin_note">This account is managed by Google or phone sign-in, so email and password updates are not handled here.</string>
+
+    <string name="data_dialog_title">Data &amp; Privacy</string>
+    <string name="data_dialog_subtitle">Control your saved FitMate data with care.</string>
+    <string name="clear_data_title">Clear Data</string>
+    <string name="clear_data_body">This removes your saved profile setup, workout history, and progress from this account.</string>
+    <string name="clear_data_button">Clear Data</string>
+    <string name="delete_account_title">Delete Account</string>
+    <string name="delete_account_body">This permanently removes your FitMate account and all progress tied to it.</string>
+    <string name="delete_account_button">Delete Account</string>
+    <string name="delete_confirm_title">Delete Account</string>
+    <string name="delete_confirm_body">Upon clicking this, your account will be permanently deleted along with all your progress till now. Do you wish to continue?</string>
+
+    <string name="feedback_dialog_title">Feedback</string>
+    <string name="feedback_dialog_subtitle">Tell us what would make FitMate better for you.</string>
+    <string name="feedback_placeholder">Write your feedback here...</string>
+
+    <string name="legal_dialog_title">Legal &amp; About</string>
+    <string name="legal_dialog_subtitle">Key documents and a quick note about FitMate.</string>
+    <string name="legal_tos_title">Terms of Service</string>
+    <string name="legal_tos_body">FitMate is designed to support healthy fitness planning and tracking. Use it responsibly and stop any activity that feels unsafe for your body.</string>
+    <string name="legal_privacy_title">Privacy Policy</string>
+    <string name="legal_privacy_body">Your profile, workout progress, and feedback are used only to power your FitMate experience. Sensitive credentials are never shown in plain text.</string>
+    <string name="legal_about_title">About</string>
+    <string name="legal_about_body">FitMate is a workout-first fitness app built to help students and young professionals stay consistent with practical, customizable training plans.</string>
+
+    <string name="language_dialog_title">Language</string>
+    <string name="lang_english">English</string>
+    <string name="lang_hindi">हिन्दी</string>
+    <string name="lang_bengali">বাংলা</string>
+    <string name="lang_tamil">தமிழ்</string>
+    <string name="lang_telugu">తెలుగు</string>
+    <string name="lang_marathi">मराठी</string>
+    <string name="lang_kannada">ಕನ್ನಡ</string>
+
+    <string name="diet_title">FitMate Nutrition</string>
+    <string name="diet_subtitle">Your nutrition partner</string>
+    <string name="diet_tagline">Eat smarter.  Train harder.  Recover better.</string>
+    <string name="water_glasses_progress">%1$d / %2$d glasses</string>
+
+    <string name="coach_title">FitMate Coach</string>
+    <string name="coach_subtitle">Your personal fitness assistant</string>
+    <string name="coach_thinking">Thinking...</string>
+    <string name="coach_quick_actions">Quick Actions</string>
+    <string name="coach_ai_metrics">AI Metrics Dashboard</string>
+    <string name="coach_suggested_prompts">Suggested Prompts</string>
+    <string name="coach_greeting">Good Evening, Champion</string>
+    <string name="coach_today_summary">Today\'s Summary</string>
+    <string name="coach_ai_insight">AI Insight</string>
+    <string name="coach_ai_insight_body">You are ahead of last week\'s pace. Focus on recovery tonight.</string>
+    <string name="coach_coming_soon_title">🚀 Feature Coming Soon</string>
+    <string name="coach_coming_soon_body">Attachments, workout images, meal photos and voice messages will be available in a future update.</string>
+    <string name="coach_input_hint">Ask FitMate Coach...</string>
+    <string name="coach_intro_title">FitMate AI Coach</string>
+    <string name="coach_intro_body">Get full fitness guidance from our AI-powered personal trainer.</string>
+    <string name="coach_get_started">Get Started</string>
+
+    <string name="profile_greeting">Hello, Champion</string>
+    <string name="profile_motto">Consistency beats intensity.</string>
+    <string name="profile_achievement_center">🏆 Achievement Center</string>
+    <string name="profile_keep_going">Keep going! 💪</string>
+    <string name="profile_quote">Your profile is your training compass. Stay consistent, trust the process, and let the results follow.</string>
+
+    <string name="progress_consistency_score">Consistency Score</string>
+    <string name="progress_ai_insight">AI Coach Insight</string>
+    <string name="progress_streak_workouts">Current streak: %1$d days • Total workouts: %2$d</string>
+    <string name="progress_no_data_title">Complete your first workout to unlock your progress insights.</string>
+    <string name="progress_no_data_subtitle">Your data will appear here once you log your activity.</string>
+
+    <string name="workout_exercises_count">%1$d exercises</string>
+    <string name="workout_rest_day_note">Rest day selected by you. Recovery, mobility, and lighter movement live here.</string>
+    <string name="workout_completed">Completed</string>
+    <string name="workout_exercise_instructions">Exercise instructions</string>
+    <string name="workout_set_progress">Set progress</string>
+    <string name="workout_sets_progress">%1$d / %2$d sets</string>
+    <string name="workout_timer_label">Workout timer</string>
+    <string name="workout_stop_reason">Why did you stop the timer?</string>
+    <string name="workout_stop_completed_set">Completed my current set</string>
+    <string name="workout_stop_give_up">Can\'t continue anymore, I give up :(</string>
+    <string name="workout_instructions_label">Instructions</string>
+    <string name="workout_no_plan_body">Start with a plan recommended for your fitness goal or build your own schedule day by day.</string>
+    <string name="workout_custom_step">Step %1$d of %2$d</string>
+    <string name="workout_custom_pick">Pick what you want to train on %1$s. Workouts can repeat, and at least one day must stay as rest.</string>
+    <string name="workout_rest_day_saved">This day will be saved as a rest day.</string>
+    <string name="workout_weekly_title">Weekly Training</string>
+    <string name="workout_weekly_subtitle">Your personalized weekly workout split</string>
+    <string name="workout_discipline_quote">DISCIPLINE BEATS MOTIVATION</string>
+    <string name="workout_discipline_sub">Stay Consistent. Trust The Process.</string>
+
+    <string name="welcome_background_desc">Welcome Background</string>
+    <string name="stat_calories">Calories</string>
+    <string name="stat_calories_value">450 kcal</string>
+    <string name="stat_heart_rate">Heart Rate</string>
+    <string name="stat_heart_rate_value">72 BPM</string>
+
+    <string name="question_age">How old are you?</string>
+    <string name="unit_years">years</string>
+    <string name="question_height">What\'s your height?</string>
+    <string name="unit_cm">cm</string>
+    <string name="question_weight">What\'s your weight?</string>
+    <string name="unit_kg">kg</string>
+    <string name="question_workout_goal">Daily workout goal?</string>
+    <string name="unit_min_day">min/day</string>
+    <string name="generate_fitness_plan">Generate my fitness plan</string>
+    <string name="continue_action">Continue</string>
+    <string name="question_gender">What is your\ngender?</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_other">Other</string>
+    <string name="question_main_goal">What\'s your\nmain goal?</string>
+    <string name="question_activity">How active\nare you?</string>
+    <string name="question_food">Any food\npreferences?</string>
+    <string name="symbol_minus">-</string>
+    <string name="symbol_plus">+</string>
+
+    <string name="step_goals_targets">Goals &amp; Targets</string>
+    <string name="step_diet_nutrition">Diet &amp; Nutrition</string>
+    <string name="step_workout_memory">Workout Memory</string>
+    <string name="step_ai_calibration">AI Calibration</string>
+    <string name="personalizing_default_status">Building your AI-first goals, meals, diet, and workout memory.</string>
+    <string name="progress_label">PROGRESS</string>
+    <string name="progress_percentage">%1$d%%</string>
+    <string name="step_active">⚡</string>
+    <string name="step_pending">○</string>
+
+    <!-- Profile Specific Strings -->
+    <string name="profile_label_age">Age</string>
+    <string name="profile_label_height">Height</string>
+    <string name="profile_label_weight">Weight</string>
+    <string name="profile_unit_yrs">yrs</string>
+    <string name="profile_journey_title">Your Journey</string>
+    <string name="profile_journey_subtitle">Current fitness goals</string>
+    <string name="profile_label_goal">Goal</string>
+    <string name="profile_label_level">Level</string>
+    <string name="profile_label_activity">Activity</string>
+    <string name="profile_commitment_title">Weekly Commitment</string>
+    <string name="profile_commitment_subtitle">Your training schedule</string>
+    <string name="profile_label_session">Session</string>
+    <string name="profile_label_duration">Duration</string>
+    <string name="profile_label_days_week">Days/Week</string>
+    <string name="profile_unit_min">min</string>
+    <string name="profile_unit_days">days</string>
+    <string name="profile_unit_day_short">d</string>
+    <string name="profile_not_set">Not set</string>
+    <string name="profile_nutrition_title">Nutrition Profile</string>
+    <string name="profile_nutrition_subtitle">Optimized for your goals</string>
+    <string name="profile_emoji_nutrition">🥗</string>
+    <string name="profile_diet_goal">Diet Goal</string>
+    <string name="profile_preference">Preference</string>
+    <string name="profile_habits_title">Daily Habits</string>
+    <string name="profile_habits_subtitle">Stay consistent</string>
+    <string name="profile_emoji_habits">⚡</string>
+    <string name="profile_habit_water">Drink enough water</string>
+    <string name="profile_habit_workout">Complete workout</string>
+    <string name="profile_habit_protein">Hit protein goal</string>
+    <string name="profile_current_goal_prefix">CURRENT GOAL: %1$s</string>
+    <string name="profile_streak_label">STREAK</string>
+    <string name="profile_points_label">POINTS</string>
+    <string name="profile_hero_bg_desc">Hero Background</string>
+    <string name="profile_streak_desc">Streak</string>
+    <string name="profile_banner_desc">Banner</string>
+    <string name="profile_recommendation_desc">Recommendation</string>
+    <string name="profile_achievements_desc">Achievements</string>
+    <string name="profile_decorative_model_desc">Decorative Model</string>
+
+    <!-- Nutrition Screen Specific Strings -->
+    <string name="diet_hero_desc">Nutrition hero animation</string>
+    <string name="diet_current_goal_label">CURRENT GOAL</string>
+    <string name="diet_on_track_today">85% on track today</string>
+    <string name="diet_today_progress_title">Today\'s Progress</string>
+    <string name="diet_kcal_target_format">/ %1$d kcal</string>
+    <string name="diet_protein">Protein</string>
+    <string name="diet_carbs">Carbs</string>
+    <string name="diet_fat">Fat</string>
+    <string name="diet_macro_format">%1$dg / %2$dg</string>
+    <string name="diet_insight_title">Nutrition Insight</string>
+    <string name="diet_insight_increase">Increase protein intake by %1$dg today to hit your macro target.</string>
+    <string name="diet_insight_perfect">Macro targets met perfectly. Excellent consistency today.</string>
+    <string name="diet_meals_for_goal_title">Meals For Your Goal</string>
+    <string name="diet_badge_non_veg">Non Veg</string>
+    <string name="diet_badge_eggetarian">Eggetarian</string>
+    <string name="diet_badge_high_protein">High Protein</string>
+    <string name="diet_badge_low_calorie">Low Calorie</string>
+    <string name="diet_water_intake_title">Water Intake</string>
+    <string name="diet_water_goal_subtitle">Daily Water Goal</string>
+    <string name="diet_water_remove_desc">Remove glass</string>
+    <string name="diet_water_add_desc">Add glass</string>
+    <string name="diet_water_progress_format">%1$d / %2$d glasses</string>
+    <string name="diet_water_done">🎉 Hydration Goal Completed!</string>
+    <string name="diet_meal_plan_title">Today\'s Meal Plan</string>
+    <string name="diet_recommended_meals_format">%1$d Recommended Meals</string>
+    <string name="diet_tap_to_view">Tap to view meals</string>
+    <string name="diet_choose_goal_title">Choose Your Nutrition Goal</string>
+    <string name="diet_food_preference_title">Food Preference</string>
+    <string name="diet_suggested_for_format">Suggested for %1$s</string>
+    <string name="diet_apply_plan">Apply Plan</string>
+    <string name="diet_label_category">Category</string>
+    <string name="diet_label_suitable">Suitable for</string>
+    <string name="diet_label_diet">Diet</string>
+    <string name="diet_add_to_plan">Add To Plan</string>
+    <string name="diet_calories_format">⚡ %1$s</string>
+    <string name="diet_protein_format">💪 %1$s protein</string>
+    <string name="diet_veg">Vegetarian</string>
+    <string name="diet_non_veg">Non Vegetarian</string>
+
+    <string name="goal_muscle_gain">Muscle Gain</string>
+    <string name="goal_fat_loss">Fat Loss</string>
+    <string name="goal_lean_body">Lean Body</string>
+    <string name="goal_reduce_stress">Reduce Stress &amp; Relax</string>
+    <string name="goal_cardio">Cardio / Stamina</string>
+    <string name="goal_mobility">Flexibility &amp; Mobility</string>
+
+    <string name="sub_muscle_gain">Build strength with high-protein nutrition.</string>
+    <string name="sub_fat_loss">Stay in a calorie deficit without sacrificing health.</string>
+    <string name="sub_lean_body">Balanced nutrition for a lean physique.</string>
+    <string name="sub_reduce_stress">Foods that help your body recover and relax.</string>
+    <string name="sub_cardio">Fuel your endurance and performance.</string>
+    <string name="sub_mobility">Support recovery and mobility through nutrition.</string>
+
+    <string name="meal_breakfast">Breakfast</string>
+    <string name="meal_lunch">Lunch</string>
+    <string name="meal_dinner">Dinner</string>
+    <string name="meal_snacks">Snacks</string>
+    <string name="meal_drink">Drink</string>
+    <string name="meal_salad">Salad</string>
+    <string name="meal_soup">Soup</string>
+
+    <!-- New Strings for AI Coach Coming Soon -->
+    <string name="label_locked">Locked</string>
+    <string name="label_coming_soon">Coming Soon</string>
+    <string name="coach_active_development">🚀 Under Active Development</string>
+    <string name="coach_coming_soon_description">We\'re actively building an intelligent AI fitness coach to provide personalized workout guidance, nutrition coaching, recovery insights and real-time fitness support.</string>
+    <string name="coach_next_update">Coming in the Next Update</string>
+    <string name="coach_support_message">Thank you for supporting FitMate ❤️</string>
+
+    <string name="coach_feature_workouts">Personalized Workout Plans</string>
+    <string name="coach_feature_nutrition">Smart Nutrition Guidance</string>
+    <string name="coach_feature_progress">Progress Analysis</string>
+    <string name="coach_feature_recovery">Recovery &amp; Wellness Advice</string>
+
+    <!-- Splash Screen Specific Strings -->
+    <string name="splash_status_preparing">PREPARING YOUR PLAN...</string>
+    <string name="splash_status_biometrics">LOADING BIOMETRICS...</string>
+    <string name="splash_status_syncing">SYNCING AI ENGINE...</string>
+    <string name="splash_status_personalizing">PERSONALIZING EXPERIENCE...</string>
+    <string name="splash_status_ready">READY.</string>
+    <string name="splash_version">v2.4</string>
+    <string name="splash_ai_engine">AI ENGINE</string>
+    <string name="splash_stat_vo2_value">98.2</string>
+    <string name="splash_stat_vo2_label">VO₂ MAX</string>
+    <string name="splash_stat_hr_value">72 BPM</string>
+    <string name="splash_stat_hr_label">HEART RATE</string>
+    <string name="splash_stat_kcal_value">2,840</string>
+    <string name="splash_stat_kcal_label">KCAL</string>
+    <string name="splash_stat_athletes_value">12K+</string>
+    <string name="splash_stat_athletes_label">Athletes</string>
+    <string name="splash_stat_score_value">99%</string>
+    <string name="splash_stat_score_label">AI Score</string>
+    <string name="splash_stat_rating_value">4.9★</string>
+    <string name="splash_stat_rating_label">Rating</string>
+
+    <!-- Progress Screen Specific Strings -->
+    <string name="progress_streak_day_single">1 Day Streak</string>
+    <string name="progress_streak_days_multi">%1$d Day Streak</string>
+    <string name="progress_hero_summary">Good Evening\n\n%1$d workouts completed\n%2$d day streak\n\nAI Insight:\n%3$s</string>
+    <string name="progress_insight_consistency_low">Consistency can be improved this week.</string>
+    <string name="progress_insight_excellent">Excellent consistency. Keep pushing.</string>
+    <string name="progress_insight_good">Good progress. One extra workout this week could boost results.</string>
+    <string name="progress_insight_poor">Workout consistency is dropping. Try completing your scheduled sessions.</string>
+    <string name="progress_fitness_score_label">Fitness Score</string>
+    <string name="progress_completion_label">Completion</string>
+    <string name="progress_activity_week_title">Activity This Week</string>
+    <string name="progress_monthly_summary_title">Monthly Summary</string>
+    <string name="progress_stat_workouts">Workouts</string>
+    <string name="progress_stat_streak">Streak</string>
+    <string name="progress_stat_rate">Rate</string>
+    <string name="progress_sets_completed_suffix">%1$d sets completed this month</string>
+    <string name="progress_personal_records_title">Personal Records</string>
+    <string name="progress_longest_streak_label">Longest Streak</string>
+    <string name="progress_best_week_label">Best Week</string>
+    <string name="progress_total_label">Total</string>
+    <string name="progress_days_suffix">Days</string>
+    <string name="progress_logs_suffix">Logs</string>
+    <string name="progress_workouts_suffix">Workouts</string>
+    <string name="progress_heatmap_title">Activity Heatmap</string>
+    <string name="progress_calendar_prev">Prev Month</string>
+    <string name="progress_calendar_next">Next Month</string>
+    <string name="progress_status_missed">Missed</string>
+
+    <string name="day_mon_short">Mon</string>
+    <string name="day_tue_short">Tue</string>
+    <string name="day_wed_short">Wed</string>
+    <string name="day_thu_short">Thu</string>
+    <string name="day_fri_short">Fri</string>
+    <string name="day_sat_short">Sat</string>
+    <string name="day_sun_short">Sun</string>
+
+
+    <!-- Workout Screen Specific Strings -->
+    <string name="workout_hero_custom_title">Custom weekly split active</string>
+    <string name="workout_hero_recommended_title">Recommended weekly plan active</string>
+    <string name="workout_hero_custom_desc">Choose what to train on each weekday, keep at least one rest day, and tune every exercise with slider-based set and rep controls.</string>
+    <string name="workout_hero_recommended_desc">Your weekly schedule, exercises, sets, and reps are matched to your saved fitness goal and profile.</string>
+    <string name="workout_btn_make_custom">Make custom plan</string>
+    <string name="workout_btn_use_recommended">Use recommended plan</string>
+    <string name="workout_btn_regenerate_recommended">Regenerate recommended plan</string>
+    <string name="workout_btn_open">Open</string>
+    <string name="workout_progress_desc_complete">You\'ve completed every planned set for this exercise.</string>
+    <string name="workout_progress_desc_incomplete">Complete a set, stop the timer, and log the outcome to move this bar forward.</string>
+    <string name="workout_btn_start">Start Workout</string>
+    <string name="workout_btn_stop">Stop Workout</string>
+    <string name="workout_timer_status_complete">All planned sets are complete for this exercise.</string>
+    <string name="workout_timer_status_live">Timer is live. Stop it when the current set ends.</string>
+    <string name="workout_timer_status_paused">Timer paused. Submit the reason below to log this round.</string>
+    <string name="workout_timer_status_idle">Start the timer when you begin your current set.</string>
+    <string name="workout_error_select_reason">Select a reason before submitting.</string>
+    <string name="workout_instructions_tap_collapse">Tap to collapse</string>
+    <string name="workout_instructions_tap_expand">Tap to view step-by-step instructions</string>
+    <string name="workout_setup_title">Choose your workout setup</string>
+    <string name="workout_btn_recommended_plan">Recommended plan</string>
+    <string name="workout_btn_custom_plan">Custom plan</string>
+    <string name="workout_goal_changed_title">Your fitness goal changed</string>
+    <string name="workout_goal_changed_msg">Generate a new recommended workout plan for %1$s?</string>
+    <string name="workout_replace_custom_title">Replace custom plan?</string>
+    <string name="workout_replace_custom_msg">Your custom workout will be replaced with a recommended %1$s plan.</string>
+    <string name="workout_btn_confirm">Confirm</string>
+    <string name="workout_btn_save_plan">Save plan</string>
+    <string name="workout_btn_next">Next</string>
+    <string name="workout_btn_save_edits">Save edits</string>
+    <string name="workout_error_rest_requirement">Please keep at least 1 rest day in your week.</string>
+    <string name="workout_error_no_exercises">Select at least one exercise, or switch this day to rest.</string>
+    <string name="workout_edit_day_title">Edit %1$s</string>
+    <string name="workout_label_sets">Sets</string>
+    <string name="workout_label_reps">Reps</string>
+    <string name="workout_label_duration">Duration</string>
+    <string name="workout_unit_sets">sets</string>
+    <string name="workout_unit_reps">reps</string>
+    <string name="workout_unit_sec">sec</string>
+    <string name="workout_focus_push_sub">Chest + Shoulders + Triceps</string>
+    <string name="workout_focus_pull_sub">Back + Biceps + Forearms</string>
+    <string name="workout_sets_reps_format">%1$d sets • %2$s</string>
+
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_hard">Hard</string>
+    <!-- Missing strings for WorkoutScreen.kt -->
+    <string name="workout_calendar_prev">Previous Day</string>
+    <string name="workout_calendar_next">Next Day</string>
+
+
+    <!-- Settings: status & error messages (added for full localization) -->
+    <string name="msg_profile_updated">Profile updated successfully.</string>
+    <string name="msg_email_update_unsupported">Email updates are only available for email-password accounts in this screen.</string>
+    <string name="msg_invalid_email">Enter a valid email address.</string>
+    <string name="msg_email_verification_sent">Verification email sent. Confirm it to finish updating your email.</string>
+    <string name="msg_email_update_failed">Could not update email.</string>
+    <string name="msg_password_update_unsupported">Password updates are only available for email-password accounts in this screen.</string>
+    <string name="msg_password_too_short">Password should be at least 6 characters.</string>
+    <string name="msg_no_email_linked">No email linked to this account.</string>
+    <string name="msg_current_password_required">Enter your current password to update the password.</string>
+    <string name="msg_password_update_failed">Could not update password.</string>
+    <string name="msg_no_active_user">No active user.</string>
+    <string name="msg_data_cleared">Your saved FitMate data has been cleared.</string>
+    <string name="msg_data_clear_failed">Could not clear your data right now.</string>
+    <string name="msg_no_active_account">No active account found.</string>
+    <string name="msg_account_deleted">Your account has been deleted.</string>
+    <string name="msg_account_delete_failed">Account deletion failed. Please sign in again and retry.</string>
+    <string name="msg_feedback_empty">Write a little feedback before submitting.</string>
+    <string name="msg_feedback_submitted">Thanks. Your feedback was submitted successfully.</string>
+    <string name="msg_feedback_failed">Could not submit feedback.</string>
+    <string name="fitmate_user_fallback">FitMate User</string>
+    <string name="msg_password_updated">Password updated successfully.</string>
+    <string name="lang_default_badge">Default</string>
+    <string name="tab_profile">Profile</string>
+    <string name="tab_workout">Workout</string>
+    <string name="tab_diet">Diet</string>
+    <string name="tab_progress">Progress</string>
+    <string name="tab_coach">Coach</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tagline_profile">EXCUSES don\'t burn CALORIES</string>
+    <string name="tagline_workout">No Pain. No Gain.</string>
+    <string name="tagline_diet">Eat clean. Get fit. Be happy.</string>
+    <string name="tagline_progress">Track your fitness journey</string>
+    <string name="tagline_coach">Ask smart. Train better.</string>
+    <string name="cd_open_settings">Open settings</string>
+    <string name="cd_share_analytics">Share Analytics</string>
+    <string name="cd_current_streak">Current workout streak</string>
+
+</resources>

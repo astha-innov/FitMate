@@ -49,10 +49,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fitmate.R
 import com.fitmate.ui.components.FitMateLogoMark
 import com.fitmate.ui.viewmodel.PersonalizationState
 import kotlinx.coroutines.delay
@@ -79,24 +81,29 @@ fun PersonalizingScreen(
 ) {
     val progress = state.progress.coerceIn(0f, 1f)
 
-    val steps = remember(progress) {
+    val goalsLabel = stringResource(R.string.step_goals_targets)
+    val dietLabel = stringResource(R.string.step_diet_nutrition)
+    val workoutLabel = stringResource(R.string.step_workout_memory)
+    val aiLabel = stringResource(R.string.step_ai_calibration)
+
+    val steps = remember(progress, goalsLabel, dietLabel, workoutLabel, aiLabel) {
         listOf(
-            OnboardingStep("Goals & Targets", when {
+            OnboardingStep(goalsLabel, when {
                 progress > 0.25f -> StepStatus.DONE
                 progress > 0f    -> StepStatus.ACTIVE
                 else             -> StepStatus.PENDING
             }),
-            OnboardingStep("Diet & Nutrition", when {
+            OnboardingStep(dietLabel, when {
                 progress > 0.50f -> StepStatus.DONE
                 progress > 0.25f -> StepStatus.ACTIVE
                 else             -> StepStatus.PENDING
             }),
-            OnboardingStep("Workout Memory", when {
+            OnboardingStep(workoutLabel, when {
                 progress > 0.75f -> StepStatus.DONE
                 progress > 0.50f -> StepStatus.ACTIVE
                 else             -> StepStatus.PENDING
             }),
-            OnboardingStep("AI Calibration", when {
+            OnboardingStep(aiLabel, when {
                 progress >= 1f   -> StepStatus.DONE
                 progress > 0.75f -> StepStatus.ACTIVE
                 else             -> StepStatus.PENDING
@@ -140,7 +147,7 @@ fun PersonalizingScreen(
                     Spacer(Modifier.height(10.dp))
                     Text(
                         text = state.status.ifBlank {
-                            "Building your AI-first goals, meals, diet, and workout memory."
+                            stringResource(R.string.personalizing_default_status)
                         },
                         fontSize = 13.sp,
                         color = Color(0xFF6B7280),
@@ -230,7 +237,7 @@ private fun ShimmerTitle() {
         label = "shimmer_alpha"
     )
     Text(
-        text = "PERSONALISING",
+        text = stringResource(R.string.personalising),
         fontSize = 26.sp,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = 3.sp,
@@ -258,14 +265,14 @@ private fun NeonProgressBar(progress: Float) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "PROGRESS",
+                text = stringResource(R.string.progress_label),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp,
                 color = _NeonCyan.a(0.7f)
             )
             Text(
-                "${(animProgress * 100).toInt()}%",
+                text = stringResource(R.string.progress_percentage, (animProgress * 100).toInt()),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = _NeonCyan
@@ -398,9 +405,9 @@ private fun StepIcon(status: StepStatus) {
         StepStatus.PENDING -> Color(0xFFD1D5DB)
     }
     val iconText = when (status) {
-        StepStatus.DONE    -> "✓"
-        StepStatus.ACTIVE  -> "⚡"
-        StepStatus.PENDING -> "○"
+        StepStatus.DONE    -> stringResource(R.string.step_done)
+        StepStatus.ACTIVE  -> stringResource(R.string.step_active)
+        StepStatus.PENDING -> stringResource(R.string.step_pending)
     }
     val iconColor = when (status) {
         StepStatus.DONE, StepStatus.ACTIVE -> _NeonCyan
@@ -491,7 +498,7 @@ private fun ErrorBox(message: String, onBackToSetup: () -> Unit) {
                 .border(1.dp, _ErrorRed.a(0.3f), RoundedCornerShape(12.dp))
         ) {
             Text(
-                text = "← Back to Setup",
+                text = stringResource(R.string.back_to_setup),
                 color = _ErrorRed,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
