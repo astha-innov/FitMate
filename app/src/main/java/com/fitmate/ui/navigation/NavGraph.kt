@@ -1,110 +1,4 @@
-//package com.fitmate.ui.navigation
-//
-//import androidx.compose.runtime.Composable
-//import androidx.lifecycle.viewmodel.compose.viewModel
-//import androidx.navigation.compose.NavHost
-//import androidx.navigation.compose.composable
-//import androidx.navigation.compose.rememberNavController
-//import com.fitmate.ui.CampusFitApp
-//import com.fitmate.ui.auth.ForgotPasswordScreen
-//import com.fitmate.ui.auth.OtpVerificationScreen
-//import com.fitmate.ui.auth.SignInScreen
-//import com.fitmate.ui.auth.SignUpScreen
-//import com.fitmate.ui.coach.CoachChatScreen
-//import com.fitmate.ui.splash.SplashScreen
-//import com.fitmate.ui.viewmodel.AuthViewModel
-//import com.fitmate.data.AppStorage
-//import com.google.firebase.auth.FirebaseAuth
-//
-//@Composable
-//fun NavGraph() {
-//
-//    val navController = rememberNavController()
-//
-//    val authViewModel: AuthViewModel = viewModel()
-//
-//    NavHost(
-//        navController = navController,
-//
-//        startDestination = Routes.Splash.route
-//    ) {
-//
-//        composable(
-//            route = Routes.Splash.route
-//        ) {
-//
-//            SplashScreen(
-//
-//                onSplashFinished = {
-//
-//                    FirebaseAuth.getInstance().currentUser?.uid?.let {
-//                        AppStorage.prepareForUser(it)
-//                    }
-//
-//                    navController.navigate(Routes.SignUp.route) {
-//                        popUpTo(Routes.Splash.route) {
-//                            inclusive = true
-//                        }
-//                    }
-//                }
-//            )
-//        }
-//
-//        composable(
-//            route = Routes.SignUp.route
-//        ) {
-//
-//            SignUpScreen(
-//                navController = navController,
-//                viewModel = authViewModel
-//            )
-//        }
-//
-//        composable(
-//            route = Routes.SignIn.route
-//        ) {
-//
-//            SignInScreen(
-//                navController = navController,
-//                viewModel = authViewModel
-//            )
-//        }
-//
-//        composable(
-//            route = Routes.OtpVerification.route
-//        ) {
-//
-//            OtpVerificationScreen(
-//                navController = navController,
-//                viewModel = authViewModel
-//            )
-//        }
-//
-//        composable(
-//            route = Routes.ForgotPassword.route
-//        ) {
-//
-//            ForgotPasswordScreen(
-//                navController = navController,
-//                viewModel = authViewModel
-//            )
-//        }
-//
-//        composable(
-//            route = Routes.Home.route
-//        ) {
-//
-//            CampusFitApp()
-//        }
-//
-//        composable(
-//            route = Routes.CoachChat.route
-//        ) {
-//
-//            CoachChatScreen()
-//        }
-//    }
-//}
+
 
 package com.fitmate.ui.navigation
 
@@ -122,6 +16,8 @@ import com.fitmate.ui.coach.CoachChatScreen
 import com.fitmate.ui.splash.SplashScreen
 import com.fitmate.ui.viewmodel.AuthViewModel
 import com.fitmate.data.AppStorage
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.awaitCancellation
 import com.google.firebase.auth.FirebaseAuth
 
 /**
@@ -151,6 +47,31 @@ fun NavGraph() {
     // language switch had "broken navigation" when it hadn't).
     val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
 
+    // LOGOUT FIX: Watch for sign-out after the app is already running.
+    // When the user was logged in and Firebase current-user becomes null,
+    // navigate to SignIn and wipe the entire back stack so the back button
+    // cannot return to Home. This does NOT fire during the normal
+    // Splash → SignIn first-launch flow because `wasLoggedIn` is false
+    // when the user was never authenticated in this session.
+    LaunchedEffect(Unit) {
+        var wasLoggedIn = isLoggedIn
+        val auth = FirebaseAuth.getInstance()
+        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val nowLoggedIn = firebaseAuth.currentUser != null
+            if (wasLoggedIn && !nowLoggedIn) {
+                navController.navigate(Routes.SignIn.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+            wasLoggedIn = nowLoggedIn
+        }
+        auth.addAuthStateListener(listener)
+        try {
+            kotlinx.coroutines.awaitCancellation()
+        } finally {
+            auth.removeAuthStateListener(listener)
+        }
+    }
     NavHost(
         navController = navController,
 

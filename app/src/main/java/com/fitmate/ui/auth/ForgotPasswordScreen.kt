@@ -4,6 +4,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,13 +13,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -75,7 +78,7 @@ fun ForgotPasswordScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // 1. PREMIUM BACKGROUND IMAGE WITH ZOOM ANIMATION
+        // 1. PREMIUM BACKGROUND IMAGE
         val infiniteTransition = rememberInfiniteTransition(label = "bg_zoom")
         val bgScale by infiniteTransition.animateFloat(
             initialValue = 1.0f, targetValue = 1.08f,
@@ -114,7 +117,7 @@ fun ForgotPasswordScreen(
                 .padding(horizontal = 24.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 3. TOP BAR & BRANDING
+            // 3. TOP BAR
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -132,27 +135,53 @@ fun ForgotPasswordScreen(
                         tint = PrimaryText
                     )
                 }
+            }
 
-                Text(
-                    text = stringResource(R.string.fitmate_brand),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 6.sp,
-                        color = PrimaryGreen
-                    ),
-                    modifier = Modifier.graphicsLayer {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // REUSED LOCK ILLUSTRATION
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .graphicsLayer {
                         scaleX = logoScale
                         scaleY = logoScale
                     }
+                    .background(PrimaryGreen.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+                    .border(1.dp, PrimaryGreen.copy(alpha = 0.2f), RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = PrimaryGreen,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // 4. HEADER TEXT
+            // REUSED PREMIUM BADGE
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(PrimaryGreen.copy(alpha = 0.1f))
+                    .border(1.dp, PrimaryGreen.copy(alpha = 0.2f), RoundedCornerShape(50.dp))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.reset_password).uppercase(),
+                    color = PrimaryGreen,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = stringResource(R.string.reset_password),
+                text = stringResource(R.string.fitmate_brand),
                 color = PrimaryText,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -170,43 +199,113 @@ fun ForgotPasswordScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 5. GLASSMORPHISM CARD
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .graphicsLayer {
-                        translationY = cardOffsetY.toPx()
-                        alpha = cardAlpha
+            // 5. GLASSMORPHISM CARD WITH CENTERED LOCK OVERLAY
+            Box(modifier = Modifier.fillMaxWidth()) {
+
+                // BACKGROUND CARD CONTENT — faded, non-interactive
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer {
+                            translationY = cardOffsetY.toPx()
+                            alpha = cardAlpha
+                        }
+                        .shadow(
+                            elevation = 30.dp,
+                            shape = RoundedCornerShape(32.dp),
+                            spotColor = Color.Black.copy(alpha = 0.05f),
+                            ambientColor = Color.Transparent
+                        )
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(GlassWhite)
+                        .border(1.dp, CardBorder, RoundedCornerShape(32.dp))
+                        .padding(24.dp)
+                        .alpha(0.45f)
+                ) {
+                    Column {
+                        PremiumTextField(
+                            value = email,
+                            onValueChange = { },
+                            label = stringResource(R.string.email),
+                            icon = Icons.Default.Email
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        PremiumButton(
+                            text = stringResource(R.string.send_reset_link),
+                            loading = false,
+                            onClick = { }
+                        )
                     }
-                    .shadow(
-                        elevation = 30.dp,
-                        shape = RoundedCornerShape(32.dp),
-                        spotColor = Color.Black.copy(alpha = 0.05f),
-                        ambientColor = Color.Transparent
-                    )
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(GlassWhite)
-                    .blur(16.dp)
-                    .border(1.dp, CardBorder, RoundedCornerShape(32.dp))
-                    .padding(24.dp)
-            ) {
-                Column {
-                    PremiumTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = stringResource(R.string.email),
-                        icon = Icons.Default.Email
-                    )
+                }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    PremiumButton(
-                        text = stringResource(R.string.send_reset_link),
-                        loading = loading || resetState is PasswordResetState.Sending,
-                        onClick = { viewModel.sendPasswordReset(email) }
-                    )
+                // GLASSMORPHISM LOCK OVERLAY — centered over the card
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .graphicsLayer {
+                            translationY = cardOffsetY.toPx()
+                            alpha = cardAlpha
+                        }
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.55f),
+                                    Color.White.copy(alpha = 0.70f)
+                                )
+                            )
+                        )
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.9f),
+                                    CardBorder.copy(alpha = 0.5f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(32.dp)
+                        )
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) { /* disabled — coming soon */ },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = 0.72f))
+                            .border(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.9f),
+                                shape = RoundedCornerShape(16.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = PrimaryGreen.copy(alpha = 0.75f),
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
                 }
             }
+
+            // ONE CENTERED "COMING SOON" LABEL BELOW THE LOCKED CARD
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = "Coming Soon",
+                color = SecondaryText,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.4.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             // 6. STATE MESSAGING
             when (val state = resetState) {

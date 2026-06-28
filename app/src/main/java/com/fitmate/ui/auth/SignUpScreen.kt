@@ -10,6 +10,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,15 +24,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,8 +104,6 @@ fun SignUpScreen(
             .fillMaxSize()
             .background(Color.White) // Retained project component
     ) {
-
-
 
         // WHITE HAZE OVERLAY - Converts the dark theme to a premium white theme
         Box(
@@ -191,9 +192,7 @@ fun SignUpScreen(
 
                     PremiumTextField( // Retained project component
                         value = username,
-                        onValueChange = {
-                            username = it
-                        },
+                        onValueChange = { username = it },
                         label = stringResource(R.string.username),
                         icon = Icons.Default.Person
                     )
@@ -202,9 +201,7 @@ fun SignUpScreen(
 
                     PremiumTextField( // Retained project component
                         value = email,
-                        onValueChange = {
-                            email = it
-                        },
+                        onValueChange = { email = it },
                         label = stringResource(R.string.email),
                         icon = Icons.Default.Email
                     )
@@ -213,9 +210,7 @@ fun SignUpScreen(
 
                     PremiumTextField( // Retained project component
                         value = password,
-                        onValueChange = {
-                            password = it
-                        },
+                        onValueChange = { password = it },
                         label = stringResource(R.string.password),
                         icon = Icons.Default.Lock,
                         isPassword = true
@@ -226,13 +221,7 @@ fun SignUpScreen(
                     PremiumButton( // Retained project component
                         text = stringResource(R.string.create_account),
                         loading = loading,
-                        onClick = {
-
-                            viewModel.signUp(
-                                email,
-                                password
-                            )
-                        }
+                        onClick = { viewModel.signUp(email, password) }
                     )
                 }
             }
@@ -243,7 +232,7 @@ fun SignUpScreen(
 
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
-                    color =  Color(0xFFE5E7EB) // Retained project component
+                    color = Color(0xFFE5E7EB) // Retained project component
                 )
 
                 Text(
@@ -255,26 +244,79 @@ fun SignUpScreen(
 
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
-                    color =  Color(0xFFE5E7EB) // Retained project component
+                    color = Color(0xFFE5E7EB) // Retained project component
                 )
             }
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            PremiumSecondaryButton( // Retained project component
-                text = stringResource(R.string.continue_with_google),
-                onClick = startGoogleSignIn
+            // UNIFIED LOCKED GOOGLE SECTION
+            Box(modifier = Modifier.fillMaxWidth()) {
+
+                // BACKGROUND CONTENT — faded, non-interactive
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.45f)
+                ) {
+                    PremiumSecondaryButton( // Retained project component
+                        text = stringResource(R.string.continue_with_google),
+                        onClick = { }
+                    )
+                }
+
+                // GLASSMORPHISM LOCK OVERLAY — very light tint so button text stays readable
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.White.copy(alpha = 0.18f))
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) { /* disabled — coming soon */ }
+                ) {
+                    // FROSTED GLASS LOCK ICON — pinned to top-end so it never covers the text
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White.copy(alpha = 0.82f))
+                            .border(
+                                width = 1.dp,
+                                color = CardBorder,
+                                shape = RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = PrimaryGreen.copy(alpha = 0.85f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            // ONE CENTERED "COMING SOON" LABEL BELOW THE LOCKED BLOCK
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = "Coming Soon",
+                color = Color(0xFF6B7280),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.4.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             TextButton(
-                onClick = {
-
-                    navController.navigate(
-                        Routes.SignIn.route
-                    )
-                }
+                onClick = { navController.navigate(Routes.SignIn.route) }
             ) {
 
                 Text(

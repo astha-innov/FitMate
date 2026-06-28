@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -203,7 +204,7 @@ fun SignInScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 4. AUTH CARD — NO .blur() on the card itself; blur only lives in the overlay above
+            // 4. AUTH CARD
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,7 +220,6 @@ fun SignInScreen(
                     )
                     .clip(RoundedCornerShape(32.dp))
                     .background(GlassWhite)
-                    // *** REMOVED .blur(16.dp) — that was blurring card contents ***
                     .border(1.dp, CardBorder, RoundedCornerShape(32.dp))
                     .padding(24.dp)
             ) {
@@ -267,24 +267,105 @@ fun SignInScreen(
                     Text(stringResource(R.string.or_divider), color = SecondaryText, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     HorizontalDivider(modifier = Modifier.weight(1f), color = CardBorder)
                 }
+
                 Spacer(modifier = Modifier.height(32.dp))
-                PremiumSecondaryButton(
-                    text = stringResource(R.string.continue_with_google),
-                    onClick = startGoogleSignIn
+
+                // UNIFIED LOCKED ALTERNATIVES SECTION
+                Box(modifier = Modifier.fillMaxWidth()) {
+
+                    // BACKGROUND CONTENT — faded, non-interactive
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .alpha(0.45f)
+                    ) {
+                        PremiumSecondaryButton(
+                            text = stringResource(R.string.continue_with_google),
+                            onClick = { }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PremiumTextField(
+                            value = phoneNumber,
+                            onValueChange = { },
+                            label = stringResource(R.string.phone_number),
+                            icon = Icons.Default.Phone
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        PremiumSecondaryButton(
+                            text = stringResource(R.string.send_otp),
+                            loading = false,
+                            onClick = { }
+                        )
+                    }
+
+                    // GLASSMORPHISM LOCK OVERLAY — covers the entire alternatives block
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.55f),
+                                        Color.White.copy(alpha = 0.70f)
+                                    )
+                                )
+                            )
+                            .border(
+                                width = 1.dp,
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.9f),
+                                        CardBorder.copy(alpha = 0.5f)
+                                    )
+                                ),
+                                shape = RoundedCornerShape(24.dp)
+                            )
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) { /* disabled — coming soon */ },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // FROSTED GLASS LOCK ICON CONTAINER
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White.copy(alpha = 0.72f))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.White.copy(alpha = 0.9f),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = PrimaryGreen.copy(alpha = 0.75f),
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ONE CENTERED "COMING SOON" LABEL BELOW THE LOCKED BLOCK
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = "Coming Soon",
+                    color = SecondaryText,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 0.4.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                PremiumTextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
-                    label = stringResource(R.string.phone_number),
-                    icon = Icons.Default.Phone
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                PremiumSecondaryButton(
-                    text = stringResource(R.string.send_otp),
-                    loading = phoneAuthState is PhoneAuthUiState.Sending,
-                    onClick = { viewModel.sendOtp(activity, phoneNumber) }
-                )
+
                 Spacer(modifier = Modifier.height(32.dp))
                 TextButton(
                     onClick = { navController.navigate(Routes.SignUp.route) },
@@ -440,6 +521,55 @@ fun PremiumSecondaryButton(
             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = PrimaryText, strokeWidth = 2.dp)
         } else {
             Text(text = text, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+        }
+    }
+}
+
+@Composable
+fun ComingSoonWrapper(
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(0.55f)
+    ) {
+        content()
+
+        // Intercept all touch events so nothing fires
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) { /* disabled - coming soon */ }
+        )
+
+        // "Coming Soon" badge pinned to top-end corner
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 4.dp, top = 4.dp)
+                .clip(RoundedCornerShape(99.dp))
+                .background(Color(0xFF111827).copy(alpha = 0.75f))
+                .padding(horizontal = 8.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(10.dp)
+            )
+            Text(
+                text = "Coming Soon",
+                color = Color.White,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.3.sp
+            )
         }
     }
 }
