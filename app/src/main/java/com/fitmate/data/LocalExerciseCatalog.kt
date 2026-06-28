@@ -27,7 +27,10 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
 
     fun findById(id: String): LocalExercise? = byId[normalizeId(id)]
 
-    fun findByName(name: String): LocalExercise? = byNormalizedName[normalizeId(name)]
+    fun findByName(name: String): LocalExercise? {
+        val normalizedName = normalizeId(name)
+        return byNormalizedName[exerciseAliases[normalizedName] ?: normalizedName]
+    }
 
     fun forFocus(focus: WorkoutFocus): List<LocalExercise> {
         if (focus == WorkoutFocus.REST) return emptyList()
@@ -76,8 +79,11 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
             name = entry.name,
             mediaAsset = mediaAssetOverrides[entry.name]
                 ?: entry.postureImage.takeIf(String::isNotBlank),
-            detailMediaAsset = detailAssetOverrides[entry.name]
-                ?: entry.detailGifAsset.takeIf(String::isNotBlank),
+            detailMediaAsset = if (detailAssetOverrides.containsKey(entry.name)) {
+                detailAssetOverrides[entry.name]
+            } else {
+                entry.detailGifAsset.takeIf(String::isNotBlank)
+            },
             instructionAsset = instructionAssetOverrides[entry.name]
                 ?: entry.instructionMarkdownAsset.takeIf(String::isNotBlank),
             primaryMuscles = primaryMuscles(entry.name, entry.muscleGroup),
@@ -156,7 +162,7 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
     }
 
     private fun secondaryMuscles(name: String): Set<MuscleGroup> = when {
-        name in setOf("Push-Ups", "Bench Press", "Chest Press", "Machine Chest Press") ->
+        name in setOf("Push-Ups", "Bench Press", "Cable Chest Press", "Machine Chest Press") ->
             setOf(MuscleGroup.SHOULDERS, MuscleGroup.TRICEPS)
         name.contains("Row") || name.contains("Pulldown") ->
             setOf(MuscleGroup.BICEPS, MuscleGroup.FOREARMS)
@@ -214,36 +220,36 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
         .trim('_')
 
     private fun additionalEntries(): List<ExerciseLibraryEntry> = listOf(
-        entry("Bayesian Cable Curls", "Biceps", "Keep the shoulder fixed and curl through a full controlled range.", "Bayesian-Cable-Curl.gif", "Bayesian Cable Curls.gif", "Bayesian-Cable-Curl.md"),
+        entry("Bayesian Cable Curls", "Biceps", "Keep the shoulder fixed and curl through a full controlled range.", "Bayesian-Cable-Curl.gif", "Bayesian Cable Curls.webp", "Bayesian-Cable-Curl.md"),
         entry("Bulgarian Split Squat", "Quadriceps + Glutes", "Stay balanced, lower under control, and drive through the front foot.", "bulgarian-split-squat.jpg", "Bulgarian Split Squat.gif", "Bulgarian Split Squats.md"),
         entry("Cable Curls", "Biceps", "Keep your elbows still and squeeze the biceps without leaning back.", "Cable-Curls.jpg", "Cable Curls.gif", "Cable-Curls.md"),
         entry("Cable Flyes", "Chest", "Use a soft elbow bend and bring the hands together with chest control.", "Cables-Flyes.jpeg", "cable flyes.gif", "Cable-Flyes.md"),
         entry("Cable Lateral Raise", "Shoulders", "Raise to shoulder height without shrugging or swinging.", "Cable Lateral Raises.gif", "Cable Lateral Raise.gif", "Cable Lateral Raises.md"),
         entry("Chest Supported Machine Row", "Back", "Keep the chest supported and pull the elbows behind the torso.", "Chest-Supported-Machine-Row.jpg", "Chest Supported Machine Row.gif", "Chest-Supported-Machine-Row.md"),
         entry("Dead Hangs", "Back + Forearms", "Hang with controlled shoulders and breathe steadily.", "Dead Hangs.webp", "Dead Hangs.webp", "Dead Hangs.md", ExerciseMetricType.SECONDS, 30, 15, 90),
-        entry("Dumbbell Curl", "Biceps", "Curl without swinging and lower the dumbbells slowly.", "Dumbbell Curl.webp", "Dumbbell Curl.gif", "Dumbbell Curl.md"),
+        entry("Dumbbell Curl", "Biceps", "Curl without swinging and lower the dumbbells slowly.", "Dumbbell Curl.webp", "Dumbbell curl.jpg", "Dumbbell Curl.md"),
         entry("Dumbbell Lateral Raises", "Shoulders", "Lead with the elbows and stop around shoulder height.", "Dumbbell-Lateral-Raises.webp", "Dumbbell Lateral Raises.gif", "Dumbbell-Lateral-Raises.md"),
         entry("Dumbbell Shrugs", "Back + Shoulders", "Lift the shoulders straight up, pause, and lower fully.", "Dumbbell Shrugs.webp", "Dumbbell Shrugs.gif", "Dumbbell Shrugs.md"),
         entry("EZ Bar Curl", "Biceps", "Keep the wrists neutral and curl without moving the upper arms.", "EZ-Bar-Curl.jpg", "EZ Bar Curl.gif", "EZ-Bar-Curl.md"),
         entry("Face Pull", "Shoulders + Back", "Pull toward the face and rotate the hands apart at the finish.", "Face-Pull.webp", "Face Pull.gif", "Face-Pulls.md"),
-        entry("Farmer Carries", "Full Body + Forearms", "Walk tall with a braced core and firm grip.", "Farmer Carries.gif", "Farmer Carries.gif", "Farmer Carries.md", ExerciseMetricType.SECONDS, 30, 15, 90),
+        entry("Farmer Carries", "Full Body + Forearms", "Walk tall with a braced core and firm grip.", "Farmer Carries.gif", "Farmer Carries.jpg", "Farmer Carries.md", ExerciseMetricType.SECONDS, 30, 15, 90),
         entry("Hammer Curl", "Biceps + Forearms", "Keep a neutral grip and avoid swinging the torso.", "Hammer-Curls.webp", "Hammer Curl.gif", "Hammer-Curls.md"),
-        entry("Hamstring Curl", "Hamstrings", "Curl smoothly, pause at peak contraction, and control the return.", "Hamstring-Curl.webp", "Hamstring curl.gif", "Hamstring Curl.md"),
-        entry("Hanging Leg Raises", "Core", "Brace the torso and raise the legs without swinging.", "Hanging-Leg-Raises.jpg", "Hanging Leg Raises.gif", "Hanging-Leg-Raises.md"),
-        entry("Leg Press", "Quadriceps + Glutes", "Lower to a comfortable depth and press without locking the knees.", "Leg-Press.jpeg", "Leg-Press.gif", "Leg Press.md"),
+        entry("Hamstring Curl", "Hamstrings", "Curl smoothly, pause at peak contraction, and control the return.", "Hamstring-Curl.webp", "Hamstring curl.jpg", "Hamstring Curl.md"),
+        entry("Hanging Leg Raises", "Core", "Brace the torso and raise the legs without swinging.", "Hanging-Leg-Raises.jpg", "Hanging Leg Raises.jpg", "Hanging-Leg-Raises.md"),
+        entry("Leg Press", "Quadriceps + Glutes", "Lower to a comfortable depth and press without locking the knees.", "Leg-Press.jpeg", "Leg Press.gif", "Leg Press.md"),
         entry("Machine Chest Press", "Chest", "Keep the shoulders down and press with steady chest tension.", "Machine-Chest-Press.jpeg", "Machine Chest Press.gif", "Machine-Chest-Press.md"),
         entry("Overhead Cable Tricep Extensions", "Triceps", "Keep the elbows pointed forward and extend fully without arching.", "Overhead-Cable-Tricept-Extensions.webp", "Overhead Cable Tricep Extensions.gif", "Overhead-Cable-Tricept-Extensions.md"),
         entry("Rear Delt Flyes", "Shoulders + Back", "Open the arms with rear-delt control and avoid shrugging.", "Rear-Delt-Flyes.webp", "Rear Delt Flyes.gif", "Rear-Delt-Flyes.md"),
-        entry("Reverse Curls", "Forearms + Biceps", "Use an overhand grip and keep the wrists straight.", "Reverse-Curls.gif", "Reverse Curls.gif", "Reverse-Curls.md"),
+        entry("Reverse Curls", "Forearms + Biceps", "Use an overhand grip and keep the wrists straight.", "Reverse-Curls.gif", "Reverse Curl.gif", "Reverse-Curls.md"),
         entry("Reverse Wrist Curl", "Forearms", "Move only at the wrists through a controlled range.", "Reverse-Wrist-Curl.gif", "Reverse Wrist Curl.gif", "Reverse-Wrist-Curls.md"),
         entry("Rope Pushdowns", "Triceps", "Keep the elbows tucked and separate the rope at full extension.", "Rope-Pushdowns.jpg", "Rope Pushdowns.gif", "Rope-Pushdowns.md"),
         entry("Squats", "Quadriceps + Glutes", "Brace the trunk, sit between the hips, and drive through the feet.", "Squats.gif", "Squats.gif", "Squats.md"),
         entry("Standing Calf Raises", "Calves", "Rise fully onto the toes, pause, and lower through the heel.", "Standing Calf raises.gif", "Standing Calf raises.gif", "Standing Calf Raises.md"),
-        entry("Straight Arm Pulldown", "Back", "Keep the arms nearly straight and pull from the lats.", "Straight-Arm-Pulldowm.jpg", "Straight-Arm-Pulldown.gif", "Straight-Arm-Pulldown.md"),
-        entry("Tricep Kickbacks", "Triceps", "Hold the upper arm still and extend the elbow completely.", "Tricep Kickback.webp", "Tricep Kickbacks.gif", "Tricep Kickback.md"),
+        entry("Straight Arm Pulldown", "Back", "Keep the arms nearly straight and pull from the lats.", "Straight-Arm-Pulldowm.jpg", "Straight Arm Pulldown.jpg", "Straight-Arm-Pulldown.md"),
+        entry("Tricep Kickbacks", "Triceps", "Hold the upper arm still and extend the elbow completely.", "Tricep Kickback.webp", "Tricep Kickbacks.jpg", "Tricep Kickback.md"),
         entry("Upright Row", "Shoulders", "Lead with the elbows and stop before the shoulders feel pinched.", "Upright row.jpg", "Upright Row.gif", "Upright Row.md"),
         entry("Wide Grip Lat Pulldown", "Back", "Pull toward the upper chest while keeping the torso stable.", "wide-grip-lat-pulldown.webp", "Wide Grip Lat Pulldown.gif", "Wide-Grip-Lat-pulldown.md"),
-        entry("Wrist Roller", "Forearms", "Keep the arms steady and roll the load using controlled wrist turns.", "Wrist Roller.webp", "Wrist Roller.gif", "Wrist Roller.md", ExerciseMetricType.SECONDS, 30, 15, 90),
+        entry("Wrist Roller", "Forearms", "Keep the arms steady and roll the load using controlled wrist turns.", "Wrist Roller.webp", "Wrist Roller.jpg", "Wrist Roller.md", ExerciseMetricType.SECONDS, 30, 15, 90),
     )
 
     private fun entry(
@@ -270,24 +276,64 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
         maxAmount = maxAmount,
     )
 
-    private val detailAssetOverrides = mapOf(
-        "Bench Press" to "Bench Press.gif",
-        "Cable Chest Press" to "Cable Chest Press.gif",
-        "Incline Inner Biceps Curls" to "Incline Inner Biceps Curls.gif",
-        "Barbell Rear Delt Row" to "Barbell Rear Delt Row.gif",
-        "Elevated Cable Rows" to "Elevated Cable Rows.gif",
-        "Deadlift with Bands" to "Deadlift with Bands.gif",
+    private val detailAssetOverrides: Map<String, String?> = mapOf(
         "Barbell Lunge" to "Barbell Lunge.gif",
-        "Cable Hip Adduction" to "Cable Hip Adduction.gif",
-        "Shoulder Raise" to "Shoulder Raise.gif",
-        "Body Tricep Press" to "Body Tricep Press.gif",
-        "Bench Dips" to "Bench Dips.gif",
-        "Cable Crunch" to "Cable Crunch.gif",
-        "Decline Reverse Crunch" to "Decline Reverse Crunch.gif",
-        "Bent Knee Hip Raise" to "Bent Knee Hip Raise.gif",
+        "Barbell Rear Delt Row" to "Barbell Rear Delt Row.gif",
         "Battling Ropes" to "Battling Ropes.gif",
-        "Bottoms Up" to "Bottoms Up.gif",
-        "Romanian Deadlift" to "Romanian-Deadlift.gif",
+        "Bayesian Cable Curls" to "Bayesian Cable Curls.webp",
+        "Bench Dips" to "Bench Dips.webp",
+        "Bench Press" to "bench press.webp",
+        "Bent Knee Hip Raise" to "Bent Knee Hip Raise.gif",
+        "Body Tricep Press" to "Body Tricep Press.webp",
+        "Bottoms Up" to "Bottoms Up.jpg",
+        "Bulgarian Split Squat" to "Bulgarian Split Squat.gif",
+        "Butterfly" to "Butterfly.gif",
+        "Cable Chest Press" to "Cable Chest Press.webp",
+        "Cable Crunch" to "Cable Crunch.gif",
+        "Cable Curls" to "Cable Curls.gif",
+        "Cable Flyes" to "cable flyes.gif",
+        "Cable Hip Adduction" to "Cable Hip Adduction.webp",
+        "Cable Lateral Raise" to "Cable Lateral Raise.gif",
+        "Chest Supported Machine Row" to "Chest Supported Machine Row.gif",
+        "Dead Hangs" to "Dead Hangs.webp",
+        "Deadlift with Bands" to "Deadlift with Bands.jpg",
+        "Decline Reverse Crunch" to "Decline Reverse Crunch.jpg",
+        "Dumbbell Curl" to "Dumbbell curl.jpg",
+        "Dumbbell Lateral Raises" to "Dumbbell Lateral Raises.gif",
+        "Dumbbell Shrugs" to "Dumbbell Shrugs.gif",
+        "Dynamic Back Stretch" to "Dynamic Back Stretch.jpg",
+        "Elevated Back Lunge" to "Elevated Back Lunge.gif",
+        "Elevated Cable Rows" to "Elevated Cable Rows.jpg",
+        "EZ Bar Curl" to "EZ Bar Curl.gif",
+        "Face Pull" to "Face Pull.gif",
+        "Farmer Carries" to "Farmer Carries.jpg",
+        "Hack Squat" to "Hack Squat.jpg",
+        "Hammer Curl" to "Hammer Curl.gif",
+        "Hamstring Curl" to "Hamstring curl.jpg",
+        "Hanging Leg Raises" to "Hanging Leg Raises.jpg",
+        "Incline Inner Biceps Curls" to "Incline Inner Biceps Curls.jpg",
+        "Jumping Jack" to "Jumping Jack.jpg",
+        "Leg Press" to "Leg Press.gif",
+        "Machine Chest Press" to "Machine Chest Press.gif",
+        "Mountain Climber" to "Mountain Climber.gif",
+        "Overhead Cable Tricep Extensions" to "Overhead Cable Tricep Extensions.gif",
+        "Plank" to "Plank.gif",
+        "Push-Ups" to "Push Ups.gif",
+        "Rear Delt Flyes" to "Rear Delt Flyes.gif",
+        "Reverse Curls" to "Reverse Curl.gif",
+        "Reverse Wrist Curl" to "Reverse Wrist Curl.gif",
+        "Romanian Deadlift" to "Romanian Deadlift.gif",
+        "Rope Pushdowns" to "Rope Pushdowns.gif",
+        "Shoulder Raise" to "Shoulder Raise.gif",
+        "Sit-Up" to "Sit Up.gif",
+        "Squats" to "Squats.gif",
+        "Standing Calf Raises" to "Standing Calf raises.gif",
+        "Straight Arm Pulldown" to "Straight Arm Pulldown.jpg",
+        "Tricep Extension" to "Tricep Extension.gif",
+        "Tricep Kickbacks" to "Tricep Kickbacks.jpg",
+        "Upright Row" to "Upright Row.gif",
+        "Wide Grip Lat Pulldown" to "Wide Grip Lat Pulldown.gif",
+        "Wrist Roller" to "Wrist Roller.jpg",
     )
 
     private val mediaAssetOverrides = mapOf(
@@ -301,7 +347,7 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
 
     private val splitAssignments = mapOf(
         WorkoutSplitType.PUSH to setOf(
-            "Push-Ups", "Cable Chest Press", "Bench Press", "Chest Press", "Butterfly",
+            "Push-Ups", "Cable Chest Press", "Bench Press", "Butterfly",
             "Cable Flyes", "Machine Chest Press", "Shoulder Raise", "Cable Lateral Raise",
             "Dumbbell Lateral Raises", "Body Tricep Press", "Tricep Extension", "Bench Dips",
             "Overhead Cable Tricep Extensions", "Rope Pushdowns", "Tricep Kickbacks",
@@ -325,7 +371,7 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
             "EZ Bar Curl", "Hammer Curl", "Reverse Curls", "Body Tricep Press", "Tricep Extension",
             "Bench Dips", "Overhead Cable Tricep Extensions", "Rope Pushdowns", "Tricep Kickbacks",
             "Plank", "Cable Crunch", "Decline Reverse Crunch", "Bent Knee Hip Raise", "Sit-Up",
-            "Decline Crunch", "Hanging Leg Raises",
+            "Hanging Leg Raises",
         ),
         WorkoutSplitType.LEGS_SHOULDERS to setOf(
             "Hack Squat", "Barbell Lunge", "Elevated Back Lunge", "Bulgarian Split Squat", "Leg Press",
@@ -333,7 +379,7 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
             "Shoulder Raise", "Cable Lateral Raise", "Dumbbell Lateral Raises", "Upright Row",
         ),
         WorkoutSplitType.UPPER_BODY_POWER to setOf(
-            "Push-Ups", "Bench Press", "Chest Press", "Cable Chest Press", "Machine Chest Press",
+            "Push-Ups", "Bench Press", "Cable Chest Press", "Machine Chest Press",
             "Barbell Rear Delt Row", "Elevated Cable Rows", "Chest Supported Machine Row",
             "Wide Grip Lat Pulldown", "Shoulder Raise", "Bench Dips", "Farmer Carries",
         ),
@@ -348,7 +394,7 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
     private val bodyweightExercises = setOf(
         "Push-Ups", "Bench Dips", "Body Tricep Press", "Dynamic Back Stretch", "Elevated Back Lunge",
         "Bulgarian Split Squat", "Bottoms Up", "Mountain Climber", "Jumping Jack", "Plank", "Sit-Up",
-        "Decline Crunch", "Decline Reverse Crunch", "Bent Knee Hip Raise", "Hanging Leg Raises", "Dead Hangs",
+        "Decline Reverse Crunch", "Bent Knee Hip Raise", "Hanging Leg Raises", "Dead Hangs",
     )
 
     private val conditioningExercises = setOf(
@@ -389,6 +435,11 @@ object LocalExerciseCatalog : ExerciseRecommendationSource {
         "Cable Curls", "Rope Pushdowns", "Cable Lateral Raise",
     )
 
+    private val exerciseAliases = mapOf(
+        normalizeId("Chest Press") to normalizeId("Cable Chest Press"),
+        normalizeId("Decline Crunch") to normalizeId("Decline Reverse Crunch"),
+    )
+
     const val DEFAULT_INSTRUCTION_FALLBACK =
         "Detailed instructions are not available for this exercise yet. Use controlled form and stop if you feel pain."
 }
@@ -399,7 +450,15 @@ object LocalExerciseDatabase {
 
     private val byNormalizedName = exercises.associateBy { normalizeName(it.name) }
 
-    fun exerciseByName(name: String): ExerciseLibraryEntry? = byNormalizedName[normalizeName(name)]
+    fun exerciseByName(name: String): ExerciseLibraryEntry? {
+        val normalizedName = normalizeName(name)
+        val canonicalName = when (normalizedName) {
+            normalizeName("Chest Press") -> normalizeName("Cable Chest Press")
+            normalizeName("Decline Crunch") -> normalizeName("Decline Reverse Crunch")
+            else -> normalizedName
+        }
+        return byNormalizedName[canonicalName]
+    }
 
     private fun normalizeName(value: String): String = value
         .lowercase()

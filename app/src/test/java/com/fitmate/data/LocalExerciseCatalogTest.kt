@@ -24,7 +24,7 @@ class LocalExerciseCatalogTest {
         val exercises = LocalExerciseCatalog.exercises
 
         assertEquals(exercises.size, exercises.map { it.id }.distinct().size)
-        assertTrue(exercises.size >= 59)
+        assertTrue(exercises.size >= 57)
         exercises.forEach { exercise ->
             assertTrue(exercise.id.matches(Regex("[a-z0-9_]+")))
             assertTrue(exercise.primaryMuscles.isNotEmpty())
@@ -69,14 +69,25 @@ class LocalExerciseCatalogTest {
     }
 
     @Test
-    fun `legacy exercises without details remain available with fallbacks`() {
-        listOf("Chest Press", "Decline Crunch").forEach { name ->
-            val exercise = LocalExerciseCatalog.findByName(name)
-            assertNotNull(exercise)
-            assertEquals(null, exercise?.detailMediaAsset)
-            assertEquals(null, exercise?.instructionAsset)
-            assertNotNull(LocalExerciseDatabase.exerciseByName(name))
-        }
+    fun `renamed exercises resolve to canonical entries without duplicates`() {
+        val cableChestPress = LocalExerciseCatalog.findByName("Cable Chest Press")
+        val declineReverseCrunch = LocalExerciseCatalog.findByName("Decline Reverse Crunch")
+
+        assertEquals(cableChestPress, LocalExerciseCatalog.findByName("Chest Press"))
+        assertEquals(declineReverseCrunch, LocalExerciseCatalog.findByName("Decline Crunch"))
+        assertEquals("Cable Chest Press", LocalExerciseDatabase.exerciseByName("Chest Press")?.name)
+        assertEquals("Decline Reverse Crunch", LocalExerciseDatabase.exerciseByName("Decline Crunch")?.name)
+        assertTrue(LocalExerciseCatalog.exercises.none { it.name == "Chest Press" || it.name == "Decline Crunch" })
+    }
+
+    @Test
+    fun `renamed dumbbell curl media preserves its instruction mapping`() {
+        val dumbbellCurl = LocalExerciseCatalog.findByName("Dumbbell Curl")
+
+        assertNotNull(dumbbellCurl)
+        assertEquals("Dumbbell curl.jpg", dumbbellCurl?.detailMediaAsset)
+        assertEquals("Dumbbell Curl.md", dumbbellCurl?.instructionAsset)
+        assertNotNull(LocalExerciseDatabase.exerciseByName("Dumbbell Curl"))
     }
 
     @Test
@@ -84,9 +95,9 @@ class LocalExerciseCatalogTest {
         val benchPress = LocalExerciseCatalog.findByName("bench-press")
 
         assertNotNull(benchPress)
-        assertEquals("Bench Press.gif", benchPress?.detailMediaAsset)
+        assertEquals("bench press.webp", benchPress?.detailMediaAsset)
         assertEquals("Bench Press.md", benchPress?.instructionAsset)
-        assertTrue(File(assets, "workout_details/gifs/Bench Press.gif").isFile)
+        assertTrue(File(assets, "workout_details/gifs/bench press.webp").isFile)
         assertTrue(File(assets, "workout_details/instructions/Bench Press.md").isFile)
     }
 
