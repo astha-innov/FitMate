@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Internet Permission -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Camera Permission -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Camera Hardware -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="FitMate"
-        android:supportsRtl="true"
         android:localeConfig="@xml/locale_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
         android:theme="@style/Theme.FitMate"
         android:usesCleartextTraffic="true">
 
+        <!-- Main Launcher Activity -->
         <activity
-            android:name="com.fitmate.MainActivity"
+            android:name=".MainActivity"
             android:exported="true">
 
             <intent-filter>
@@ -24,6 +34,11 @@
             </intent-filter>
 
         </activity>
+
+        <!-- Barcode Scanner Activity -->
+        <activity
+            android:name=".ScanFoodActivity"
+            android:exported="false" />
 
     </application>
 

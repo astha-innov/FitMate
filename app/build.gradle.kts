@@ -104,12 +104,9 @@ dependencies {
     // LIFECYCLE
     // =========================
 
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
-
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.5")
-
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
-
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     // =========================
     // NAVIGATION
     // =========================
@@ -120,9 +117,9 @@ dependencies {
     // COROUTINES
     // =========================
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
 
     // =========================
     // FIREBASE
@@ -160,6 +157,25 @@ dependencies {
 
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
+
+    // ========================================
+// CameraX
+// ========================================
+    implementation("androidx.camera:camera-camera2:1.4.2")
+    implementation("androidx.camera:camera-lifecycle:1.4.2")
+    implementation("androidx.camera:camera-view:1.4.2")
+
+// ========================================
+// ML Kit Barcode Scanner
+// ========================================
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+
+// ========================================
+// Camera Permission (Compose)
+// ========================================
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+
+    implementation("com.google.guava:guava:33.2.1-android")
 
     // =========================
     // DESUGARING
