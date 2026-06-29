@@ -15,20 +15,16 @@ import com.fitmate.domain.model.WorkoutFocus
 import com.fitmate.domain.model.WorkoutWeekday
 import com.fitmate.domain.model.WeeklyWorkoutSchedule
 import com.fitmate.domain.repository.CampusFitRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.UUID
 
 class CampusFitRepositoryImpl(
-    private val backendService: FirebaseBackendService = FirebaseBackendService(),
+
 ) : CampusFitRepository {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
 
     private val _profile = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadProfile() ?: UserProfile() else UserProfile())
     private val _aiConfig = MutableStateFlow(if (AppStorage.isReady()) AppStorage.loadAiConfig() ?: AiConfig() else AiConfig())
@@ -58,37 +54,27 @@ class CampusFitRepositoryImpl(
 
     init {
         normalizeDailyProgress()
-        scope.launch {
-            try {
-                bootstrapBackend()
-            } finally {
-                _sessionReady.value = true
-            }
-        }
+        _sessionReady.value = true
     }
 
     override fun updateProfile(profile: UserProfile) {
         _profile.value = profile
         persistLocalState()
-        syncToBackend()
     }
 
     override fun updateAiConfig(config: AiConfig) {
         _aiConfig.value = config
         persistLocalState()
-        syncToBackend()
     }
 
     override fun updateThemeMode(mode: AppThemeMode) {
         _themeMode.value = mode
         persistLocalState()
-        syncToBackend()
     }
 
     override fun toggleReminders() {
         _discipline.value = _discipline.value.copy(remindersEnabled = !_discipline.value.remindersEnabled)
         persistLocalState()
-        syncToBackend()
     }
 
     override fun saveMealAnalysis(analysis: MealAnalysis) {
@@ -101,33 +87,28 @@ class CampusFitRepositoryImpl(
             proteinConsumed = _todayProgress.value.proteinConsumed + analysis.estimatedProtein,
         )
         persistLocalState()
-        syncToBackend()
     }
 
     override fun addWater(amountLiters: Double) {
         normalizeDailyProgress()
         _todayProgress.value = _todayProgress.value.copy(waterLitersConsumed = _todayProgress.value.waterLitersConsumed + amountLiters)
         persistLocalState()
-        syncToBackend()
     }
 
     override fun savePersonalizedPlan(plan: PersonalizedPlan) {
         _personalizedPlan.value = plan
         persistLocalState()
-        syncToBackend()
     }
 
     override fun markSetupCompleted(completed: Boolean) {
         _setupCompleted.value = completed
         persistLocalState()
-        syncToBackend()
     }
 
     override fun saveWorkoutSchedule(schedule: WeeklyWorkoutSchedule) {
         _workoutSchedule.value = schedule
         recalculateWorkoutDiscipline()
         persistLocalState()
-        syncToBackend()
     }
 
     override fun recordWorkoutSet(
@@ -180,50 +161,7 @@ class CampusFitRepositoryImpl(
 
         recalculateWorkoutDiscipline()
         persistLocalState()
-        syncToBackend()
     }
-
-    private suspend fun bootstrapBackend() {
-        if (!backendService.isConfigured()) return
-        val remoteState = runCatching { backendService.loadState() }.getOrNull()
-        if (remoteState != null) applyRemoteState(remoteState) else syncToBackend()
-    }
-
-    private fun applyRemoteState(state: BackendState) {
-        state.profile?.let { _profile.value = it }
-        state.aiConfig?.let { _aiConfig.value = it }
-        state.themeMode?.let { _themeMode.value = it }
-        state.setupCompleted?.let { _setupCompleted.value = it }
-        state.personalizedPlan?.let { _personalizedPlan.value = it }
-        state.discipline?.let { _discipline.value = it }
-        state.todayProgress?.let { _todayProgress.value = it }
-        state.mealLogs?.let {
-            _mealLogs.value = it.sortedByDescending(MealLog::date)
-            _latestMealAnalysis.value = it.firstOrNull()?.analysis
-        }
-        state.workoutSchedule?.let { _workoutSchedule.value = it }
-        state.workoutLogs?.let { _workoutLogs.value = it.sortedByDescending(WorkoutDayLog::date) }
-        normalizeDailyProgress()
-        recalculateWorkoutDiscipline()
-        persistLocalState()
-    }
-
-    private fun syncToBackend() {
-        scope.launch { runCatching { backendService.saveState(snapshotState()) } }
-    }
-
-    private fun snapshotState(): BackendState = BackendState(
-        profile = _profile.value,
-        aiConfig = _aiConfig.value,
-        themeMode = _themeMode.value,
-        setupCompleted = _setupCompleted.value,
-        personalizedPlan = _personalizedPlan.value,
-        discipline = _discipline.value,
-        todayProgress = _todayProgress.value,
-        mealLogs = _mealLogs.value.take(60),
-        workoutSchedule = _workoutSchedule.value,
-        workoutLogs = _workoutLogs.value.take(180),
-    )
 
     private fun persistLocalState() {
         if (!AppStorage.isReady()) return
@@ -306,10 +244,10 @@ class CampusFitRepositoryImpl(
             ?: return if (date.isBefore(LocalDate.now())) WorkoutDayStatus.MISSED else WorkoutDayStatus.NONE
 
         val isCompleted = scheduleDay.exercises.isNotEmpty() &&
-            scheduleDay.exercises.all { config ->
-                val progress = log.exercises.firstOrNull { it.exerciseName == config.exerciseName }
-                progress != null && progress.completedSets >= config.sets
-            }
+                scheduleDay.exercises.all { config ->
+                    val progress = log.exercises.firstOrNull { it.exerciseName == config.exerciseName }
+                    progress != null && progress.completedSets >= config.sets
+                }
 
         if (isCompleted) return WorkoutDayStatus.COMPLETED
 

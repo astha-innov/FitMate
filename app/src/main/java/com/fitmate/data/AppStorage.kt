@@ -54,6 +54,15 @@ object AppStorage {
         editor.putString(ACTIVE_USER_ID, userId).apply()
     }
 
+    fun clearAllUserData() {
+        val editor = prefs.edit()
+
+        USER_SCOPED_KEYS
+            .filter { key -> key != "theme_mode" }
+            .forEach(editor::remove)
+
+        editor.apply()
+    }
     fun saveSetupCompleted(completed: Boolean) {
         prefs.edit().putBoolean("setup_completed", completed).apply()
     }

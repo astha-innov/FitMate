@@ -282,8 +282,8 @@ fun SettingsScreen(
             onClearData = {
                 scope.launch {
                     val result = runCatching {
-                        backendService.clearUserDocument()
-                        AppStorage.saveSetupCompleted(false)
+
+                        AppStorage.clearAllUserData()
                         dataClearedMessage
                         // Setup-completed flip is observed by CampusFitApp's
                         // own state flow, which naturally routes back to
@@ -332,10 +332,12 @@ fun SettingsScreen(
                         scope.launch {
                             val result = runCatching {
                                 val currentUser = auth.currentUser ?: error(noActiveAccountMessage)
-                                backendService.clearUserDocument()
+
                                 currentUser.delete().await()
+
+                                AppStorage.clearAllUserData()
+
                                 auth.signOut()
-                                AppStorage.saveSetupCompleted(false)
                                 accountDeletedMessage
                                 // Auth state flip drives navigation back to
                                 // SignIn automatically -- no restart needed.

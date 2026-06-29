@@ -463,5 +463,21 @@
     <string name="fitmate_user_fallback">FitMate उपयोगकर्ता</string>
     <string name="msg_password_updated">पासवर्ड सफलतापूर्वक अपडेट किया गया।</string>
     <string name="lang_default_badge">डिफ़ॉल्ट</string>
+    <string name="tab_profile">प्रोफ़ाइल</string>
+    <string name="tab_workout">वर्कआउट</string>
+    <string name="tab_diet">आहार</string>
+    <string name="tab_progress">प्रगति</string>
+    <string name="tab_coach">कोच</string>
+    <string name="tab_settings">सेटिंग्स</string>
+
+    <string name="tagline_profile">बहाने कैलोरी नहीं जलाते।</string>
+    <string name="tagline_workout">बिना मेहनत, कोई परिणाम नहीं।</string>
+    <string name="tagline_diet">साफ़ खाओ। फिट रहो। खुश रहो।</string>
+    <string name="tagline_progress">अपनी फिटनेस यात्रा को ट्रैक करें</string>
+    <string name="tagline_coach">समझदारी से पूछें। बेहतर प्रशिक्षण लें।</string>
+
+    <string name="cd_open_settings">सेटिंग्स खोलें</string>
+    <string name="cd_share_analytics">एनालिटिक्स साझा करें</string>
+    <string name="cd_current_streak">वर्तमान वर्कआउट स्ट्रीक</string>
 
 </resources>
