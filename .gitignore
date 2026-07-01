@@ -39,3 +39,5 @@ Thumbs.db
 
 .env
 serviceAccountKey.json
+*serviceAccount*.json
+node_modules/
