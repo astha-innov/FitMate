@@ -36,3 +36,6 @@ gradle.properties
 # OS clutter
 .DS_Store
 Thumbs.db
+
+.env
+serviceAccountKey.json

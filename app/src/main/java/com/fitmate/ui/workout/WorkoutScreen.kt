@@ -76,6 +76,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -96,6 +97,8 @@ import coil.compose.LocalImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.fitmate.R
+import com.fitmate.data.ExerciseRemoteMedia
+import com.fitmate.data.FirestoreExerciseMediaRepository
 import com.fitmate.data.LocalExerciseDatabase
 import com.fitmate.data.LocalExerciseCatalog
 import com.fitmate.domain.model.ExerciseLibraryEntry
@@ -189,6 +192,10 @@ fun WorkoutScreen(
     var selectedInstructionExercise by remember { mutableStateOf<SelectedExerciseDetail?>(null) }
     val collapsedDays = remember {
         mutableStateMapOf<String, Boolean>()
+    }
+
+    LaunchedEffect(Unit) {
+        FirestoreExerciseMediaRepository.refresh()
     }
 
     LaunchedEffect(schedule) {
@@ -463,7 +470,7 @@ private fun WorkoutDayCard(
             ) {
                 if (focusImage.isNotBlank()) {
                     AsyncImage(
-                        model = "file:///android_asset/exercises/$focusImage",
+                        model = decorAssetModel(focusImage),
                         contentDescription = day.focus.label,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -610,8 +617,10 @@ private fun ExerciseCardRow(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
             ) {
-                AsyncImage(
-                    model = assetModel(entry.postureImage),
+                ExerciseMediaImage(
+                    exerciseName = entry.name,
+                    localAssetName = entry.postureImage,
+                    detailMedia = false,
                     contentDescription = entry.name,
                     modifier = Modifier
                         .size(72.dp)
@@ -700,7 +709,7 @@ private fun WorkoutInstructionScreen(
     val exercise = detail.exercise
     val totalSets = detail.config.sets.coerceAtLeast(1)
     val markdown = remember(exercise.instructionMarkdownAsset) {
-        loadAssetText(context, "workout_details/instructions/${exercise.instructionMarkdownAsset}")
+        loadAssetText(context, "instructions/${exercise.instructionMarkdownAsset}")
     }
     val parsed = remember(markdown, exercise.name, exercise.instructions) {
         if (markdown.isBlank()) {
@@ -794,8 +803,10 @@ private fun WorkoutInstructionScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column {
-                        AsyncImage(
-                            model = detailAssetModel(exercise.detailGifAsset),
+                        ExerciseMediaImage(
+                            exerciseName = exercise.name,
+                            localAssetName = exercise.detailGifAsset,
+                            detailMedia = true,
                             contentDescription = exercise.name,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1387,7 +1398,7 @@ private fun SequentialPlanBuilderDialog(
         ) {
             if (previewImage.isNotBlank()) {
                 AsyncImage(
-                    model = assetModel(previewImage),
+                    model = decorAssetModel(previewImage),
                     contentDescription = day.focus.label,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -1694,8 +1705,10 @@ private fun EditableExerciseCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
             ) {
-                AsyncImage(
-                    model = assetModel(entry.postureImage),
+                ExerciseMediaImage(
+                    exerciseName = entry.name,
+                    localAssetName = entry.postureImage,
+                    detailMedia = false,
                     contentDescription = entry.name,
                     modifier = Modifier
                         .size(88.dp)
@@ -1986,6 +1999,12 @@ private fun detailAssetModel(
     return assetName.takeIf { it.isNotBlank() }?.let { "file:///android_asset/workout_details/gifs/$it" }
 }
 
+private fun decorAssetModel(
+    assetName: String
+): String? {
+    return assetName.takeIf { it.isNotBlank() }?.let { "file:///android_asset/workout/decor/$it" }
+}
+
 private fun loadAssetText(
     context: Context,
     assetPath: String
@@ -2127,7 +2146,7 @@ private fun HeroGifCarousel() {
             ) { page ->
                 val actualIndex = page % heroGifs.size
                 AsyncImage(
-                    model = assetModel(heroGifs[actualIndex]),
+                    model = decorAssetModel(heroGifs[actualIndex]),
                     contentDescription = stringResource(R.string.workout_weekly_title),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -2184,7 +2203,7 @@ private fun MotivationBanner() {
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
-                model = assetModel("gym_motivation.gif"),
+                model = decorAssetModel("gym_motivation.gif"),
                 contentDescription = stringResource(R.string.workout_discipline_quote),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -2221,4 +2240,47 @@ private fun MotivationBanner() {
             }
         }
     }
+}
+
+@Composable
+private fun ExerciseMediaImage(
+    exerciseName: String,
+    localAssetName: String,
+    detailMedia: Boolean,
+    contentDescription: String?,
+    modifier: Modifier,
+    contentScale: ContentScale,
+    placeholder: ColorPainter,
+    error: ColorPainter,
+    fallback: ColorPainter,
+) {
+    val remoteMediaById by FirestoreExerciseMediaRepository.mediaByExerciseId
+        .collectAsStateWithLifecycle()
+    val exerciseId = remember(exerciseName) {
+        LocalExerciseCatalog.findByName(exerciseName)?.id
+    }
+    val remoteMedia: ExerciseRemoteMedia? = exerciseId?.let(remoteMediaById::get)
+    val remoteUrl = if (detailMedia) remoteMedia?.detailMediaUrl else remoteMedia?.thumbnailUrl
+    val localModel = if (detailMedia) {
+        detailAssetModel(localAssetName)
+    } else {
+        assetModel(localAssetName)
+    }
+    var remoteLoadFailed by remember(remoteUrl, localModel) { mutableStateOf(false) }
+    val model = remoteUrl?.takeUnless { remoteLoadFailed } ?: localModel
+
+    AsyncImage(
+        model = model,
+        contentDescription = contentDescription,
+        modifier = modifier,
+        contentScale = contentScale,
+        placeholder = placeholder,
+        error = error,
+        fallback = fallback,
+        onError = {
+            if (remoteUrl != null && model == remoteUrl) {
+                remoteLoadFailed = true
+            }
+        },
+    )
 }

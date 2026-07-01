@@ -1,0 +1,25 @@
+{
+  "name": "fitness-app",
+  "version": "1.0.0",
+  "description": "FitMate is a workout-focused Android fitness app built with Kotlin, Jetpack Compose, Firebase, and a modern neon-dark design system.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astha-innov/FitMate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/astha-innov/FitMate/issues"
+  },
+  "homepage": "https://github.com/astha-innov/FitMate#readme",
+  "dependencies": {
+    "cloudinary": "^2.10.0",
+    "dotenv": "^17.4.2",
+    "firebase-admin": "^14.1.0"
+  }
+}

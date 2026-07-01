@@ -37,34 +37,22 @@ class LocalExerciseCatalogTest {
     }
 
     @Test
-    fun `all mapped media and instruction assets exist`() {
+    fun `all mapped instruction assets exist`() {
         LocalExerciseCatalog.exercises.forEach { exercise ->
-            exercise.mediaAsset?.let {
-                assertTrue("Missing card media for ${exercise.name}: $it", File(assets, "exercises/$it").isFile)
-            }
-            exercise.detailMediaAsset?.let {
-                assertTrue("Missing detail media for ${exercise.name}: $it", File(assets, "workout_details/gifs/$it").isFile)
-            }
             exercise.instructionAsset?.let {
-                assertTrue("Missing instructions for ${exercise.name}: $it", File(assets, "workout_details/instructions/$it").isFile)
+                assertTrue("Missing instructions for ${exercise.name}: $it", File(assets, "instructions/$it").isFile)
             }
         }
     }
 
     @Test
-    fun `every packaged workout detail asset is mapped`() {
-        val mappedGifs = LocalExerciseCatalog.exercises.mapNotNull { it.detailMediaAsset }.toSet()
-        val packagedGifs = File(assets, "workout_details/gifs").listFiles().orEmpty()
-            .filter(File::isFile)
-            .map(File::getName)
-            .toSet()
+    fun `every packaged instruction asset is mapped`() {
         val mappedInstructions = LocalExerciseCatalog.exercises.mapNotNull { it.instructionAsset }.toSet()
-        val packagedInstructions = File(assets, "workout_details/instructions").listFiles().orEmpty()
+        val packagedInstructions = File(assets, "instructions").listFiles().orEmpty()
             .filter(File::isFile)
             .map(File::getName)
             .toSet()
 
-        assertEquals(packagedGifs, mappedGifs)
         assertEquals(packagedInstructions, mappedInstructions)
     }
 
@@ -91,14 +79,13 @@ class LocalExerciseCatalogTest {
     }
 
     @Test
-    fun `bench press uses its packaged detail media and instructions`() {
+    fun `bench press keeps its remote media key and packaged instructions`() {
         val benchPress = LocalExerciseCatalog.findByName("bench-press")
 
         assertNotNull(benchPress)
         assertEquals("bench press.webp", benchPress?.detailMediaAsset)
         assertEquals("Bench Press.md", benchPress?.instructionAsset)
-        assertTrue(File(assets, "workout_details/gifs/bench press.webp").isFile)
-        assertTrue(File(assets, "workout_details/instructions/Bench Press.md").isFile)
+        assertTrue(File(assets, "instructions/Bench Press.md").isFile)
     }
 
     @Test

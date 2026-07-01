@@ -1,0 +1,527 @@
+{
+  "exercises": [
+    {
+      "exerciseId": "barbell_lunge",
+      "name": "Barbell Lunge",
+      "thumbnailFile": "barbell_lunge.jpg",
+      "detailMediaFile": "Barbell Lunge.gif",
+      "instructionFile": "Barbell-Lunge.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909709/workouts/images/barbell_lunge.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909711/workouts/gifs/barbell_lunge.gif"
+    },
+    {
+      "exerciseId": "barbell_rear_delt_row",
+      "name": "Barbell Rear Delt Row",
+      "thumbnailFile": "barbell_rearDelt_row.jpg",
+      "detailMediaFile": "Barbell Rear Delt Row.gif",
+      "instructionFile": "Barbell-Rear-Delt-Row.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909713/workouts/images/barbell_rear_delt_row.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909714/workouts/gifs/barbell_rear_delt_row.gif"
+    },
+    {
+      "exerciseId": "battling_ropes",
+      "name": "Battling Ropes",
+      "thumbnailFile": "battling_ropes.jpg",
+      "detailMediaFile": "Battling Ropes.gif",
+      "instructionFile": "Battling-Ropes.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909716/workouts/images/battling_ropes.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909717/workouts/gifs/battling_ropes.gif"
+    },
+    {
+      "exerciseId": "bayesian_cable_curls",
+      "name": "Bayesian Cable Curls",
+      "thumbnailFile": "Bayesian-Cable-Curl.gif",
+      "detailMediaFile": "Bayesian Cable Curls.webp",
+      "instructionFile": "Bayesian-Cable-Curl.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909719/workouts/images/bayesian_cable_curls.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909720/workouts/gifs/bayesian_cable_curls.webp"
+    },
+    {
+      "exerciseId": "bench_dips",
+      "name": "Bench Dips",
+      "thumbnailFile": "bench_dips.jpg",
+      "detailMediaFile": "Bench Dips.webp",
+      "instructionFile": "Bench-Dips.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909722/workouts/images/bench_dips.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909723/workouts/gifs/bench_dips.jpg"
+    },
+    {
+      "exerciseId": "bench_press",
+      "name": "Bench Press",
+      "thumbnailFile": "bench_press.gif",
+      "detailMediaFile": "bench press.webp",
+      "instructionFile": "Bench Press.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909725/workouts/images/bench_press.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909726/workouts/gifs/bench_press.jpg"
+    },
+    {
+      "exerciseId": "bent_knee_hip_raise",
+      "name": "Bent Knee Hip Raise",
+      "thumbnailFile": "bent_knee_hip_raise.jpg",
+      "detailMediaFile": "Bent Knee Hip Raise.gif",
+      "instructionFile": "Bent-Knee-Hip-Raise.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909728/workouts/images/bent_knee_hip_raise.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909729/workouts/gifs/bent_knee_hip_raise.gif"
+    },
+    {
+      "exerciseId": "body_tricep_press",
+      "name": "Body Tricep Press",
+      "thumbnailFile": "body_tricep_press.jpg",
+      "detailMediaFile": "Body Tricep Press.webp",
+      "instructionFile": "Body-Tricep-Press.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909730/workouts/images/body_tricep_press.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909732/workouts/gifs/body_tricep_press.webp"
+    },
+    {
+      "exerciseId": "bottoms_up",
+      "name": "Bottoms Up",
+      "thumbnailFile": "bottoms_up.jpg",
+      "detailMediaFile": "Bottoms Up.jpg",
+      "instructionFile": "Bottoms-Up.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909733/workouts/images/bottoms_up.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909734/workouts/gifs/bottoms_up.jpg"
+    },
+    {
+      "exerciseId": "bulgarian_split_squat",
+      "name": "Bulgarian Split Squat",
+      "thumbnailFile": "bulgarian-split-squat.jpg",
+      "detailMediaFile": "Bulgarian Split Squat.gif",
+      "instructionFile": "Bulgarian Split Squats.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909736/workouts/images/bulgarian_split_squat.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909737/workouts/gifs/bulgarian_split_squat.webp"
+    },
+    {
+      "exerciseId": "butterfly",
+      "name": "Butterfly",
+      "thumbnailFile": "butterfly.jpg",
+      "detailMediaFile": "Butterfly.gif",
+      "instructionFile": "Butterfly.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909739/workouts/images/butterfly.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909740/workouts/gifs/butterfly.gif"
+    },
+    {
+      "exerciseId": "cable_chest_press",
+      "name": "Cable Chest Press",
+      "thumbnailFile": "cable_chest_press.jpg",
+      "detailMediaFile": "Cable Chest Press.webp",
+      "instructionFile": "Cable-Chest-Press.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909742/workouts/images/cable_chest_press.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909743/workouts/gifs/cable_chest_press.webp"
+    },
+    {
+      "exerciseId": "cable_crunch",
+      "name": "Cable Crunch",
+      "thumbnailFile": "cable_crunch.jpg",
+      "detailMediaFile": "Cable Crunch.gif",
+      "instructionFile": "Cable-Crunch.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909744/workouts/images/cable_crunch.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909745/workouts/gifs/cable_crunch.gif"
+    },
+    {
+      "exerciseId": "cable_curls",
+      "name": "Cable Curls",
+      "thumbnailFile": "Cable-Curls.jpg",
+      "detailMediaFile": "Cable Curls.gif",
+      "instructionFile": "Cable-Curls.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909747/workouts/images/cable_curls.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909748/workouts/gifs/cable_curls.gif"
+    },
+    {
+      "exerciseId": "cable_flyes",
+      "name": "Cable Flyes",
+      "thumbnailFile": "Cables-Flyes.jpeg",
+      "detailMediaFile": "cable flyes.gif",
+      "instructionFile": "Cable-Flyes.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909750/workouts/images/cable_flyes.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909752/workouts/gifs/cable_flyes.gif"
+    },
+    {
+      "exerciseId": "cable_hip_adduction",
+      "name": "Cable Hip Adduction",
+      "thumbnailFile": "cable_hip_aduction.jpg",
+      "detailMediaFile": "Cable Hip Adduction.webp",
+      "instructionFile": "Cable-Hip-Adduction.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909754/workouts/images/cable_hip_adduction.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909755/workouts/gifs/cable_hip_adduction.webp"
+    },
+    {
+      "exerciseId": "cable_lateral_raise",
+      "name": "Cable Lateral Raise",
+      "thumbnailFile": "Cable Lateral Raises.gif",
+      "detailMediaFile": "Cable Lateral Raise.gif",
+      "instructionFile": "Cable Lateral Raises.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909757/workouts/images/cable_lateral_raise.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909758/workouts/gifs/cable_lateral_raise.gif"
+    },
+    {
+      "exerciseId": "chest_supported_machine_row",
+      "name": "Chest Supported Machine Row",
+      "thumbnailFile": "Chest-Supported-Machine-Row.jpg",
+      "detailMediaFile": "Chest Supported Machine Row.gif",
+      "instructionFile": "Chest-Supported-Machine-Row.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909759/workouts/images/chest_supported_machine_row.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909761/workouts/gifs/chest_supported_machine_row.gif"
+    },
+    {
+      "exerciseId": "dead_hangs",
+      "name": "Dead Hangs",
+      "thumbnailFile": "Dead Hangs.webp",
+      "detailMediaFile": "Dead Hangs.webp",
+      "instructionFile": "Dead Hangs.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909762/workouts/images/dead_hangs.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909764/workouts/gifs/dead_hangs.jpg"
+    },
+    {
+      "exerciseId": "deadlift_with_bands",
+      "name": "Deadlift with Bands",
+      "thumbnailFile": "deadlift_with_bands.jpg",
+      "detailMediaFile": "Deadlift with Bands.jpg",
+      "instructionFile": "Deadlift-with-Bands.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909765/workouts/images/deadlift_with_bands.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909766/workouts/gifs/deadlift_with_bands.jpg"
+    },
+    {
+      "exerciseId": "decline_reverse_crunch",
+      "name": "Decline Reverse Crunch",
+      "thumbnailFile": "decline_reverse_crunch.jpg",
+      "detailMediaFile": "Decline Reverse Crunch.jpg",
+      "instructionFile": "Decline-Reverse-Crunch.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909768/workouts/images/decline_reverse_crunch.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909769/workouts/gifs/decline_reverse_crunch.jpg"
+    },
+    {
+      "exerciseId": "dumbbell_curl",
+      "name": "Dumbbell Curl",
+      "thumbnailFile": "Dumbbell Curl.webp",
+      "detailMediaFile": "Dumbbell curl.jpg",
+      "instructionFile": "Dumbbell Curl.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909770/workouts/images/dumbbell_curl.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909772/workouts/gifs/dumbbell_curl.jpg"
+    },
+    {
+      "exerciseId": "dumbbell_lateral_raises",
+      "name": "Dumbbell Lateral Raises",
+      "thumbnailFile": "Dumbbell-Lateral-Raises.webp",
+      "detailMediaFile": "Dumbbell Lateral Raises.gif",
+      "instructionFile": "Dumbbell-Lateral-Raises.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909773/workouts/images/dumbbell_lateral_raises.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909776/workouts/gifs/dumbbell_lateral_raises.gif"
+    },
+    {
+      "exerciseId": "dumbbell_shrugs",
+      "name": "Dumbbell Shrugs",
+      "thumbnailFile": "Dumbbell Shrugs.webp",
+      "detailMediaFile": "Dumbbell Shrugs.gif",
+      "instructionFile": "Dumbbell Shrugs.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909778/workouts/images/dumbbell_shrugs.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909779/workouts/gifs/dumbbell_shrugs.gif"
+    },
+    {
+      "exerciseId": "dynamic_back_stretch",
+      "name": "Dynamic Back Stretch",
+      "thumbnailFile": "dynamic_back_stretch.jpg",
+      "detailMediaFile": "Dynamic Back Stretch.jpg",
+      "instructionFile": "Dynamic-Back-Stretch.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909781/workouts/images/dynamic_back_stretch.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909782/workouts/gifs/dynamic_back_stretch.jpg"
+    },
+    {
+      "exerciseId": "elevated_back_lunge",
+      "name": "Elevated Back Lunge",
+      "thumbnailFile": "elevated_back_lunge.jpg",
+      "detailMediaFile": "Elevated Back Lunge.gif",
+      "instructionFile": "Elevated-Back-Lunge.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909783/workouts/images/elevated_back_lunge.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909784/workouts/gifs/elevated_back_lunge.gif"
+    },
+    {
+      "exerciseId": "elevated_cable_rows",
+      "name": "Elevated Cable Rows",
+      "thumbnailFile": "elevated_cable_rows.jpg",
+      "detailMediaFile": "Elevated Cable Rows.jpg",
+      "instructionFile": "Elevated-Cable-Rows.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909786/workouts/images/elevated_cable_rows.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909787/workouts/gifs/elevated_cable_rows.jpg"
+    },
+    {
+      "exerciseId": "ez_bar_curl",
+      "name": "EZ Bar Curl",
+      "thumbnailFile": "EZ-Bar-Curl.jpg",
+      "detailMediaFile": "EZ Bar Curl.gif",
+      "instructionFile": "EZ-Bar-Curl.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909788/workouts/images/ez_bar_curl.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909790/workouts/gifs/ez_bar_curl.gif"
+    },
+    {
+      "exerciseId": "face_pull",
+      "name": "Face Pull",
+      "thumbnailFile": "Face-Pull.webp",
+      "detailMediaFile": "Face Pull.gif",
+      "instructionFile": "Face-Pulls.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909791/workouts/images/face_pull.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909792/workouts/gifs/face_pull.gif"
+    },
+    {
+      "exerciseId": "farmer_carries",
+      "name": "Farmer Carries",
+      "thumbnailFile": "Farmer Carries.gif",
+      "detailMediaFile": "Farmer Carries.jpg",
+      "instructionFile": "Farmer Carries.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909794/workouts/images/farmer_carries.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909795/workouts/gifs/farmer_carries.jpg"
+    },
+    {
+      "exerciseId": "hack_squat",
+      "name": "Hack Squat",
+      "thumbnailFile": "hack_squat.jpg",
+      "detailMediaFile": "Hack Squat.jpg",
+      "instructionFile": "Hack-Squat.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909797/workouts/images/hack_squat.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909798/workouts/gifs/hack_squat.jpg"
+    },
+    {
+      "exerciseId": "hammer_curl",
+      "name": "Hammer Curl",
+      "thumbnailFile": "Hammer-Curls.webp",
+      "detailMediaFile": "Hammer Curl.gif",
+      "instructionFile": "Hammer-Curls.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909800/workouts/images/hammer_curl.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909801/workouts/gifs/hammer_curl.gif"
+    },
+    {
+      "exerciseId": "hamstring_curl",
+      "name": "Hamstring Curl",
+      "thumbnailFile": "Hamstring-Curl.webp",
+      "detailMediaFile": "Hamstring curl.jpg",
+      "instructionFile": "Hamstring Curl.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909803/workouts/images/hamstring_curl.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909804/workouts/gifs/hamstring_curl.jpg"
+    },
+    {
+      "exerciseId": "hanging_leg_raises",
+      "name": "Hanging Leg Raises",
+      "thumbnailFile": "Hanging-Leg-Raises.jpg",
+      "detailMediaFile": "Hanging Leg Raises.jpg",
+      "instructionFile": "Hanging-Leg-Raises.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909805/workouts/images/hanging_leg_raises.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909807/workouts/gifs/hanging_leg_raises.jpg"
+    },
+    {
+      "exerciseId": "incline_inner_biceps_curls",
+      "name": "Incline Inner Biceps Curls",
+      "thumbnailFile": "incline_inner_biceps_curls.jpg",
+      "detailMediaFile": "Incline Inner Biceps Curls.jpg",
+      "instructionFile": "Incline-Inner-Biceps-Curls.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909808/workouts/images/incline_inner_biceps_curls.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909809/workouts/gifs/incline_inner_biceps_curls.jpg"
+    },
+    {
+      "exerciseId": "jumping_jack",
+      "name": "Jumping Jack",
+      "thumbnailFile": "jumping_jack.jpg",
+      "detailMediaFile": "Jumping Jack.jpg",
+      "instructionFile": "Jumping-Jack.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909810/workouts/images/jumping_jack.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909811/workouts/gifs/jumping_jack.jpg"
+    },
+    {
+      "exerciseId": "leg_press",
+      "name": "Leg Press",
+      "thumbnailFile": "Leg-Press.jpeg",
+      "detailMediaFile": "Leg Press.gif",
+      "instructionFile": "Leg Press.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909813/workouts/images/leg_press.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909814/workouts/gifs/leg_press.gif"
+    },
+    {
+      "exerciseId": "machine_chest_press",
+      "name": "Machine Chest Press",
+      "thumbnailFile": "Machine-Chest-Press.jpeg",
+      "detailMediaFile": "Machine Chest Press.gif",
+      "instructionFile": "Machine-Chest-Press.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909816/workouts/images/machine_chest_press.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909817/workouts/gifs/machine_chest_press.gif"
+    },
+    {
+      "exerciseId": "mountain_climber",
+      "name": "Mountain Climber",
+      "thumbnailFile": "mountain_climber.jpg",
+      "detailMediaFile": "Mountain Climber.gif",
+      "instructionFile": "Mountain-Climber.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909819/workouts/images/mountain_climber.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909820/workouts/gifs/mountain_climber.gif"
+    },
+    {
+      "exerciseId": "overhead_cable_tricep_extensions",
+      "name": "Overhead Cable Tricep Extensions",
+      "thumbnailFile": "Overhead-Cable-Tricept-Extensions.webp",
+      "detailMediaFile": "Overhead Cable Tricep Extensions.gif",
+      "instructionFile": "Overhead-Cable-Tricept-Extensions.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909822/workouts/images/overhead_cable_tricep_extensions.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909823/workouts/gifs/overhead_cable_tricep_extensions.gif"
+    },
+    {
+      "exerciseId": "plank",
+      "name": "Plank",
+      "thumbnailFile": "plank.webp",
+      "detailMediaFile": "Plank.gif",
+      "instructionFile": "Plank.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909824/workouts/images/plank.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909826/workouts/gifs/plank.gif"
+    },
+    {
+      "exerciseId": "push_ups",
+      "name": "Push-Ups",
+      "thumbnailFile": "pushup.gif",
+      "detailMediaFile": "Push Ups.gif",
+      "instructionFile": "Push-Ups.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909828/workouts/images/push_ups.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909830/workouts/gifs/push_ups.gif"
+    },
+    {
+      "exerciseId": "rear_delt_flyes",
+      "name": "Rear Delt Flyes",
+      "thumbnailFile": "Rear-Delt-Flyes.webp",
+      "detailMediaFile": "Rear Delt Flyes.gif",
+      "instructionFile": "Rear-Delt-Flyes.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909831/workouts/images/rear_delt_flyes.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909833/workouts/gifs/rear_delt_flyes.gif"
+    },
+    {
+      "exerciseId": "reverse_curls",
+      "name": "Reverse Curls",
+      "thumbnailFile": "Reverse-Curls.gif",
+      "detailMediaFile": "Reverse Curl.gif",
+      "instructionFile": "Reverse-Curls.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909835/workouts/images/reverse_curls.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909836/workouts/gifs/reverse_curls.gif"
+    },
+    {
+      "exerciseId": "reverse_wrist_curl",
+      "name": "Reverse Wrist Curl",
+      "thumbnailFile": "Reverse-Wrist-Curl.gif",
+      "detailMediaFile": "Reverse Wrist Curl.gif",
+      "instructionFile": "Reverse-Wrist-Curls.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909838/workouts/images/reverse_wrist_curl.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909839/workouts/gifs/reverse_wrist_curl.gif"
+    },
+    {
+      "exerciseId": "romanian_deadlift",
+      "name": "Romanian Deadlift",
+      "thumbnailFile": "Romanian Deadlift.jpg",
+      "detailMediaFile": "Romanian Deadlift.gif",
+      "instructionFile": "Romanian Deadlift instructions.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909840/workouts/images/romanian_deadlift.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909844/workouts/gifs/romanian_deadlift.gif"
+    },
+    {
+      "exerciseId": "rope_pushdowns",
+      "name": "Rope Pushdowns",
+      "thumbnailFile": "Rope-Pushdowns.jpg",
+      "detailMediaFile": "Rope Pushdowns.gif",
+      "instructionFile": "Rope-Pushdowns.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909846/workouts/images/rope_pushdowns.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909847/workouts/gifs/rope_pushdowns.gif"
+    },
+    {
+      "exerciseId": "shoulder_raise",
+      "name": "Shoulder Raise",
+      "thumbnailFile": "shoulder_raise.jpg",
+      "detailMediaFile": "Shoulder Raise.gif",
+      "instructionFile": "Shoulder-Raise.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909848/workouts/images/shoulder_raise.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909850/workouts/gifs/shoulder_raise.gif"
+    },
+    {
+      "exerciseId": "sit_up",
+      "name": "Sit-Up",
+      "thumbnailFile": "situp.jpg",
+      "detailMediaFile": "Sit Up.gif",
+      "instructionFile": "Sit-Up.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909851/workouts/images/sit_up.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909854/workouts/gifs/sit_up.gif"
+    },
+    {
+      "exerciseId": "squats",
+      "name": "Squats",
+      "thumbnailFile": "Squats.gif",
+      "detailMediaFile": "Squats.gif",
+      "instructionFile": "Squats.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909856/workouts/images/squats.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909857/workouts/gifs/squats.gif"
+    },
+    {
+      "exerciseId": "standing_calf_raises",
+      "name": "Standing Calf Raises",
+      "thumbnailFile": "Standing Calf raises.gif",
+      "detailMediaFile": "Standing Calf raises.gif",
+      "instructionFile": "Standing Calf Raises.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909859/workouts/images/standing_calf_raises.gif",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909860/workouts/gifs/standing_calf_raises.gif"
+    },
+    {
+      "exerciseId": "straight_arm_pulldown",
+      "name": "Straight Arm Pulldown",
+      "thumbnailFile": "Straight-Arm-Pulldowm.jpg",
+      "detailMediaFile": "Straight Arm Pulldown.jpg",
+      "instructionFile": "Straight-Arm-Pulldown.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909862/workouts/images/straight_arm_pulldown.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909863/workouts/gifs/straight_arm_pulldown.jpg"
+    },
+    {
+      "exerciseId": "tricep_extension",
+      "name": "Tricep Extension",
+      "thumbnailFile": "tricep_extension.jpg",
+      "detailMediaFile": "Tricep Extension.gif",
+      "instructionFile": "Tricep-Extension.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909864/workouts/images/tricep_extension.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909865/workouts/gifs/tricep_extension.gif"
+    },
+    {
+      "exerciseId": "tricep_kickbacks",
+      "name": "Tricep Kickbacks",
+      "thumbnailFile": "Tricep Kickback.webp",
+      "detailMediaFile": "Tricep Kickbacks.jpg",
+      "instructionFile": "Tricep Kickback.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909867/workouts/images/tricep_kickbacks.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909868/workouts/gifs/tricep_kickbacks.jpg"
+    },
+    {
+      "exerciseId": "upright_row",
+      "name": "Upright Row",
+      "thumbnailFile": "Upright row.jpg",
+      "detailMediaFile": "Upright Row.gif",
+      "instructionFile": "Upright Row.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909869/workouts/images/upright_row.jpg",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909870/workouts/gifs/upright_row.gif"
+    },
+    {
+      "exerciseId": "wide_grip_lat_pulldown",
+      "name": "Wide Grip Lat Pulldown",
+      "thumbnailFile": "wide-grip-lat-pulldown.webp",
+      "detailMediaFile": "Wide Grip Lat Pulldown.gif",
+      "instructionFile": "Wide-Grip-Lat-pulldown.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909871/workouts/images/wide_grip_lat_pulldown.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909873/workouts/gifs/wide_grip_lat_pulldown.gif"
+    },
+    {
+      "exerciseId": "wrist_roller",
+      "name": "Wrist Roller",
+      "thumbnailFile": "Wrist Roller.webp",
+      "detailMediaFile": "Wrist Roller.jpg",
+      "instructionFile": "Wrist Roller.md",
+      "thumbnailUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909874/workouts/images/wrist_roller.webp",
+      "detailMediaUrl": "https://res.cloudinary.com/dq1yjobea/image/upload/v1782909875/workouts/gifs/wrist_roller.jpg"
+    }
+  ],
+  "decorAssets": [
+    { "file": "bench_press.gif", "assetPath": "workout/decor/bench_press.gif" },
+    { "file": "chest_press.gif", "assetPath": "workout/decor/chest_press.gif" },
+    { "file": "doggo.gif", "assetPath": "workout/decor/doggo.gif" },
+    { "file": "gym_buddy.gif", "assetPath": "workout/decor/gym_buddy.gif" },
+    { "file": "gym_motivation.gif", "assetPath": "workout/decor/gym_motivation.gif" },
+    { "file": "lifting_weights.gif", "assetPath": "workout/decor/lifting_weights.gif" },
+    { "file": "pushup.gif", "assetPath": "workout/decor/pushup.gif" }
+  ],
+  "unmatchedAssets": []
+}
